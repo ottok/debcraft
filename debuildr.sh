@@ -74,6 +74,7 @@ run_in_container() {
   docker run --name deb-builder \
       --interactive --tty --rm \
       --user="$(id -u)" --shm-size=1G \
+      --cpus=4 \
       -v "${PWD}/buildout":/tmp/build -v "${PWD}/buildout/ccache":/.ccache \
       -v "${PWD}/$PKG":/tmp/build/source -w /tmp/build/source \
       -e DEB_BUILD_OPTIONS="$DEB_BUILD_OPTIONS" -e CCACHE_DIR=/.ccache \
