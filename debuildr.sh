@@ -192,9 +192,9 @@ then
   SERIES=$(cd "$PKG"; dpkg-parsechangelog -S distribution)
 
   # Current Launchpad Debian Sid equivalent
-  if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ]
+  if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ]
   then
-    SERIES="focal"
+    SERIES="groovy"
   fi
 
   # The Launchpad upload cannot have any extra Debian/Ubuntu version string
