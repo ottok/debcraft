@@ -47,7 +47,7 @@ rm -f -- *.changes *.dsc *.deb
 
 run_in_container() {
   # Reset ccache stats, silently
-  CCACHE_DIR=./buildout/ccache ccache -z > /dev/null
+  CCACHE_DIR=./buildout/ccache ccache -z -s
 
   # Clean tmp directory
   rm -f buildout/*.*
