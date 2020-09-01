@@ -133,7 +133,7 @@ then
   # Internally runs 'debuild -i -I'
   run_in_container gbp buildpackage --no-sign
 
-elif [ "$1" = "source" ]
+elif [ "$1" = "source" ] || [ "$1" = "src" ]
 then
   # Use subshell to avoid having cd .. back
   (cd "$PKG"; git reset --hard; git clean -fdx)
