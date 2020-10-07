@@ -192,7 +192,7 @@ then
   SERIES=$(cd "$PKG"; dpkg-parsechangelog -S distribution)
 
   # Current Launchpad Debian Sid equivalent
-  if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ]
+  if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ] || [ "$SERIES" = 'experimental' ]
   then
     SERIES="groovy"
   fi
