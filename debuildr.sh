@@ -194,6 +194,9 @@ then
 
   SERIES=$(cd "$PKG"; dpkg-parsechangelog -S distribution)
 
+  # Strip away any -updates or -security components before upload
+  SERIES=$(echo "$SERIES" | sed 's/-updates//g' | sed 's/-security//g')
+
   # Current Launchpad Debian Sid equivalent
   if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ] || [ "$SERIES" = 'experimental' ]
   then
