@@ -200,7 +200,7 @@ then
   # Current Launchpad Debian Sid equivalent
   if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ] || [ "$SERIES" = 'experimental' ]
   then
-    SERIES="groovy"
+    SERIES="hirsute"
   fi
 
   # The Launchpad upload cannot have any extra Debian/Ubuntu version string
