@@ -41,6 +41,7 @@ BRANCH_NAME=$(git -C "$PKG/.git" symbolic-ref HEAD | sed 's|.*heads/||' | sed 's
 
 # Use environment if set, otherwise use nice defaults
 DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-parallel=4 nocheck noautodbgsym}"
+echo "Running with DEB_BUILD_OPTIONS=\"$DEB_BUILD_OPTIONS\""
 
 # Clean up old files
 rm -f -- *.changes *.dsc *.deb
