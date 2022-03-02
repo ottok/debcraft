@@ -201,8 +201,25 @@ then
   # Current Launchpad Debian Sid equivalent
   if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ] || [ "$SERIES" = 'experimental' ]
   then
-    SERIES='impish'
+    SERIES='jammy'
   fi
+
+  # Historical equivalents
+  case $SERIES in
+    bullseye)
+      # August 2021
+      SERIES='hirsute' # or impish
+      ;;
+    buster)
+      # July 2019
+      SERIES='disco' # or eoan
+      ;;
+    stretch)
+      # June 2017
+      SERIES='zesty' # or artful
+      ;;
+  esac
+
 
   # The Launchpad upload cannot have any extra Debian/Ubuntu version string
   # components, therefore convert all extra characters to simply dots.
