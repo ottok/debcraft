@@ -106,9 +106,16 @@ run_in_container() {
     echo "filelist-$COMMIT_ID-$BRANCH_NAME.log created"
 
     # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
-    # will forever yield a errors
-    lintian -EvIL +pedantic --profile=debian --color=always \
+    # will likely always emit errors if package complex enough
+    docker run -it --rm --user="$(id -u)" --shm-size=1G -v "${PWD}:/package" -w /package "$CONTAINER" \
+      lintian -EvIL +pedantic --profile=debian --color=never \
       ./*.changes | tee "lintian-$COMMIT_ID-$BRANCH_NAME.log" || true
+    # Don't use color, otherwise logs become unreadable and diffs messy
+
+   # NOTE! Lintian is Perl and therefore installing the latest Lintian version on any older
+   # Debian/Ubuntu distro generally works well. Download and install the latest version from
+   # https://packages.debian.org/sid/all/lintian/download
+   # NOTE! ..but not on Sid in 2023, so running Lintian inside container..
 
   fi
 
