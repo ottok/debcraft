@@ -262,3 +262,11 @@ then
   backportpackage -y -u "$PPA" -d "$SERIES" \
     -S "~$(date '+%s').$COMMIT_ID.$BRANCH_NAME" "$DSC"
 fi
+
+
+# @TODO: Compare with diffoscope
+# - needs to have something to compare to
+# - filenames must be identical, otherwise end result is just a filename comparison
+# - meld on uncompressed .deb dirs might be more interactive?
+# - debdiff might also work well
+# docker run --rm -t -w $(pwd) -v $(pwd):$(pwd):ro       registry.salsa.debian.org/reproducible-builds/diffoscope --exclude-directory-metadata=yes --no-progress --html - master compare > report.html
