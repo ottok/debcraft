@@ -18,8 +18,17 @@ then
   . ./.env
   echo "Building package/dir $PKG in container $CONTAINER (from .env file)"
 else
-  echo "ERROR: No PKG or CONTAINER defined nor .env file found!"
-  exit 1
+  if [ -z "$PKG" ]
+  then
+    PKG="$(basename "$(pwd)" | sed s/pkg-//)"
+    echo "No PKG defined, defaulting to '$PKG' based on directory name"
+  fi
+
+  if [ -z "$CONTAINER" ]
+  then
+    CONTAINER="debian-sid-build-env"
+    echo "No CONTAINER defined, defaulting container '$CONTAINER'"
+  fi
 fi
 
 if [ -z "$1" ]
