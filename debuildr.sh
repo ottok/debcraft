@@ -206,6 +206,10 @@ then
 
   # Historical equivalents
   case $SERIES in
+    bookworm)
+      # June 2023
+      SERIES='lunar'
+      ;;
     bullseye)
       # August 2021
       SERIES='hirsute' # or impish
