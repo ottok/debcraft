@@ -158,7 +158,8 @@ then
   # Use subshell to avoid having cd .. back
   # Use -S so all tools (dpkg-build, dpkg-source) see it. Using --build=source
   # would not bee enough.
-  (cd "$PKG"; gbp buildpackage --git-notify=on -S -d)
+  (cd "$PKG"; gbp buildpackage --git-notify=on --git-builder="debuild --no-lintian -i -I" -S -d)
+
   # Show source-only Lintian info without saving it in a file
   # Don't fail if there are errors, as we often want to proceed to test uploads anyway
   lintian -EvIL +pedantic --profile=debian --color=always ./*.changes || true
