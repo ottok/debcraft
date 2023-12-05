@@ -74,16 +74,16 @@ build_in_container() {
   echo "----------------------------------------------------------------------"
   echo "==> $COMMAND"
 
-  # Run build inside a Docker image with build dependencies defined in a Dockerfile
+  # Run build inside a Podman image with build dependencies defined in a Podmanfile
   # --tty needed for session to have colors automatically
   # --interactive needed for Ctrl+C to cancel build and stop container (and not
   # just exit tty)
   # NOTE!: If build fails, script fails here (due to set pipefail) and there
   # will be no notifications or sounds to user.
   # shellcheck disable=SC2086
-  docker run --name deb-builder \
+  podman run --name deb-builder \
       --interactive --tty --rm \
-      --user="$(id -u)" --shm-size=1G \
+      --shm-size=1G \
       --cpus=4 \
       -v "${PWD}/buildout":/tmp/build -v "${PWD}/buildout/ccache":/.ccache \
       -v "${PWD}/$PKG":/tmp/build/source -w /tmp/build/source \
@@ -91,6 +91,8 @@ build_in_container() {
       "$CONTAINER" \
       $COMMAND | tee "build-$COMMIT_ID-$BRANCH_NAME.log"
 
+  # Podman has user mapping by default. If using Docker, add '--user="$(id -u)"'
+  # in the command above to enable user mapping.
   echo "----------------------------------------------------------------------"
   echo # Space to make output more readable
 
@@ -116,7 +118,7 @@ build_in_container() {
 
     # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
     # will likely always emit errors if package complex enough
-    docker run -it --rm --user="$(id -u)" --shm-size=1G -v "${PWD}:/package" -w /package "$CONTAINER" \
+    podman run -it --rm --user="$(id -u)" --shm-size=1G -v "${PWD}:/package" -w /package "$CONTAINER" \
       lintian -EvIL +pedantic --profile=debian --color=never \
       ./*.changes | tee "lintian-$COMMIT_ID-$BRANCH_NAME.log" || true
     # Don't use color, otherwise logs become unreadable and diffs messy
@@ -143,7 +145,7 @@ then
   # with a default regex that will filter out control files and directories of
   # the most common revision control systems, backup and swap files and Libtool
   # build output directories
-  # Notifications cannot be emitted from inside the Docker container, so don't
+  # Notifications cannot be emitted from inside the Podman container, so don't
   # bother running with --git-notify.
 
   # Regular build for Salsa-CI maintained Debian packages
@@ -269,4 +271,4 @@ fi
 # - filenames must be identical, otherwise end result is just a filename comparison
 # - meld on uncompressed .deb dirs might be more interactive?
 # - debdiff might also work well
-# docker run --rm -t -w $(pwd) -v $(pwd):$(pwd):ro       registry.salsa.debian.org/reproducible-builds/diffoscope --exclude-directory-metadata=yes --no-progress --html - master compare > report.html
+# podman run --rm -t -w $(pwd) -v $(pwd):$(pwd):ro       registry.salsa.debian.org/reproducible-builds/diffoscope --exclude-directory-metadata=yes --no-progress --html - master compare > report.html

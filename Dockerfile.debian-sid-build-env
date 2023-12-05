@@ -25,4 +25,5 @@ RUN mkdir -p ccache
 RUN ccache -s
 
 # Run with:
-# docker build --pull --tag debian-sid-build-env  --file Dockerfile.debian-sid-build-env .
+# podman build --pull --tag debian-sid-build-env  --file Dockerfile.debian-sid-build-env .
+# (if using Docker, simply replace 'podman' with 'docker' in line above)
