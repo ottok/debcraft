@@ -46,7 +46,7 @@ echo "Running with DEB_BUILD_OPTIONS=\"$DEB_BUILD_OPTIONS\""
 # Clean up old files
 rm -f -- *.changes *.dsc *.deb
 
-run_in_container() {
+build_in_container() {
   # Reset ccache stats, silently
   CCACHE_DIR=./buildout/ccache ccache -z -s
 
@@ -139,7 +139,7 @@ then
 
   # Regular build for Salsa-CI maintained Debian packages
   # Internally runs 'debuild -i -I'
-  run_in_container gbp buildpackage --no-sign
+  build_in_container gbp buildpackage --git-builder='debuild --no-lintian --no-sign -i -I'
 
 elif [ "$1" = "source" ] || [ "$1" = "src" ]
 then
@@ -169,13 +169,13 @@ then
   #run_in_container fakeroot debian/rules override_dh_auto_c
   #run_in_container fakeroot debian/rules build
   #run_in_container dh build --verbose
-  #run_in_container dh install --verbose
-  run_in_container dpkg-buildpackage --no-sign --build=any,all
+  #run_in_container fakeroot dh install --verbose # compat level 9
+  build_in_container dpkg-buildpackage --no-sign --build=any,all
   # --no-pre-clean
 
 else
   # shellcheck disable=SC2086,SC2048
-  run_in_container $*
+  build_in_container $*
 
   # Tips: https://www.debian.org/doc/manuals/maint-guide/build.en.html#quickrebuild
   # E.g.:
