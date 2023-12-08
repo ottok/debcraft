@@ -1,0 +1,20 @@
+---
+default:
+  image: debian:sid
+
+stages:
+  - test
+  - Salsa-CI
+
+test:
+  stage: test
+  script:
+    - make test
+
+# Once 'make test' passed, also run the .deb builds and tests
+# @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
+# runners are too small for everything this stage does.
+# build_deb:
+#   stage: Salsa-CI
+#   trigger:
+#     include: debian/salsa-ci.yml

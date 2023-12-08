@@ -1,0 +1,29 @@
+# Base Containerfile for Debcraft
+FROM debian:sid
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends \
+    devscripts \
+    equivs \
+    curl \
+    ccache \
+    git \
+    git-buildpackage \
+    pristine-tar \
+    eatmydata \
+    lintian
+
+RUN update-ccache-symlinks
+RUN mkdir --verbose --parents ccache
+RUN ccache --show-stats
+
+COPY control /
+RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
+    -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
+
+COPY debcraft-builder.sh /debcraft-builder
+COPY debcraft-validator.sh /debcraft-validator
+COPY debcraft-releaser.sh /debcraft-releaser
+RUN chmod +x /debcraft-*
