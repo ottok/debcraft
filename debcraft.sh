@@ -7,7 +7,7 @@ set -e
 set -o pipefail
 
 # show commands (debug)
-set -x
+#set -x
 
 display_help() {
   echo "usage: Debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]"
@@ -35,16 +35,25 @@ display_version() {
 DEBCRAFT_CMD_PATH="$0"
 DEBCRAFT_INSTALL_DIR="/home/otto/koodia/debcraft"
 
+# Save for later use
+DEBCRAFT_RUN_DIR="$(pwd)"
+
+# shellcheck source=src/output.sh
+source "$DEBCRAFT_INSTALL_DIR/src/output.sh"
+
+# shellcheck source=src/distributions.sh
+source "$DEBCRAFT_INSTALL_DIR/src/distributions.sh"
+
 if [ -z "$1" ]
 then
-  echo "ERROR: Pass at least one argument!"
+  log_error "Missing argument <build|validate|release|prune>"
   echo
   display_help
   exit 1
 fi
 
 while :
-echo "DEBUG: $1"
+#log_info "Parsing option/argument: $1"
 do
   case "$1" in
 	-d | --distribution)
@@ -69,7 +78,7 @@ do
     break
     ;;
 	-*)
-    echo "Error: Unknown option: $1" >&2
+    log_error "Unknown option: $1"
     ## or call function display_help
     exit 1
     ;;
@@ -85,14 +94,45 @@ do
   esac
 done
 
-# shellcheck source=src/distributions.sh
-source "$DEBCRAFT_INSTALL_DIR/src/distributions.sh"
+if [ -z "$ACTION" ]
+then
+  log_error "Argument '$TARGET' not one of <build|validate|release|prune>"
+  echo
+  display_help
+  exit 1
+fi
 
+# If no target defined, default to current directory
+if [ -z "$TARGET" ]
+then
+  TARGET="$(pwd)"
+fi
+
+# If target is a path to sources, ensure the whole script runs from it
+if [ -d "$TARGET" ]
+then
+  cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
+
+  if [ -f "debian/changelog" ]
+  then
+    PACKAGE="$(dpkg-parsechangelog --show-field=source)"
+  else
+    log_error "No $TARGET/debian/changelog found, not a valid source package directory"
+    exit 1
+  fi
+else
+  log_warn "@TODO: Package lookup not implemented for $TARGET"
+  # @TODO: if package exists as such, download with apt source, or figure out
+  # source package using dpkg -S
+  exit 1
+fi
+
+# Configure program behaviour after user options and arguments have been parsed
 # shellcheck source=src/config.sh
 source "$DEBCRAFT_INSTALL_DIR/src/config.sh"
 
-# Container is needed only for build at this point
-if [ "$ACTION" == "build" ]
+# If the action needs to run in a container, automatically create it
+if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ]
 then
   # shellcheck source=src/container.sh
   source "$DEBCRAFT_INSTALL_DIR/src/container.sh"
@@ -114,6 +154,7 @@ release)
 prune)
   # For debcraft- containers: podman volume prune --force && podman system prune --force
   # Delete also all mktemp generated directories, build dirs, caches etc
-  echo "@TODO: Pruning not implemented"
+  log_warn "@TODO: Pruning not implemented"
+  exit 1
   ;;
 esac

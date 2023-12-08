@@ -1,30 +1,20 @@
 #!/bin/bash
 
-# If target is a path to sources, get the source package name from
-# debian/changelog
-if [ -d "$TARGET" ]
-then
-  # @TODO: Changing directory should probably be done in top-level script so it is inherited automatically to all other scripts
-  cd "$TARGET" || (echo "ERROR: Unable to change directory to $TARGET"; exit 1)
-  if [ -f "debian/changelog" ]
-  then
-    PACKAGE="$(dpkg-parsechangelog --show-field=source)"
-  else
-    echo "ERROR: No $TARGET/debian/changelog found, not a valid source package directory"
-    exit 1
-  fi
-else
-  echo "@TODO: Package lookup not implemented for $TARGET"
-  exit 1
-fi
-
 case "$DISTRIBUTION" in
 "")
   # If DISTRIBUTION is not set, try to guess it
   if [ ! -e debian/changelog ]
   then
-    # If debian/changelog cannot be used, default to using Debian unstable "sid"
-    BASEIMAGE="debian:sid"
+    # If debian/changelog cannot be used, but current OS is a flavor of Debian,
+    # try to use current distribution and release
+    if grep --quiet "ID_LIKE=debian" /etc/os-release
+    then
+      source /etc/os-release
+      BASEIMAGE="$ID:$VERSION_CODENAME"
+    else
+      # Otherwise default to using Debian unstable "sid"
+      BASEIMAGE="debian:sid"
+    fi
   else
     # Parse the latest debian/changelog entry
     DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution)"
@@ -53,12 +43,26 @@ podman | "")
   CONTAINER_CMD="podman"
   ;;
 *)
-  echo "ERROR: Unknown value in --container-command=""$CONTAINER_CMD"
+  log_error "Unknown value in --container-command=""$CONTAINER_CMD"
   exit 1
 esac
 
 # Container name
 CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
+
+# If TARGET is a path and has a git repostory, identify artifacts with git
+# metadata, otherwise just use timestamp
+if [ -d "$TARGET/.git" ]
+then
+  # Set git commit id and name for later use
+  COMMIT_ID=$(git -C "$TARGET/.git" log -n 1 --oneline | cut -d ' ' -f 1)
+  # Strip branch paths and any slashes so version string is clean
+  BRANCH_NAME=$(git -C "$TARGET/.git" symbolic-ref HEAD | sed 's|.*heads/||' | sed 's|/|.|g')
+
+  BUILD_ID="$COMMIT_ID-$BRANCH_NAME"
+else
+  BUILD_ID="timestamp"
+fi
 
 # Explicit exports
 export PACKAGE
@@ -66,5 +70,6 @@ export BASEIMAGE
 export CONTAINER
 export CONTAINER_CMD
 export CONTAINER_RUN_ARGS
+export BUILD_ID
 
-echo "Using '$CONTAINER_CMD' container image '$CONTAINER'"
+log_info "Using '$CONTAINER_CMD' container image '$CONTAINER'"

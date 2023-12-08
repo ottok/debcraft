@@ -2,9 +2,9 @@
 
 if [ -n "$(podman images --filter label="$CONTAINER" --quiet)" ]
 then
-  echo "Use container '$CONTAINER' for package '$PACKAGE'"
+  log_info "Use container '$CONTAINER' for package '$PACKAGE'"
 else
-  echo "Create container $CONTAINER"
+  log_info "Create container $CONTAINER"
   TEMPDIR="$(mktemp --directory)"
   touch "$TEMPDIR/Containerfile.$CONTAINER"
   cat "$DEBCRAFT_INSTALL_DIR/src/Containerfile" >> "$TEMPDIR/Containerfile.$CONTAINER"
