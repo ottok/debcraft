@@ -1,0 +1,24 @@
+# Base Containerfile for Debcraft
+FROM debian:sid
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -yqq && \
+    apt-get install -y --no-install-recommends \
+    devscripts \
+    equivs \
+    curl \
+    ccache \
+    git \
+    git-buildpackage \
+    pristine-tar \
+    eatmydata \
+    lintian
+
+RUN update-ccache-symlinks
+RUN mkdir -p ccache
+RUN ccache -s
+
+COPY control /
+RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
+    -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
