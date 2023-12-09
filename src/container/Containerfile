@@ -3,7 +3,7 @@ FROM debian:sid
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update --yes -qq && \
+RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     devscripts \
     equivs \
@@ -16,12 +16,13 @@ RUN apt-get update --yes -qq && \
     lintian
 
 RUN update-ccache-symlinks
-RUN mkdir -p ccache
-RUN ccache -s
+RUN mkdir --verbose --parents ccache
+RUN ccache --show-stats
 
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
-COPY debcraft-runner.sh /debcraft-runner
-RUN chmod +c /debcraft-runner
+COPY debcraft-builder.sh /debcraft-builder
+COPY debcraft-validator.sh /debcraft-validator
+RUN chmod +x /debcraft-builder /debcraft-validator

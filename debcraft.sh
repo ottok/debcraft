@@ -42,11 +42,11 @@ DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
 # Save for later use
 DEBCRAFT_RUN_DIR="$(pwd)"
 
-# shellcheck source=src/output.sh
-source "$DEBCRAFT_INSTALL_DIR/src/output.sh"
+# shellcheck source=src/output.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/output.inc.sh"
 
-# shellcheck source=src/distributions.sh
-source "$DEBCRAFT_INSTALL_DIR/src/distributions.sh"
+# shellcheck source=src/distributions.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/distributions.inc.sh"
 
 if [ -z "$1" ]
 then
@@ -57,7 +57,7 @@ then
 fi
 
 while :
-#log_info "Parsing option/argument: $1"
+log_debug "Parse option/argument: $1"
 do
   case "$1" in
 	--build-dirs-path)
@@ -104,11 +104,14 @@ done
 
 if [ -z "$ACTION" ]
 then
+  # IF ACTION isempty the TARGET might have been populated
   log_error "Argument '$TARGET' not one of <build|validate|release|prune>"
   echo
   display_help
   exit 1
 fi
+
+log_debug_var ACTION
 
 # If no target defined, default to current directory
 if [ -z "$TARGET" ]
@@ -130,35 +133,35 @@ then
     exit 1
   fi
 else
-  log_warn "@TODO: Package lookup not implemented for $TARGET"
+  log_error "@TODO: Package lookup not implemented for $TARGET"
   # @TODO: if package exists as such, download with apt source, or figure out
   # source package using dpkg -S
   exit 1
 fi
 
 # Configure program behaviour after user options and arguments have been parsed
-# shellcheck source=src/config.sh
-source "$DEBCRAFT_INSTALL_DIR/src/config.sh"
+# shellcheck source=src/config.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/config.inc.sh"
 
 # If the action needs to run in a container, automatically create it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ]
 then
-  # shellcheck source=src/container.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/container.sh"
+  # shellcheck source=src/container.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/container.inc.sh"
 fi
 
 case "$ACTION" in
 build)
-  # shellcheck source=src/build.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/build.sh"
+  # shellcheck source=src/build.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/build.inc.sh"
   ;;
 validate)
-  # shellcheck source=src/validate.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/validate.sh"
+  # shellcheck source=src/validate.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/validate.inc.sh"
   ;;
 release)
-  # shellcheck source=src/release.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/release.sh"
+  # shellcheck source=src/release.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/release.inc.sh"
   ;;
 prune)
   # For debcraft-* containers: podman volume prune --force && podman system prune --force

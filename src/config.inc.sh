@@ -70,6 +70,7 @@ esac
 # Container name
 CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
 
+# Build id must always be defined
 BUILD_ID="$(date '+%s')"
 
 # If TARGET is a path and has a git repostory, identify artifacts with git
@@ -112,4 +113,4 @@ export CONTAINER_CMD
 export CONTAINER_RUN_ARGS
 export BUILD_ID
 
-log_info "Using '$CONTAINER_CMD' container image '$CONTAINER'"
+log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
