@@ -3,8 +3,8 @@ FROM debian:sid
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -yqq && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get update --yes -qq && \
+    apt-get install --yes --no-install-recommends \
     devscripts \
     equivs \
     curl \
@@ -22,3 +22,6 @@ RUN ccache -s
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
+
+COPY debcraft-runner.sh /debcraft-runner
+RUN chmod +c /debcraft-runner

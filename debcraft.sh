@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# stop on errors
+# stop on any unhandled error
 set -e
 
 # @TODO: pipefail not in POSIX
@@ -10,11 +10,15 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: Debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]"
+  echo "usage: debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]"
   echo
-  echo "Build and iterate on .deb packages."
+  echo "Debcraft is a tool to easily build and rebuild .deb packages."
+  echo
+  echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
+  echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
   echo
   echo "optional arguments:"
+  echo "  --build-dirs-path        Path for writing build files and arfitacs (default: parent directory)"
   echo "  -d, --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  -c, --container-command  container command to use (default: podman)"
   echo "  -h, --help               display this help and exit"
@@ -24,16 +28,16 @@ display_help() {
 # If Debcraft itself was run in a git repository, include the git commit id
 display_version() {
   VERSION=0.1.0
-  if [[ -e .git ]]
+  if [ -e .git ]
   then
-    VERSION=${VERSION}-$(git log -n 1 --oneline | cut -d ' ' -f 1)
+    VERSION="$VERSION-$(git log -n 1 --oneline | cut -d ' ' -f 1)"
   fi
-  echo "Debcraft version ${VERSION}"
+  echo "Debcraft version $VERSION"
 }
 
-# @TODO: Make installation directory detectaion portable
-DEBCRAFT_CMD_PATH="$0"
-DEBCRAFT_INSTALL_DIR="/home/otto/koodia/debcraft"
+# Canonicalize script name if was run via symlink
+DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
+DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
 
 # Save for later use
 DEBCRAFT_RUN_DIR="$(pwd)"
@@ -56,6 +60,10 @@ while :
 #log_info "Parsing option/argument: $1"
 do
   case "$1" in
+	--build-dirs-path)
+    export BUILD_DIRS_PATH="$1"
+    shift
+    ;;
 	-d | --distribution)
     export DISTRIBUTION="$1"
     shift
@@ -109,6 +117,7 @@ then
 fi
 
 # If target is a path to sources, ensure the whole script runs from it
+# From this point onwards $PWD will point to working directory with sources
 if [ -d "$TARGET" ]
 then
   cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
@@ -152,7 +161,7 @@ release)
   source "$DEBCRAFT_INSTALL_DIR/src/release.sh"
   ;;
 prune)
-  # For debcraft- containers: podman volume prune --force && podman system prune --force
+  # For debcraft-* containers: podman volume prune --force && podman system prune --force
   # Delete also all mktemp generated directories, build dirs, caches etc
   log_warn "@TODO: Pruning not implemented"
   exit 1

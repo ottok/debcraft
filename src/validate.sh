@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Find the most recent builds
+BUILD_DIR="$(ls -t -r -d -1 build-*/ | tail -n 1)"
+
+# Validate that the build actually passed and .dsc exists
+
+# Execute the rest of the script in the build directory
+cd "$BUILD_DIR" || exit 1
+
 # Suggest upload only if *.dsc built
 if ls ./*.dsc > /dev/null 2>&1
 then
@@ -11,7 +19,7 @@ then
     PPA="ppa:$(id -un)/ppa"
   fi
 
-  SERIES=$(cd "$TARGET"; dpkg-parsechangelog -S distribution)
+  SERIES=$(cd "$TARGET" || exit 1; dpkg-parsechangelog -S distribution)
 
   # Strip away any -updates or -security components before upload
   SERIES=$(echo "$SERIES" | sed 's/-updates//g' | sed 's/-security//g')
@@ -41,25 +49,13 @@ then
       SERIES='zesty' # or artful
       ;;
   esac
-
-
-  # The Launchpad upload cannot have any extra Debian/Ubuntu version string
-  # components, therefore convert all extra characters to simply dots.
-  BRANCH_NAME=${BRANCH_NAME//-/.}
-
-  # Notify
-  notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg \
-    --urgency=low "Build of $TARGET at $COMMIT_ID (branch $BRANCH_NAME) ready"
-  paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
-
   echo # Space to make output more readable
 
   # POSIX sh does not support 'read -p' so run int via bash
   read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
-  backportpackage -y -u $PPA -d $SERIES -S ~$(date '+%s').$COMMIT_ID+$BRANCH_NAME $DSC
+  backportpackage -y -u $PPA -d $SERIES -S ~$BUILD_ID $DSC
   "
 
   # Upload to Launchpad
-  backportpackage -y -u "$PPA" -d "$SERIES" \
-    -S "~$(date '+%s').$COMMIT_ID.$BRANCH_NAME" "$DSC"
+  backportpackage -y -u "$PPA" -d "$SERIES" -S "~$BUILD_ID" "$DSC"
 fi

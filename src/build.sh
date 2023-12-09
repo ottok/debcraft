@@ -2,16 +2,15 @@
 
 # Use environment if set, otherwise use nice defaults
 DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-parallel=4 nocheck noautodbgsym}"
-echo "Running with DEB_BUILD_OPTIONS=\"$DEB_BUILD_OPTIONS\""
+echo "Running with DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'"
 
-# Clean up old files
-(cd "${PWD}/.." && rm --force --verbose -- *.changes *.dsc *.deb)
+# Use BUILD_DIRS_PATH
+BUILD_ID="$(date '+%s').$COMMIT_ID+$BRANCH_NAME"
 
-# Reset ccache stats, silently
-CCACHE_DIR="${PWD}"/../buildout/ccache ccache -z -s
+CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
+BUILD_DIR="$BUILD_DIRS_PATH/build-$BUILD_ID"
 
-# Clean tmp directory
-rm --force --verbose "${PWD}"/../buildout/*.*
+mkdir --verbose --parents "$CCACHE_DIR" "$BUILD_DIR"
 
 # Run build inside a contianer image with build dependencies defined in a Podmanfile
 # --tty needed for session to have colors automatically
@@ -25,49 +24,19 @@ podman run --name "$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
     --cpus=4 \
-    -v "${PWD}/../buildout":/tmp/build -v "${PWD}/../buildout/ccache":/.ccache \
-    -v "$TARGET":/tmp/build/source -w /tmp/build/source \
-    -e DEB_BUILD_OPTIONS="$DEB_BUILD_OPTIONS" -e CCACHE_DIR=/.ccache \
+    -v "$CCACHE_DIR":/.ccache \
+    -v "$BUILD_DIR":/tmp/build \
+    -v "$PWD":/tmp/build/source \
+    -w /tmp/build/source \
+    -e CCACHE_DIR=/.ccache \
+    -e DEB_BUILD_OPTIONS="$DEB_BUILD_OPTIONS" \
+    -e BUILD_ID="$BUILD_ID" \
     "$CONTAINER" \
-    gbp buildpackage --git-builder='debuild --no-lintian --no-sign -i -I' \
-    | tee "build-$BUILD_ID.log"
+    /debcraft-runner \
+    | tee "$BUILD_DIR/build-$BUILD_ID.log"
 
-# Podman has user mapping by default. If using Docker, add '--user="$(id -u)"'
-# in the command above to enable user mapping.
-echo "----------------------------------------------------------------------"
-echo # Space to make output more readable
 
-# Show ccache stats
-CCACHE_DIR="${PWD}"/../buildout/ccache ccache -s
-
-# Copy generated files to parent directory after successful run
-if cp -ra "${PWD}"/../buildout/*.* . > /dev/null 2>&1
-then
-
-  # clean up any old filelist from same commit
-  rm -f "${PWD}/../filelist-$BUILD_ID.log"
-  for package in *.deb
-  do
-    echo "$package" | cut -d '_' -f 1 >> \
-      "${PWD}/../filelist-$BUILD_ID.log"
-    dpkg-deb -c "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> \
-      "${PWD}/../filelist-$BUILD_ID.log"
-    echo "------------------------------------------------" >> \
-      "${PWD}/../filelist-$BUILD_ID.log"
-  done
-  echo "${PWD}/../filelist-$BUILD_ID.log created"
-
-  # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
-  # will likely always emit errors if package complex enough
-  # Don't use color, otherwise logs become unreadable and diffs messy
-  podman run --name "$CONTAINER" \
-    $CONTAINER_RUN_ARGS \
-    --interactive --tty --rm \
-    --shm-size=1G \
-    --cpus=4 \
-    -v "${PWD}/../buildout":/tmp/build \
-    -w /tmp/build \
-    "$CONTAINER" \
-    lintian -EvIL +pedantic --profile=debian --color=never ./*.changes \
-    | tee "${PWD}/../lintian-$BUILD_ID.log" || true
-fi
+# Notify
+notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg \
+  --urgency=low "Build of $TARGET at $COMMIT_ID (branch $BRANCH_NAME) ready"
+paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
