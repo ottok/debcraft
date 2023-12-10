@@ -150,8 +150,19 @@ log_info "Running in path $PWD"
 # shellcheck source=src/config.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/config.inc.sh"
 
+# Make sure sources are clean
+if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
+then
+  log_info "Ensure git respository is clean and reset (including submodules)"
+  git clean -fdx
+  git submodule foreach --recursive git clean -fdx
+  git reset --hard
+  git submodule foreach --recursive git reset --hard
+  git submodule update --init --recursive
+fi
+
 # If the action needs to run in a container, automatically create it
-if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ]
+if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ] || [ "$ACTION" == "release" ]
 then
   # shellcheck source=src/container.inc.sh
   source "$DEBCRAFT_INSTALL_DIR/src/container.inc.sh"

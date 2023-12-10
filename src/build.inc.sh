@@ -12,17 +12,6 @@ mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
 
 log_info "Building package in $BUILD_DIR"
 
-# Make sure sources are clean
-if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
-then
-  log_info "Ensure git respository is clean and reset (including submodules)"
-  git clean -fdx
-  git submodule foreach --recursive git clean -fdx
-  git reset --hard
-  git submodule foreach --recursive git reset --hard
-  git submodule update --init --recursive
-fi
-
 # Make it visible what this temporary directory was used for
 echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR/status.log"
 
@@ -47,10 +36,10 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
     /debcraft-builder \
-    >> "$BUILD_DIR/build.log" \
+    | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
-#    | tee -a "$BUILD_DIR/build.log" \
+#    >> "$BUILD_DIR/build.log" \
 
 if [ -n "$FAILURE" ]
 then

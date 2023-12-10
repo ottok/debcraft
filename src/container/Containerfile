@@ -25,4 +25,5 @@ RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
 
 COPY debcraft-builder.sh /debcraft-builder
 COPY debcraft-validator.sh /debcraft-validator
-RUN chmod +x /debcraft-builder /debcraft-validator
+COPY debcraft-releaser.sh /debcraft-releaser
+RUN chmod +x /debcraft-*
