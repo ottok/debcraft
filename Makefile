@@ -16,4 +16,6 @@ build:
 	 ./debcraft.sh
 
 install: build
-	install files?
+	install script and src folder
+	man page
+	bash autocomplete file

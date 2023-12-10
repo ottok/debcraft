@@ -15,9 +15,12 @@ case "$BUILD_DIRS_PATH" in
 esac
 
 # Additional sanity check
-if ! touch "$BUILD_DIRS_PATH/.debcraft"
+if touch "$BUILD_DIRS_PATH/debcraft-test"
 then
+  rm "$BUILD_DIRS_PATH/debcraft-test"
+else
   log_error "Unable to access '$BUILD_DIRS_PATH' - check permissions"
+  exit 1
 fi
 
 case "$DISTRIBUTION" in
@@ -41,7 +44,7 @@ case "$DISTRIBUTION" in
     # ..or if that is UNRELEASED, the second last entry
     if [ "$DISTRIBUTION" == "UNRELEASED" ]
     then
-      DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --count=1 --offset=1)"
+      DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --offset=1 --count=1)"
     fi
     # Let function map dpkg-parsechangelog value to a sensible baseimage
     BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
@@ -61,6 +64,7 @@ docker)
 podman | "")
   # Default to using Podman
   CONTAINER_CMD="podman"
+  CONTAINER_RUN_ARGS="--userns=keep-id"
   ;;
 *)
   log_error "Invalid value in --container-command=$CONTAINER_CMD"
@@ -73,14 +77,13 @@ CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
 # Build id must always be defined
 BUILD_ID="$(date '+%s')"
 
-# If TARGET is a path and has a git repostory, identify artifacts with git
-# metadata, otherwise just use timestamp
-if [ -d "$TARGET/.git" ]
+# If PWD has a git repostory append BUILD_ID with git tag and branch
+if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
-  COMMIT_ID=$(git -C "$TARGET/.git" log -n 1 --oneline | cut -d ' ' -f 1)
+  COMMIT_ID=$(git -C "$PWD/.git" log -n 1 --oneline | cut -d ' ' -f 1)
   # Strip branch paths and any slashes so version string is clean
-  BRANCH_NAME=$(git -C "$TARGET/.git" symbolic-ref HEAD | sed 's|.*heads/||')
+  BRANCH_NAME=$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||')
 
   # The BUILD_ID will appended to the Debian/Ubuntu version string, and thus
   # cannot have slahses, dashes or underscores.
@@ -94,15 +97,12 @@ then
   BUILD_ID="$BUILD_ID.$COMMIT_ID+$BRANCH_NAME"
 fi
 
-# Extra validation
-if [ ! -d "$BUILD_DIRS_PATH" ]
-then
-  log_error "Option '$BUILD_DIRS_PATH' is not a valid path"
-fi
-if ! touch "$BUILD_DIRS_PATH/.debcraft"
-then
-  log_error "Unable to access '$BUILD_DIRS_PATH' - check permissions"
-fi
+# Podman man page mentions support for architectures arm, arm64, 386, amd64, ppc64le, s390x
+# @TODO: Figure out how to get 'amd64' from system and use it first, later allow user to choose:
+# - `uname -a` only has formax x86_64
+# - `lsb_release -a` and /etc/os-release only has distro name
+# - `dpkg-architecture --query DEB_BUILD_ARCH` is Debian/Ubuntu dependent
+#ARCH=
 
 # Explicit exports
 export PACKAGE

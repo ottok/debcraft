@@ -18,11 +18,12 @@ display_help() {
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
   echo
   echo "optional arguments:"
-  echo "  --build-dirs-path        Path for writing build files and arfitacs (default: parent directory)"
-  echo "  -d, --distribution       Linux distribution to build in (default: debian:sid)"
-  echo "  -c, --container-command  container command to use (default: podman)"
-  echo "  -h, --help               display this help and exit"
-  echo "  --version                display version and exit"
+  echo "  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)"
+  echo "  --distribution       Linux distribution to build in (default: debian:sid)"
+  echo "  --container-command  container command to use (default: podman)"
+  echo "  --clean              ensure container base is updated and sources clean"
+  echo "  -h, --help           display this help and exit"
+  echo "  --version            display version and exit"
 }
 
 # If Debcraft itself was run in a git repository, include the git commit id
@@ -64,12 +65,16 @@ do
     export BUILD_DIRS_PATH="$1"
     shift
     ;;
-	-d | --distribution)
+	--distribution)
     export DISTRIBUTION="$1"
     shift
     ;;
-	-c | --container-command)
+	--container-command)
     export CONTAINER_CMD="$1"
+    shift
+    ;;
+	--clean)
+    export CLEAN="true"
     shift
     ;;
 	-h | --help)
@@ -138,6 +143,8 @@ else
   # source package using dpkg -S
   exit 1
 fi
+
+log_info "Running in path $PWD"
 
 # Configure program behaviour after user options and arguments have been parsed
 # shellcheck source=src/config.inc.sh

@@ -10,12 +10,15 @@ set -o pipefail
 #set -x
 
 # Reset ccache stats, silently
-ccache --zero-stats --show-stats
+ccache --zero-stats > /dev/null
 
 # Build package
-gbp buildpackage --git-builder='debuild --no-lintian --no-sign -i -I'
+# Don't use colors as they garble the logs (unless 'tee' can be tought to filter our ANSI codes)
+# Passed to dpkg-buildpackage: --no-sign (no keys available in container anyway)
+# Passed to dpkg-source: --diff-ignore (-i, ignore default file types e.g. .git folder), --tar-ignore (-I, passing ignores to tar)
+gbp buildpackage --git-color=off --git-builder='debuild --no-lintian --no-sign --diff-ignore --tar-ignore'
 
-# Show ccache stats
+# Show ccache stats which should have some hits in case ccache was used during the build
 ccache --show-stats
 
 cd /tmp/build || exit 1

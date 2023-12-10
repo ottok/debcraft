@@ -1,27 +1,56 @@
 #!/bin/bash
 
-if [ -n "$("$CONTAINER_CMD" images --filter reference="$CONTAINER" --quiet)" ] && [ -z "$DEBUG" ]
-then
-  log_info "Container '$CONTAINER' already exists, no need to build it"
-else
-  log_info "Create container $CONTAINER"
+# podman images --noheading --filter reference=debcraft-entr-debian-sid --format "table {{.ID}} {{.Repository}} {{.Tag}} {{.CreatedAt}}"
+# 3ea068db053c  localhost/debcraft-entr-debian-sid  latest      2023-12-10 02:36:49 +0000 UTC
 
-  TEMPDIR="$(mktemp --directory)"
-  log_debug_var "TEMPDIR"
+# build if
+# - container missing
+# - container exists, but timestamp older than debian/control file
+# - container exitss, but is more than one day old and the previouis build for exact same commit passed, so use --pull to make sure base image is fully up-to-date
 
-  cp --archive "$DEBCRAFT_INSTALL_DIR"/src/container/* "$TEMPDIR"
+# OR - always try to build and let 'podman build' decide if image missing or control file has updated?
+
+# if [ -n "$("$CONTAINER_CMD" images --noheading --filter reference="$CONTAINER")" ] && [ -z "$DEBUG" ]
+#then
+#  log_info "Container '$CONTAINER' already exists and is newer than package 'control' file, no need to build it"
+
+  CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
+  mkdir --verbose --parents "$CONTAINER_DIR"
+
+  log_debug_var "CONTAINER_DIR"
+
+  cp --archive "$DEBCRAFT_INSTALL_DIR"/src/container/* "$CONTAINER_DIR"
 
   # Make it visible what this temporary directory was used for
-  echo "CONTAINER=$CONTAINER" >> "$TEMPDIR/debcraft"
+  echo "[$(date --iso-8601=seconds)] Building container $CONTAINER for build $BUILD_ID" >> "$CONTAINER_DIR/status.log"
 
   # Customize baseimage
-  sed "s/FROM debian:sid/FROM $BASEIMAGE/" -i "$TEMPDIR/Containerfile"
+  sed "s/FROM debian:sid/FROM $BASEIMAGE/" -i "$CONTAINER_DIR/Containerfile"
 
   # Customize preinstalled build dependencies
-  cp debian/control "$TEMPDIR/control"
+  cp debian/control "$CONTAINER_DIR/control"
 
-  # @TODO: Pull new only if image previous build was successful etc
-  CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
+  # Force pulling new base image
+  if [ -n "$CLEAN" ]
+  then
+    CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
+  fi
 
-  "$CONTAINER_CMD" build --tag "$CONTAINER" "$TEMPDIR" | tee -a "$TEMPDIR/container-build.log"
+  # @TODO: Automatically use --pull when making sure dependencies are updated
+
+  "$CONTAINER_CMD" build  \
+    --tag "$CONTAINER" \
+    --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
+    --logfile="$CONTAINER_DIR/container-$BUILD_ID.log" \
+    $CONTAINER_BUILD_ARGS \
+    "$CONTAINER_DIR" \
+    | tee -a "$CONTAINER_DIR/build.log" \
+    || FAILURE="true"
+
+if [ -n "$FAILURE" ]
+then
+  tail "$CONTAINER_DIR"/*.log
+  echo
+  log_error "Container build failed - see logs in $CONTAINER_DIR for details"
+  exit 1
 fi
