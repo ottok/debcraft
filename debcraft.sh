@@ -153,7 +153,7 @@ source "$DEBCRAFT_INSTALL_DIR/src/config.inc.sh"
 # Make sure sources are clean
 if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
 then
-  log_info "Ensure git respository is clean and reset (including submodules)"
+  log_info "Ensure git repository is clean and reset (including submodules)"
   git clean -fdx
   git submodule foreach --recursive git clean -fdx
   git reset --hard

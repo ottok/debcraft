@@ -10,7 +10,7 @@ set -o pipefail
 #set -x
 
 # Build package
-# Don't use colors as they garble the logs (unless 'tee' can be tought to filter our ANSI codes)
+# Don't use colors as they garble the logs (unless 'tee' can be taught to filter our ANSI codes)
 # Passed to dpkg-buildpackage: --no-sign (no keys available in container anyway)
 # Passed to dpkg-source: --diff-ignore (-i, ignore default file types e.g. .git folder), --tar-ignore (-I, passing ignores to tar)
 # Use -S so all tools (dpkg-build, dpkg-source) see it. Using --build=source
