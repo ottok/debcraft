@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Use BUILD_DIRS_PATH
+# shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
 BUILD_DIR="$BUILD_DIRS_PATH/debcraft-release-$PACKAGE-$BUILD_ID"
 
 mkdir --parents "$BUILD_DIR/source"

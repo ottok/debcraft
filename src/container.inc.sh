@@ -38,8 +38,8 @@ fi
 
 # @TODO: Automatically use --pull when making sure dependencies are updated
 
-#--logfile="$CONTAINER_DIR/container-$BUILD_ID.log" \
-
+# intentionally allow variable to expand to multiple arguments
+# shellcheck disable=SC2086
 "$CONTAINER_CMD" build  \
   --tag "$CONTAINER" \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
@@ -47,6 +47,9 @@ fi
   "$CONTAINER_DIR" \
   | tee -a "$CONTAINER_DIR/build.log" \
   || FAILURE="true"
+
+# @TODO: Redirect all output to log if too verbose?
+# --logfile="$CONTAINER_DIR/container-$BUILD_ID.log" \
 
 if [ -n "$FAILURE" ]
 then

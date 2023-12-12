@@ -26,6 +26,7 @@ cd /tmp/build || exit 1
 # Log package contents
 for package in *.deb
 do
+  # shellcheck disable=SC2129
   echo "$package" | cut -d '_' -f 1 >> "filelist.log"
   dpkg-deb -c "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> "filelist.log"
   echo "------------------------------------------------" >> "filelist.log"

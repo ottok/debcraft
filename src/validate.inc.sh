@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Find the most recent builds
+# shellcheck disable=SC2012
 BUILD_DIR="$(ls -t -r -d -1 build-*/ | tail -n 1)"
 
 # Validate that the build actually passed and .dsc exists
@@ -52,6 +53,7 @@ then
   echo # Space to make output more readable
 
   # POSIX sh does not support 'read -p' so run int via bash
+  # shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
   read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
   backportpackage -y -u $PPA -d $SERIES -S ~$BUILD_ID $DSC
   "

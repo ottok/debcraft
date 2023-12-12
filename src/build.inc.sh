@@ -6,6 +6,7 @@ log_info "Obey DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'"
 
 # Use BUILD_DIRS_PATH
 CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
+# shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
 BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 
 mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
@@ -39,7 +40,8 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
-#    >> "$BUILD_DIR/build.log" \
+# @TODO: Redirect all output to log if too verbose?
+# >> "$BUILD_DIR/build.log" \
 
 if [ -n "$FAILURE" ]
 then

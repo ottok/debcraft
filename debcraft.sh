@@ -40,9 +40,6 @@ display_version() {
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
 
-# Save for later use
-DEBCRAFT_RUN_DIR="$(pwd)"
-
 # shellcheck source=src/output.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/output.inc.sh"
 
