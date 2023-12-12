@@ -71,6 +71,9 @@ podman | "")
   exit 1
 esac
 
+## Strip additional parts, e.g. 'bookworm-security' would be 'bookworm'
+#RELEASE_NAME="${1//-*/}"
+
 # Container name
 CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
 
@@ -81,17 +84,15 @@ BUILD_ID="$(date '+%s')"
 if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
-  COMMIT_ID=$(git -C "$PWD/.git" log -n 1 --oneline | cut -d ' ' -f 1)
+  COMMIT_ID="$(git -C "$PWD/.git" log -n 1 --oneline | cut -d ' ' -f 1)"
   # Strip branch paths and any slashes so version string is clean
-  BRANCH_NAME=$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||')
+  BRANCH_NAME="$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||')"
 
   # The BUILD_ID will appended to the Debian/Ubuntu version string, and thus
   # cannot have slahses, dashes or underscores.
-  BRANCH_NAME="$(echo "$BRANCH_NAME" | \
-    sed 's|/|.|g' | \
-    sed 's/-/./g' | \
-    sed 's/_/./g' \
-    )"
+  BRANCH_NAME="${BRANCH_NAME////.}"
+  BRANCH_NAME="${BRANCH_NAME//-/.}"
+  BRANCH_NAME="${BRANCH_NAME//_/.}"
 
   # This format is compatible to be appended to package version string
   BUILD_ID="$BUILD_ID.$COMMIT_ID+$BRANCH_NAME"
@@ -102,6 +103,12 @@ fi
 # - `uname -a` only has formax x86_64
 # - `lsb_release -a` and /etc/os-release only has distro name
 # - `dpkg-architecture --query DEB_BUILD_ARCH` is Debian/Ubuntu dependent
+#
+# None of these Bash varibles have amd64 either:
+# - HOSTNAME: XPS-13-9370
+# - HOSTTYPE: x86_64
+# - MACHTYPE: x86_64-pc-linux-gnu
+# - OSTYPE: linux-gnu
 #ARCH=
 
 # Explicit exports

@@ -60,19 +60,24 @@ echo "Using directory $TEMPDIR for logs and artifacts in "
 debcraft_test "help" "  --version            display version and exit"
 
 # Prepare test git repository
-#gbp clone --depth=1 --pristine-tar --debian-branch=master https://..
+# @TODO: Clone remote only if needed, otherwise re-use local clones
 gbp clone --color=off --pristine-tar --debian-branch=master ~/debian/entr/pkg-entr/entr
-cd entr
 
+debcraft_test "build entr" "Build BUILD_ID of entr completed!"
+
+cd entr
+git clean -fdx
+debcraft_test "build" "Build BUILD_ID of entr completed!"
+git clean -fdx
 debcraft_test "build ." "Build BUILD_ID of entr completed!"
 
-# Clean away git repository
-git reset --hard
-git clean -fdx
-rm --recursive --force --verbose .git
 
 # @TODO: The last test always fail as the debcraft-builder.sh currently uses git-buildpackage which requires a git repository
-#debcraft_test "build ." "Build BUILD_ID of entr completed!"
+# Clean away git repository
+#git reset --hard
+#git clean -fdx
+#rm --recursive --force --verbose .git
+#debcraft_test "build" "Build BUILD_ID of entr completed!"
 
 
 echo "============================"

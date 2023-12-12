@@ -1,8 +1,21 @@
 #!/bin/bash
 
+sleep 5 &
+spinner $! "docker build"
+
+exit 1
+
+RELEASE="$(dpkg-parsechangelog  --show-field=distribution)"
+
+# Strip additional parts (-security, -updates)
+# e.g. 'bookworm-security' would be 'bookworm'
+RELEASE="${RELEASE//-*}"
+
+SERIES="$(get_ubuntu_equivalent_from_debian_release "$RELEASE")"
+
 # Find the most recent builds
 # shellcheck disable=SC2012
-BUILD_DIR="$(ls -t -r -d -1 build-*/ | tail -n 1)"
+BUILD_DIR="$(ls -t -r -d -1 ../debcraft-build-*/ | tail -n 1)"
 
 # Validate that the build actually passed and .dsc exists
 
@@ -15,49 +28,20 @@ then
   DSC="$(ls ./*.dsc)"
 
   # Default to personal PPA if no other set
+  # @TODO: Make this configurable as we can't assume everyone has their local
+  # username same as their Launchpad username
   if [ -z "$PPA" ]
   then
     PPA="ppa:$(id -un)/ppa"
   fi
 
-  SERIES=$(cd "$TARGET" || exit 1; dpkg-parsechangelog -S distribution)
-
-  # Strip away any -updates or -security components before upload
-  SERIES=$(echo "$SERIES" | sed 's/-updates//g' | sed 's/-security//g')
-
-  # Current Launchpad Debian Sid equivalent
-  if [ "$SERIES" = 'unstable' ] || [ "$SERIES" = 'sid' ] || [ "$SERIES" = 'UNRELEASED' ] || [ "$SERIES" = 'experimental' ]
-  then
-    SERIES='noble'
-  fi
-
-  # Historical equivalents
-  case $SERIES in
-    bookworm)
-      # June 2023
-      SERIES='lunar'
-      ;;
-    bullseye)
-      # August 2021
-      SERIES='hirsute' # or impish
-      ;;
-    buster)
-      # July 2019
-      SERIES='disco' # or eoan
-      ;;
-    stretch)
-      # June 2017
-      SERIES='zesty' # or artful
-      ;;
-  esac
-  echo # Space to make output more readable
-
-  # POSIX sh does not support 'read -p' so run int via bash
+  # @TODO: Launchpad uploads depend on signed source package, thus can't really
+  # fully done inside a container -> ask users to run debsign+dput manually
   # shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
   read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
   backportpackage -y -u $PPA -d $SERIES -S ~$BUILD_ID $DSC
   "
 
   # Upload to Launchpad
-  backportpackage -y -u "$PPA" -d "$SERIES" -S "~$BUILD_ID" "$DSC"
+  backportpackage --yes --upload="$PPA" --destination="$SERIES" --suffix="~$BUILD_ID" "$DSC"
 fi

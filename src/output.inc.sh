@@ -1,15 +1,15 @@
 #!/bin/bash
 
 function log_error() {
-  echo "ERROR: $1" >&2
+  echo -e "\e[38;5;1mERROR: $1\e[0m" >&2
 }
 
 function log_warn() {
-  echo "WARNING: $1" >&2
+  echo -e "\e[38;5;3mWARNING: $1\e[0m" >&2
 }
 
 function log_info() {
-  echo "$1"
+  echo -e "\e[38;5;33m$1\e[0m"
 }
 
 if [ -z "$DEBUG" ]
@@ -22,18 +22,75 @@ then
     true
   }
 else
-  echo "DEBUG: Running Debcraft in debug mode"
-
   # Print debug information not normally visible
   function log_debug() {
-    echo "DEBUG: $1"
+    echo -e "\e[38;5;5mDEBUG: $1\e[0m"
   }
 
   # Print the variable name and value in one "log_debug_var example" call
   function log_debug_var() {
     # E.g. "example:"
-    echo -n "$1: "
+    echo -ne "\e[38;5;5m$1: "
     # E.g. value of $example
-    eval 'echo $'"$1"
+    eval 'echo -n $'"$1"
+    # Intentionally using second source file but first lineno occurence
+    echo -e " (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]}})\e[0m"
   }
+
+  log_debug "Running Debcraft in debug mode"
 fi
+
+# @TODO: Crude spinner
+spinner() {
+  local PID="$1"
+  local CMD="${2:-building}"
+  local START_TIME="$EPOCHSECONDS"
+  local DELAY="0.1"
+  local i=1
+  local SPINNER="/-\|"
+  local CMD_WIDTH=$(($(tput cols)-25))
+
+  # Start color
+  printf "\e[38;5;33m"
+  while kill -0 "$PID" 2> /dev/null
+  do
+    printf "\r[%ss] Executing: %-${CMD_WIDTH}s" "$((EPOCHSECONDS-START_TIME))" "$CMD"
+    # shellcheck disable=2059 # this oneliner trick is intentional
+    printf "\b${SPINNER:i++%${#SPINNER}:1}"
+    sleep "$DELAY"
+  done
+  printf "\r[%ss] Completed: %-${CMD_WIDTH}s\n" "$((EPOCHSECONDS-START_TIME))" "$CMD"
+
+  # End color
+  printf "\e[0m"
+
+  # Debug: View entire color palette
+  #for x in {1..254}
+  #do
+  #  echo -ne "\e[38;5;${x}m${x} "
+  #done
+  #echo -ne "\e[0m"
+
+  # Debug: View ANSI effects
+  #for x in {1..254}
+  #do
+  #  echo -ne "\e[${x};5;33m${x}\e[0m "
+  #done
+
+}
+
+# @TODO: Currently this has no real concept of knowing progress
+progress_bar() {
+  BAR_WIDTH=$(($(tput cols)-20))
+  printf -v BAR "%$((BAR_WIDTH))s" ''
+  echo -n "Progress [${BAR// /.}]"
+
+  i=0
+  until test "$i" -gt ${BAR_WIDTH}
+  do
+    printf -v BAR "%-${i}s" ''
+    echo -ne "\rProgress [${BAR// /#}"
+    sleep .01
+    i="$((i+1))"
+  done
+}
