@@ -6,7 +6,7 @@
 # build if
 # - container missing
 # - container exists, but timestamp older than debian/control file
-# - container exitss, but is more than one day old and the previouis build for exact same commit passed, so use --pull to make sure base image is fully up-to-date
+# - container exists, but is more than one day old and the previouis build for exact same commit passed, so use --pull to make sure base image is fully up-to-date
 
 # OR - always try to build and let 'podman build' decide if image missing or control file has updated?
 

@@ -77,7 +77,7 @@ CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
 # Build id must always be defined
 BUILD_ID="$(date '+%s')"
 
-# If PWD has a git repostory append BUILD_ID with git tag and branch
+# If PWD has a git repository append BUILD_ID with git tag and branch
 if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
