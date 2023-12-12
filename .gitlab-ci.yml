@@ -1,6 +1,6 @@
 ---
 default:
-  image: debian:sid
+  image: debian:sid-slim
 
 stages:
   - test
@@ -9,8 +9,10 @@ stages:
 test:
   stage: test
   script:
-    - make test
+    - apt-get update -qq && apt-get -qq install --no-install-recommends --yes git devscripts python3-debian shellcheck make lsb-release codespell
+    - make test-static
 
+## Debian testing
 # Once 'make test' passed, also run the .deb builds and tests
 # @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
 # runners are too small for everything this stage does.
@@ -18,3 +20,16 @@ test:
 #   stage: Salsa-CI
 #   trigger:
 #     include: debian/salsa-ci.yml
+
+## Security testing
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
