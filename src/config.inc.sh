@@ -1,17 +1,17 @@
 #!/bin/bash
 
 case "$BUILD_DIRS_PATH" in
-"")
-  # If BUILD_DIRS_PATH is not set, use use parent directory
-  BUILD_DIRS_PATH="$(cd .. && pwd)"
-  ;;
-*)
-  # If BUILD_DIRS_PATH is defined, use it as-is
-  if [ ! -d "$BUILD_DIRS_PATH" ]
-  then
-    log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH"
-    exit 1
-  fi
+  "")
+    # If BUILD_DIRS_PATH is not set, use use parent directory
+    BUILD_DIRS_PATH="$(cd .. && pwd)"
+    ;;
+  *)
+    # If BUILD_DIRS_PATH is defined, use it as-is
+    if [ ! -d "$BUILD_DIRS_PATH" ]
+    then
+      log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH"
+      exit 1
+    fi
 esac
 
 # Additional sanity check
@@ -24,51 +24,51 @@ else
 fi
 
 case "$DISTRIBUTION" in
-"")
-  # If DISTRIBUTION is not set, try to guess it
-  if [ ! -e debian/changelog ]
-  then
-    # If debian/changelog cannot be used, but current OS is a flavor of Debian,
-    # try to use current distribution and release
-    if grep --quiet "ID_LIKE=debian" /etc/os-release
+  "")
+    # If DISTRIBUTION is not set, try to guess it
+    if [ ! -e debian/changelog ]
     then
-      source /etc/os-release
-      BASEIMAGE="$ID:$VERSION_CODENAME"
+      # If debian/changelog cannot be used, but current OS is a flavor of Debian,
+      # try to use current distribution and release
+      if grep --quiet "ID_LIKE=debian" /etc/os-release
+      then
+        source /etc/os-release
+        BASEIMAGE="$ID:$VERSION_CODENAME"
+      else
+        # Otherwise default to using Debian unstable "sid"
+        BASEIMAGE="debian:sid"
+      fi
     else
-      # Otherwise default to using Debian unstable "sid"
-      BASEIMAGE="debian:sid"
+      # Parse the latest debian/changelog entry
+      DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution)"
+      # ..or if that is UNRELEASED, the second last entry
+      if [ "$DISTRIBUTION" == "UNRELEASED" ]
+      then
+        DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --offset=1 --count=1)"
+      fi
+      # Let function map dpkg-parsechangelog value to a sensible baseimage
+      BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
     fi
-  else
-    # Parse the latest debian/changelog entry
-    DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution)"
-    # ..or if that is UNRELEASED, the second last entry
-    if [ "$DISTRIBUTION" == "UNRELEASED" ]
-    then
-      DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --offset=1 --count=1)"
-    fi
-    # Let function map dpkg-parsechangelog value to a sensible baseimage
-    BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
-  fi
-  ;;
-*)
-  # If DISTRIBUTION is defined, use it to set BASEIMAGE
-  BASEIMAGE="$DISTRIBUTION"
+    ;;
+  *)
+    # If DISTRIBUTION is defined, use it to set BASEIMAGE
+    BASEIMAGE="$DISTRIBUTION"
 esac
 
 case "$CONTAINER_CMD" in
-docker)
-  # Using Docker is valid option but requires some extra args to work
-  CONTAINER_CMD="docker"
-  CONTAINER_RUN_ARGS="--user=$(id -u)"
-  ;;
-podman | "")
-  # Default to using Podman
-  CONTAINER_CMD="podman"
-  CONTAINER_RUN_ARGS="--userns=keep-id"
-  ;;
-*)
-  log_error "Invalid value in --container-command=$CONTAINER_CMD"
-  exit 1
+  docker)
+    # Using Docker is valid option but requires some extra args to work
+    CONTAINER_CMD="docker"
+    CONTAINER_RUN_ARGS="--user=$(id -u)"
+    ;;
+  podman | "")
+    # Default to using Podman
+    CONTAINER_CMD="podman"
+    CONTAINER_RUN_ARGS="--userns=keep-id"
+    ;;
+  *)
+    log_error "Invalid value in --container-command=$CONTAINER_CMD"
+    exit 1
 esac
 
 ## Strip additional parts, e.g. 'bookworm-security' would be 'bookworm'

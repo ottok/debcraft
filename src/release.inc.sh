@@ -46,18 +46,18 @@ fi
 MSG="Source build $BUILD_ID of $PACKAGE completed!"
 
 echo
-echo "$MSG"
+log_info "$MSG"
 
 # Notify
 notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "$MSG"
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 
 echo
-echo "Results visible in $BUILD_DIR"
-echo "To complete the release process, please review, sign and upload:"
-echo "cd $BUILD_DIR"
-echo "debsign *.changes"
-echo "dput *.changes"
-echo "cd - # Return back to source directory"
-echo "gbp tag"
-echo "gbp push"
+log_info "Results visible in $BUILD_DIR"
+log_info "To complete the release process, please review, sign and upload:"
+log_info "cd $BUILD_DIR"
+log_info "debsign *.changes"
+log_info "dput *.changes"
+log_info "cd - # Return back to source directory"
+log_info "gbp tag"
+log_info "gbp push"

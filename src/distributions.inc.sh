@@ -8,18 +8,18 @@ function get_baseimage_from_distribution_name() {
 
   # @TODO: Ideally read /usr/share/distro-info/debian.csv and ubuntu.csv directly
   case "$NAME" in
-  unstable)
-    echo "debian:sid"
-    ;;
-  experimental | sid | trixie | bookworm | bullseye | buster)
-    echo "debian:$NAME"
-    ;;
-  noble | jammy | focal)
-    echo "ubuntu:$NAME"
-    ;;
-  *)
-    log_warn "@TODO: Container baseimage mapping not implemented for $NAME"
-    exit 1
+    unstable)
+      echo "debian:sid"
+      ;;
+    experimental | sid | trixie | bookworm | bullseye | buster)
+      echo "debian:$NAME"
+      ;;
+    noble | jammy | focal)
+      echo "ubuntu:$NAME"
+      ;;
+    *)
+      log_error "@TODO: Container baseimage mapping not implemented for $NAME"
+      exit 1
   esac
 
 }
@@ -62,7 +62,7 @@ function get_ubuntu_equivalent_from_debian_release() {
         echo "zesty" # or artful
         ;;
       *)
-        log_warn "@TODO: Debian release to Ubuntu series mapping not implemented for $SERIES"
+        log_error "@TODO: Debian release to Ubuntu series mapping not implemented for $SERIES"
         exit 1
     esac
   fi

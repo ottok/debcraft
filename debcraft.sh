@@ -58,49 +58,49 @@ while :
 log_debug "Parse option/argument: $1"
 do
   case "$1" in
-	--build-dirs-path)
-    export BUILD_DIRS_PATH="$1"
-    shift
-    ;;
-	--distribution)
-    export DISTRIBUTION="$1"
-    shift
-    ;;
-	--container-command)
-    export CONTAINER_CMD="$1"
-    shift
-    ;;
-	--clean)
-    export CLEAN="true"
-    shift
-    ;;
-	-h | --help)
-    display_help  # Call your function
-    exit 0
-    ;;
-	--version)
-    display_version
-    exit 0
-    ;;
-	--)
-    # No more options
-    shift
-    break
-    ;;
-	-*)
-    log_error "Unknown option: $1"
-    ## or call function display_help
-    exit 1
-    ;;
-  build | validate | release | prune)
-    export ACTION="$1"
-    shift
-    ;;
-  *)
-    export TARGET="$1"
-    # No more options or arguments
-    break
-    ;;
+    --build-dirs-path)
+      export BUILD_DIRS_PATH="$1"
+      shift
+      ;;
+    --distribution)
+      export DISTRIBUTION="$1"
+      shift
+      ;;
+    --container-command)
+      export CONTAINER_CMD="$1"
+      shift
+      ;;
+    --clean)
+      export CLEAN="true"
+      shift
+      ;;
+    -h | --help)
+      display_help  # Call your function
+      exit 0
+      ;;
+    --version)
+      display_version
+      exit 0
+      ;;
+    --)
+      # No more options
+      shift
+      break
+      ;;
+    -*)
+      log_error "Unknown option: $1"
+      ## or call function display_help
+      exit 1
+      ;;
+    build | validate | release | prune)
+      export ACTION="$1"
+      shift
+      ;;
+    *)
+      export TARGET="$1"
+      # No more options or arguments
+      break
+      ;;
   esac
 done
 
@@ -166,22 +166,22 @@ then
 fi
 
 case "$ACTION" in
-build)
-  # shellcheck source=src/build.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/build.inc.sh"
-  ;;
-validate)
-  # shellcheck source=src/validate.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/validate.inc.sh"
-  ;;
-release)
-  # shellcheck source=src/release.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/release.inc.sh"
-  ;;
-prune)
-  # For debcraft-* containers: podman volume prune --force && podman system prune --force
-  # Delete also all mktemp generated directories, build dirs, caches etc
-  log_warn "@TODO: Pruning not implemented"
-  exit 1
-  ;;
+  build)
+    # shellcheck source=src/build.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/build.inc.sh"
+    ;;
+  validate)
+    # shellcheck source=src/validate.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/validate.inc.sh"
+    ;;
+  release)
+    # shellcheck source=src/release.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/release.inc.sh"
+    ;;
+  prune)
+    # For debcraft-* containers: podman volume prune --force && podman system prune --force
+    # Delete also all mktemp generated directories, build dirs, caches etc
+    log_error "@TODO: Pruning not implemented"
+    exit 1
+    ;;
 esac

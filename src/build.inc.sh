@@ -19,7 +19,7 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
 # Run build inside a container image with build dependencies defined in a Podmanfile
 # --tty needed for session to have colors automatically
 # --interactive needed for Ctrl+C to cancel build and stop container (and not
-# just exit tty)
+#   just exit tty)
 # NOTE!: If build fails, script fails here (due to set pipefail) and there
 # will be no notifications or sounds to user.
 # shellcheck disable=SC2086
@@ -55,8 +55,15 @@ fi
 MSG="Build $BUILD_ID of $PACKAGE completed!"
 
 echo
-echo "$MSG"
+log_info "$MSG"
 
 # Notify
 notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "$MSG"
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
+
+echo
+log_info "Results visible in $BUILD_DIR"
+log_info "Please review the result and compare to previous build (if exists)"
+# @TODO: Give tips on how/what to review and across which versions (e.g.
+# previous successful build on same branch, or previous release in same
+# Debian/Ubuntu series)

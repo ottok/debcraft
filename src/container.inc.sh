@@ -17,7 +17,7 @@
 
 if podman images --noheading --filter reference="$CONTAINER" --format "table {{.ID}} {{.Repository}} {{.CreatedSince}}" | grep --quiet -F 'hours ago'
 then
-  return
+  return # returns to previous "source" in parent script debcraft.sh
 fi
 
 CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"

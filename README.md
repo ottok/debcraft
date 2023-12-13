@@ -26,21 +26,134 @@ ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 
 ## Use examples
 
+```
+$ debcraft build .
+Running in path /home/otto/debian/entr/pkg-entr/entr
+Use 'podman' container image 'debcraft-entr-debian-sid' for package 'entr'
+Obey DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym'
+Building package in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1702477833.a4117db+master
+gbp:info: Creating /tmp/build/entr_5.3.orig.tar.gz
+gbp:info: Performing the build
+ dpkg-buildpackage -us -uc -ui --diff-ignore --tar-ignore
+dpkg-buildpackage: info: source package entr
+dpkg-buildpackage: info: source version 5.3-1
+dpkg-buildpackage: info: source distribution unstable
+dpkg-buildpackage: info: source changed by Otto Kekäläinen <otto@debian.org>
+ dpkg-source --diff-ignore --tar-ignore --before-build .
+dpkg-buildpackage: info: host architecture amd64
+dpkg-source: info: using patch list from debian/patches/series
+dpkg-source: info: applying libbsd-overlay.patch
+dpkg-source: info: applying kfreebsd-support.patch
+dpkg-source: info: applying debug-system-test.patch
+dpkg-source: info: applying simplified-build-test.patch
+dpkg-source: info: applying system-test-fixes.patch
+ debian/rules clean
+dh clean --buildsystem=makefile
+   dh_auto_clean -O--buildsystem=makefile
+   dh_autoreconf_clean -O--buildsystem=makefile
+   dh_clean -O--buildsystem=makefile
+ dpkg-source --diff-ignore --tar-ignore -b .
+dpkg-source: info: using source format '3.0 (quilt)'
+dpkg-source: info: verifying ./entr_5.3.orig.tar.gz.asc
+dpkg-source: info: building entr using existing ./entr_5.3.orig.tar.gz
+dpkg-source: info: building entr using existing ./entr_5.3.orig.tar.gz.asc
+dpkg-source: info: using patch list from debian/patches/series
+dpkg-source: info: building entr in entr_5.3-1.debian.tar.xz
+dpkg-source: info: building entr in entr_5.3-1.dsc
+ debian/rules binary
+dh binary --buildsystem=makefile
+   dh_update_autotools_config -O--buildsystem=makefile
+   dh_autoreconf -O--buildsystem=makefile
+   debian/rules override_dh_auto_configure
+make[1]: Entering directory '/tmp/build/source'
+ln -sf Makefile.linux Makefile
+make[1]: Leaving directory '/tmp/build/source'
+   dh_auto_build -O--buildsystem=makefile
+	make -j4 "INSTALL=install --strip-program=true"
+make[1]: Entering directory '/tmp/build/source'
+cc -g -O2 -ffile-prefix-map=/tmp/build/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.3\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
+entr.c: In function ‘run_utility’:
+entr.c:416:17: warning: ignoring return value of ‘realpath’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  416 |                 realpath(leading_edge->fn, arg_buf);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+make[1]: Leaving directory '/tmp/build/source'
+dh: command-omitted: The call to "dh_auto_test -O--buildsystem=makefile" was omitted due to "DEB_BUILD_OPTIONS=nocheck"
+   create-stamp debian/debhelper-build-stamp
+   dh_testroot -O--buildsystem=makefile
+   dh_prep -O--buildsystem=makefile
+   debian/rules override_dh_auto_install
+make[1]: Entering directory '/tmp/build/source'
+dh_auto_install -- PREFIX=/usr
+	make -j4 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
+make[2]: Entering directory '/tmp/build/source'
+install entr /tmp/build/source/debian/entr/usr/bin
+install -m 644 entr.1 /tmp/build/source/debian/entr/usr/share/man/man1
+make[2]: Leaving directory '/tmp/build/source'
+make[1]: Leaving directory '/tmp/build/source'
+   dh_installdocs -O--buildsystem=makefile
+   dh_installchangelogs -O--buildsystem=makefile
+   dh_installman -O--buildsystem=makefile
+   dh_installsystemduser -O--buildsystem=makefile
+   dh_perl -O--buildsystem=makefile
+   dh_link -O--buildsystem=makefile
+   dh_strip_nondeterminism -O--buildsystem=makefile
+   dh_compress -O--buildsystem=makefile
+   dh_fixperms -O--buildsystem=makefile
+   dh_missing -O--buildsystem=makefile
+   dh_dwz -a -O--buildsystem=makefile
+   dh_strip -a -O--buildsystem=makefile
+   dh_makeshlibs -a -O--buildsystem=makefile
+   dh_shlibdeps -a -O--buildsystem=makefile
+   dh_installdeb -O--buildsystem=makefile
+   dh_gencontrol -O--buildsystem=makefile
+   dh_md5sums -O--buildsystem=makefile
+   dh_builddeb -O--buildsystem=makefile
+dpkg-deb: building package 'entr' in '../entr_5.3-1_amd64.deb'.
+ dpkg-genbuildinfo -O../entr_5.3-1_amd64.buildinfo
+ dpkg-genchanges -O../entr_5.3-1_amd64.changes
+dpkg-genchanges: info: including full source code in upload
+ dpkg-source --diff-ignore --tar-ignore --after-build .
+dpkg-source: info: unapplying system-test-fixes.patch
+dpkg-source: info: unapplying simplified-build-test.patch
+dpkg-source: info: unapplying debug-system-test.patch
+dpkg-source: info: unapplying kfreebsd-support.patch
+dpkg-source: info: unapplying libbsd-overlay.patch
+dpkg-buildpackage: info: full upload (original source is included)
+Local storage:
+  Cache size (GiB): 0.0 / 5.0 ( 0.00%)
+
+Build 1702477833.a4117db+master of entr completed!
+
+Results visible in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1702477833.a4117db+master
+Please review the result and compare to previous build (if exists)
+```
+
 ## Documentation
 
 See `debcraft --help` for detailed usage instructions.
 
 ## Additional information
 
-### Development
+### Development as an open source project
 
-*This project is open source and contributions are welcome!*
+*This project is open source and contributions are welcome!* The project maintains a promise that the initial review will happen in 48h for all Merge Requests recieved. The [code review will be conducted professionally]() and the code base aims to maintain a very high qualiy bar, so please reserve time to polish your code submission in a couple of review rounds.
 
+The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
 
 ### Programming language: Bash
 
-Bash was specifically chosen as the main language to keep the code contribution barrier for this tool as low as possible. Additionally, as Debcraft mainly builds upon invoking other programs via their command-line interface, using Bash scripting helps keep the code base small and lean compared to using a proper programming language to run tens of subshells. If the limitations of Bash (e.g. lack of proper testing framework) starts to feel limiting parts of this tool might be rewritten in fast to develop language like Python, Mojo, Nim, Zig or Rust.
+Bash was specifically chosen as the main language to keep the code contribution barrier for this tool as low as possible. Additionally, as Debcraft mainly builds upon invoking other programs via their command-line interface, using Bash scripting helps keep the code base small and lean compared to using a proper programming language to run tens of subshells. If the limitations of Bash (e.g. lack of proper testing framework, limited control of output with merely ANSI codes, overly simplistic error handling..) starts to feel limiting parts of this tool might be rewritten in fast to develop language like Python, Mojo, Nim, Zig or Rust.
+
+### High quality, secure and performant code
+
+Despite being written with Bash, Debcraft still aims to highest possible code quality by enforcing that the code base in Shellcheck clean along with other applicable static testing, such as spellchecking. While running `set -e` is in effect to stop execution on any error unless explicitly handled. The Bash code should avoid spawning subshells if it can be avoided.
+
+There are no fixed release dates or fixed milestone scopes. Maintaing high quality triumps other priorities. This tool is intended to automate Debian packaging work that has existed for decades, and the tools should be robust enough to stand the test of time and serve for decades to come.
+
+### Testing
+
+To help with ensuring the above about code quality, the project has both Gitlab-CI for automatic testing and a simple `make test` command to run the same testing locally while developing.
 
 ### Name
 
-Why the name Debcraft? Because the name debuild was already taken. The 'craft' also helps setting users in the corrymindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
+Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the corrymindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
