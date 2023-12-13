@@ -1,7 +1,7 @@
 #!/bin/bash
 
 log_info "Validate that the directory debian/patches/ contents and debian/patches/series file match by count"
-if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(cat debian/patches/series | wc -l)" ]
+if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
 then
   log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
   find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
@@ -31,6 +31,7 @@ SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u |cut -d ':' -f 1 | xarg
 BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)"
 if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
 then
+  # shellcheck disable=SC2086 # intentional expansion of arguments
   if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
   then
       log_error "Shellcheck reported issues, please run it manually"

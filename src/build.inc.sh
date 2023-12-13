@@ -11,6 +11,12 @@ BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 
 mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
 
+# Instead of plain 'chown -R' use find and only apply chmod on files that need
+# it to avoid excess disk writes and ctime updates in vain. Use 'edecdir' as
+# safer option to 'exec' and use the variant ending with plus so any non-zero
+# exit code will be surfaced and calling script aborted.
+find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+
 log_info "Building package in $BUILD_DIR"
 
 # Make it visible what this temporary directory was used for

@@ -59,7 +59,7 @@ case "$CONTAINER_CMD" in
   docker)
     # Using Docker is valid option but requires some extra args to work
     CONTAINER_CMD="docker"
-    CONTAINER_RUN_ARGS="--user=$(id -u)"
+    CONTAINER_RUN_ARGS="--user=${UID}"
     ;;
   podman | "")
     # Default to using Podman

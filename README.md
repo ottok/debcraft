@@ -132,23 +132,49 @@ Please review the result and compare to previous build (if exists)
 
 See `debcraft --help` for detailed usage instructions.
 
+```
+$ debcraft --help
+usage: debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]
+
+Debcraft is a tool to easily build and rebuild .deb packages.
+
+In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
+be honored (currently DEB_BUILD_OPTIONS='').
+
+optional arguments:
+ --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
+ --distribution       Linux distribution to build in (default: debian:sid)
+ --container-command  container command to use (default: podman)
+ --clean              ensure container base is updated and sources clean
+ -h, --help           display this help and exit
+ --version            display version and exit
+```
+
 ## Additional information
 
 ### Development as an open source project
 
-*This project is open source and contributions are welcome!* The project maintains a promise that the initial review will happen in 48h for all Merge Requests recieved. The [code review will be conducted professionally]() and the code base aims to maintain a very high qualiy bar, so please reserve time to polish your code submission in a couple of review rounds.
+*This project is open source and contributions are welcome!* The project maintains a promise that the initial review will happen in 48h for all Merge Requests received. The [code review will be conducted professionally]() and the code base aims to maintain a very high qualiy bar, so please reserve time to polish your code submission in a couple of review rounds.
 
 The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
+
+### Roadmap
+
+Debcraft does not intend to replace well working existing tools like git-buildpackage, but rather build upon them making the overall process of as easy as possible. Current development focus is to make the `debcraft build` as easy and efficient as possible. The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
+
+For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
 
 ### Programming language: Bash
 
 Bash was specifically chosen as the main language to keep the code contribution barrier for this tool as low as possible. Additionally, as Debcraft mainly builds upon invoking other programs via their command-line interface, using Bash scripting helps keep the code base small and lean compared to using a proper programming language to run tens of subshells. If the limitations of Bash (e.g. lack of proper testing framework, limited control of output with merely ANSI codes, overly simplistic error handling..) starts to feel limiting parts of this tool might be rewritten in fast to develop language like Python, Mojo, Nim, Zig or Rust.
 
+Note that Bash is used to its fullest. There is no need to restrict functionality to POSIX compatibility as Debcraft will always run on Linux using Linux containers anyway.
+
 ### High quality, secure and performant code
 
 Despite being written with Bash, Debcraft still aims to highest possible code quality by enforcing that the code base in Shellcheck clean along with other applicable static testing, such as spellchecking. While running `set -e` is in effect to stop execution on any error unless explicitly handled. The Bash code should avoid spawning subshells if it can be avoided.
 
-There are no fixed release dates or fixed milestone scopes. Maintaing high quality triumps other priorities. This tool is intended to automate Debian packaging work that has existed for decades, and the tools should be robust enough to stand the test of time and serve for decades to come.
+There are no fixed release dates or fixed milestone scopes. Maintaining high quality triumps other priorities. This tool is intended to automate Debian packaging work that has existed for decades, and the tools should be robust enough to stand the test of time and serve for decades to come.
 
 ### Testing
 
@@ -157,3 +183,7 @@ To help with ensuring the above about code quality, the project has both Gitlab-
 ### Name
 
 Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the corrymindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
+
+## Licence
+
+Debcraft is free and open source software as published under GPLv3.

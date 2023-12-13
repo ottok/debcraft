@@ -15,10 +15,10 @@
 #  log_info "Container '$CONTAINER' already exists and is newer than package 'control' file, no need to build it"
 
 
-if podman images --noheading --filter reference="$CONTAINER" --format "table {{.ID}} {{.Repository}} {{.CreatedSince}}" | grep --quiet -F 'hours ago'
-then
-  return # returns to previous "source" in parent script debcraft.sh
-fi
+#if podman images --noheading --filter reference="$CONTAINER" --format "table {{.ID}} {{.Repository}} {{.CreatedSince}}" | grep --quiet -F 'hours ago'
+#then
+#  return # returns to previous "source" in parent script debcraft.sh
+#fi
 
 CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
 mkdir --verbose --parents "$CONTAINER_DIR"
