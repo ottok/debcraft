@@ -104,7 +104,7 @@ fi
 # - `lsb_release -a` and /etc/os-release only has distro name
 # - `dpkg-architecture --query DEB_BUILD_ARCH` is Debian/Ubuntu dependent
 #
-# None of these Bash varibles have amd64 either:
+# None of these Bash variables have amd64 either:
 # - HOSTNAME: XPS-13-9370
 # - HOSTTYPE: x86_64
 # - MACHTYPE: x86_64-pc-linux-gnu

@@ -1,9 +1,42 @@
 #!/bin/bash
 
-sleep 5 &
-spinner $! "docker build"
+log_info "Validate that the directory debian/patches/ contents and debian/patches/series file match by count"
+if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(cat debian/patches/series | wc -l)" ]
+then
+  log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
+  find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
+  sort debian/patches/series > /tmp/patches-series-sorted
+  diff --side-by-side /tmp/patches-series-sorted /tmp/patches-directory-sorted
+  exit 1
+fi
 
-exit 1
+log_info "Validate that the files in debian/ are properly formatted and sorted"
+if [ -n "$(wrap-and-sort --wrap-always --dry-run)" ]
+then
+  log_error "The directory debian/ contains files that could be automatically formatted and sorted with 'wrap-and-sort':"
+  wrap-and-sort --wrap-always --dry-run --verbose
+  exit 1
+fi
+
+log_info "Validate that the debian/rules can be parsed by Make"
+if ! make --dry-run --makefile=debian/rules > /dev/null
+then
+  log_error "Make fails to parse the debian/rules file:"
+  make --dry-run --makefile=debian/rules
+  exit 1
+fi
+
+log_info "Validate that all shell scripts in debian/rules pass Shellcheck"
+SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u |cut -d ':' -f 1 | xargs)"
+BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)"
+if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
+then
+  if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
+  then
+      log_error "Shellcheck reported issues, please run it manually"
+      exit 1
+  fi
+fi
 
 RELEASE="$(dpkg-parsechangelog  --show-field=distribution)"
 

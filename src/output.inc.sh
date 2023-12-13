@@ -33,14 +33,17 @@ else
     echo -ne "\e[38;5;5m$1: "
     # E.g. value of $example
     eval 'echo -n $'"$1"
-    # Intentionally using second source file but first lineno occurence
+    # Intentionally using second source file but first lineno occurrence
     echo -e " (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]}})\e[0m"
   }
 
   log_debug "Running Debcraft in debug mode"
 fi
 
-# @TODO: Crude spinner
+# Usage example:
+#   CMD="podman build"
+#   eval $CMD &
+#   spinner $! "$CMD"
 spinner() {
   local PID="$1"
   local CMD="${2:-building}"
