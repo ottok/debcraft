@@ -147,6 +147,9 @@ log_info "Running in path $PWD"
 # shellcheck source=src/config.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/config.inc.sh"
 
+# @TODO: Uncommitted changes test - don't proceed in vain if git
+# clean/reset/commit needs to run first
+
 # Make sure sources are clean
 if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
 then

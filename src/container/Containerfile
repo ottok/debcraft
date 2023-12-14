@@ -15,20 +15,12 @@ RUN apt-get update && \
     eatmydata \
     lintian
 
-# Delete 3 rows below
-RUN update-ccache-symlinks
-RUN mkdir --verbose --parents ccache
-RUN ccache --show-stats
-
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
-# The installation of /usr/lib/ccache symlinks must be created after
-# installation of GCC et al to properly take effect
-RUN mkdir --verbose --parents ccache
+# Should be automatic and not needed at all, but run one more time just to be sure
 RUN update-ccache-symlinks
-RUN ls -la /usr/lib/ccache
 
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
