@@ -46,6 +46,10 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
+
+# Using --userns=keep-id is slow, check if using mount flag U can help:
+# https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
+
 # @TODO: Redirect all output to log if too verbose?
 # >> "$BUILD_DIR/build.log" \
 
