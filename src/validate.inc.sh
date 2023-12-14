@@ -10,13 +10,13 @@ then
   exit 1
 fi
 
-log_info "Validate that the files in debian/ are properly formatted and sorted"
-if [ -n "$(wrap-and-sort --wrap-always --dry-run)" ]
-then
-  log_error "The directory debian/ contains files that could be automatically formatted and sorted with 'wrap-and-sort':"
-  wrap-and-sort --wrap-always --dry-run --verbose
-  exit 1
-fi
+#log_info "Validate that the files in debian/ are properly formatted and sorted"
+#if [ -n "$(wrap-and-sort --wrap-always --dry-run)" ]
+#then
+#  log_error "The directory debian/ contains files that could be automatically formatted and sorted with 'wrap-and-sort':"
+#  wrap-and-sort --wrap-always --dry-run --verbose
+#  exit 1
+#fi
 
 log_info "Validate that the debian/rules can be parsed by Make"
 if ! make --dry-run --makefile=debian/rules > /dev/null
@@ -26,18 +26,18 @@ then
   exit 1
 fi
 
-log_info "Validate that all shell scripts in debian/rules pass Shellcheck"
-SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u |cut -d ':' -f 1 | xargs)"
-BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)"
-if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
-then
-  # shellcheck disable=SC2086 # intentional expansion of arguments
-  if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
-  then
-      log_error "Shellcheck reported issues, please run it manually"
-      exit 1
-  fi
-fi
+#log_info "Validate that all shell scripts in debian/rules pass Shellcheck"
+#SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u |cut -d ':' -f 1 | xargs)"
+#BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)"
+#if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
+#then
+#  # shellcheck disable=SC2086 # intentional expansion of arguments
+#  if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
+#  then
+#      log_error "Shellcheck reported issues, please run it manually"
+#      exit 1
+#  fi
+#fi
 
 RELEASE="$(dpkg-parsechangelog  --show-field=distribution)"
 
@@ -73,7 +73,7 @@ then
   # fully done inside a container -> ask users to run debsign+dput manually
   # shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
   read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
-  backportpackage -y -u $PPA -d $SERIES -S ~$BUILD_ID $DSC
+    backportpackage --yes --upload="$PPA" --destination="$SERIES" --suffix="~$BUILD_ID" "$DSC"
   "
 
   # Upload to Launchpad

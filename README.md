@@ -160,7 +160,21 @@ The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at 
 
 ### Roadmap
 
-Debcraft does not intend to replace well working existing tools like git-buildpackage, but rather build upon them making the overall process of as easy as possible. Current development focus is to make the `debcraft build` as easy and efficient as possible. The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
+Debcraft does not intend to replace well working existing tools like git-buildpackage, but rather build upon them making the overall process of as easy as possible. Current development focus is to make the `debcraft build` as easy and efficient as possible:
+
+
+backportpackage --yes --upload=ppa:mysql-ubuntu/mariadb-10.6 --destination=jammy --suffix=~1702526461.c8a942aa86c+ubuntu.22.04 ./mariadb-10.6_10.6.16-0ubuntu0.22.04.1.dsc
+backportpackage -y -u ppa:mysql-ubuntu/mariadb-10.3 -d focal -S ~1702526170.e6790f33d+ubuntu.20.04 ./mariadb-10.3_10.3.39-0ubuntu0.20.04.1.dsc
+
+ppa:mysql-ubuntu/$PKG
+
+
+0. Custom DEB_BUILD_OPTIONS and PPA address
+0. Alaways use color and strip it from log files with some separate command?
+1. Fail early, e.g. if there are uncommitted changes and don't run the full build process.
+2. Skip generating the same source package completely, or use symlink to existing source package.
+
+The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
 
 For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
 
