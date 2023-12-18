@@ -15,19 +15,26 @@ ccache --zero-stats > /dev/null
 # Don't use colors as they garble the logs (unless 'tee' can be taught to filter our ANSI codes)
 export DPKG_COLORS=never
 
-# Don't use default build system which is debuild, as sanitizes environment
-# variables while we intentionally want to keep e.g. CCACHE_DIR and it also runs
-# Lintian and signs packages, which we specifically want to do separately.
-# Instead use dpkg-buildpackage directly (debuild would use it anyway) and also
-# instruct it to only build binary packages, skipping source package generation
-# and skipping related cleanup steps.
-#
-# Passed to dpkg-source:
-#   --diff-ignore (-i, ignore default file types e.g. .git folder)
-#   --tar-ignore (-I, passing ignores to tar)
-gbp buildpackage --git-color=off \
-  --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore'
-
+if [ -d ".git" ]
+then
+  # Always use git-buildpackage if possible
+  #
+  # Don't use default build system which is debuild, as sanitizes environment
+  # variables while we intentionally want to keep e.g. CCACHE_DIR and it also runs
+  # Lintian and signs packages, which we specifically want to do separately.
+  # Instead use dpkg-buildpackage directly (debuild would use it anyway) and also
+  # instruct it to only build binary packages, skipping source package generation
+  # and skipping related cleanup steps.
+  #
+  # Passed to dpkg-source:
+  #   --diff-ignore (-i, ignore default file types e.g. .git folder)
+  #   --tar-ignore (-I, passing ignores to tar)
+  gbp buildpackage --git-color=off \
+    --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore'
+else
+  # Fall-back to plain dpkg-buildpackage if no git repository
+  dpkg-buildpackage --no-sign --diff-ignore --tar-ignore
+fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping clean steps and running in parallel
 #  '--build=any,all --no-pre-clean --no-post-clean'\

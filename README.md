@@ -173,6 +173,7 @@ ppa:mysql-ubuntu/$PKG
 0. Alaways use color and strip it from log files with some separate command?
 1. Fail early, e.g. if there are uncommitted changes and don't run the full build process.
 2. Skip generating the same source package completely, or use symlink to existing source package.
+3. Wrap all calls to dpkg-source, dpkg-buildpackage etc in Podman/Docker so that this tool actually can run on multiple distros.
 
 The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
 
@@ -186,9 +187,13 @@ Note that Bash is used to its fullest. There is no need to restrict functionalit
 
 ### High quality, secure and performant code
 
-Despite being written with Bash, Debcraft still aims to highest possible code quality by enforcing that the code base in Shellcheck clean along with other applicable static testing, such as spellchecking. While running `set -e` is in effect to stop execution on any error unless explicitly handled. The Bash code should avoid spawning subshells if it can be avoided.
+Despite being written with Bash, Debcraft still aims to highest possible code quality by enforcing that the code base in Shellcheck clean along with other applicable static testing, such as spellchecking. While running `set -e` is in effect to stop execution on any error unless explicitly handled. The Bash code should avoid spawning subshells if it can be avoided. For example us in-line [Bash parameter substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html) instead of spawning `sed` commands in subshells.
 
 There are no fixed release dates or fixed milestone scopes. Maintaining high quality triumps other priorities. This tool is intended to automate Debian packaging work that has existed for decades, and the tools should be robust enough to stand the test of time and serve for decades to come.
+
+### Prioritize readability
+
+It is more important for code to be easy to read and reason about than quick to write. Therefore, always spend a bit of extra effort to make things clear and easy to read. For example, write `--parameter` instead of just `-p` when possible. Most commands are also run with `--verbose` intentionally to expose to users what is happening. Automation in a developer tool does not mean that things should be hidden - in this tool automation is transparent, doing as much as possible on behalf of the user but still transparent about what is being done.
 
 ### Testing
 
@@ -196,7 +201,7 @@ To help with ensuring the above about code quality, the project has both Gitlab-
 
 ### Name
 
-Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the corrymindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
+Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the correct mindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
 
 ## Licence
 

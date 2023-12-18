@@ -71,10 +71,12 @@ case "$CONTAINER_CMD" in
     exit 1
 esac
 
-## Strip additional parts, e.g. 'bookworm-security' would be 'bookworm'
-#RELEASE_NAME="${1//-*/}"
+# Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+# (https://tldp.org/LDP/abs/html/parameter-substitution.html)
+#RELEASE_NAME="${1%%-*}"
 
 # Container name
+# Replace on or more occurrences of colons with dash in container name
 CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
 
 # Build id must always be defined

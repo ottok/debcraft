@@ -94,6 +94,6 @@ progress_bar() {
     printf -v BAR "%-${i}s" ''
     echo -ne "\rProgress [${BAR// /#}"
     sleep .01
-    i="$((i+1))"
+    ((i++))
   done
 }

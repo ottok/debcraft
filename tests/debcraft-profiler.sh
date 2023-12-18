@@ -11,7 +11,7 @@ set -o pipefail
 
 # Run a profiler in the background that every second records what was the last
 # line in the log at that time, and thus helps construct a profile of on what
-# was most tiem spent waiting on while running the program.
+# was most time spent waiting on while running the program.
 CMD="$*"
 ID="$(date '+%s')"
 LOG_OUTPUT="debug-profiler-$ID.log"

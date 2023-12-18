@@ -29,6 +29,8 @@ function debcraft_test() {
   # Normalize BUILD_ID
   TEST_OUTPUT_LAST_LINE="${TEST_OUTPUT_LAST_LINE/Build * of/Build BUILD_ID of}"
 
+  # @TODO: Clean away ANSI codes from logs so they are easier to compare
+
   echo
 
   if [ "$TEST_OUTPUT_LAST_LINE" == "$EXPECTED_OUTPUT_LAST_LINE" ]
@@ -36,7 +38,9 @@ function debcraft_test() {
     echo "Test $TEST_NUMBER passed!"
   else
     echo "ERROR: Test $TEST_NUMBER failed!"
-    echo "Test output last line was:"
+    echo "Test output last line was expected to be:"
+    echo "$EXPECTED_OUTPUT_LAST_LINE"
+    echo "However, it was:"
     echo "$TEST_OUTPUT_LAST_LINE"
     echo "For full test log see $TEMPDIR/test-$TEST_NUMBER.log"
     exit 1
@@ -63,22 +67,18 @@ debcraft_test "help" "  --version            display version and exit"
 # @TODO: Clone remote only if needed, otherwise re-use local clones
 gbp clone --color=off --pristine-tar --debian-branch=master ~/debian/entr/pkg-entr/entr
 
-debcraft_test "build entr" "Build BUILD_ID of entr completed!"
+debcraft_test "build entr" "Please review the result and compare to previous build (if exists)"
 
 cd entr
 git clean -fdx
-debcraft_test "build" "Build BUILD_ID of entr completed!"
+debcraft_test "build" "Please review the result and compare to previous build (if exists)"
 git clean -fdx
-debcraft_test "build ." "Build BUILD_ID of entr completed!"
+debcraft_test "build ." "Please review the result and compare to previous build (if exists)"
 
-
-# @TODO: The last test always fail as the debcraft-builder.sh currently uses git-buildpackage which requires a git repository
-# Clean away git repository
-#git reset --hard
-#git clean -fdx
-#rm --recursive --force --verbose .git
-#debcraft_test "build" "Build BUILD_ID of entr completed!"
-
+git reset --hard
+git clean -fdx
+rm --recursive --force --verbose .git
+debcraft_test "build" "Please review the result and compare to previous build (if exists)"
 
 echo "============================"
 echo "Success! All $TEST_NUMBER Debcraft tests passed."

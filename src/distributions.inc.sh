@@ -3,8 +3,9 @@
 # Given a debian/changelog distribution pocket name, return container tag
 function get_baseimage_from_distribution_name() {
 
-  # Strip additional parts, e.g. 'bookworm-security' would be 'bookworm'
-  NAME="${1//-*/}"
+  # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+  # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
+  NAME="${1%%-*}"
 
   # @TODO: Ideally read /usr/share/distro-info/debian.csv and ubuntu.csv directly
   case "$NAME" in
@@ -26,8 +27,9 @@ function get_baseimage_from_distribution_name() {
 
 function get_ubuntu_equivalent_from_debian_release() {
 
-  # Strip additional parts, e.g. 'bookworm-security' would be 'bookworm'
-  SERIES="${1//-*/}"
+  # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+  # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
+  SERIES="${1%%-*}"
 
   # Current Launchpad Debian Sid equivalent
   if [ "$SERIES" == "UNRELEASED" ] ||

@@ -41,15 +41,15 @@ fi
 
 RELEASE="$(dpkg-parsechangelog  --show-field=distribution)"
 
-# Strip additional parts (-security, -updates)
-# e.g. 'bookworm-security' would be 'bookworm'
-RELEASE="${RELEASE//-*}"
+# Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+# (https://tldp.org/LDP/abs/html/parameter-substitution.html)
+RELEASE="${RELEASE%%-*}"
 
 SERIES="$(get_ubuntu_equivalent_from_debian_release "$RELEASE")"
 
 # Find the most recent builds
 # shellcheck disable=SC2012
-BUILD_DIR="$(ls -t -r -d -1 ../debcraft-build-*/ | tail -n 1)"
+BUILD_DIR="$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-* | head --lines=1)"
 
 # Validate that the build actually passed and .dsc exists
 
@@ -73,7 +73,7 @@ then
   # fully done inside a container -> ask users to run debsign+dput manually
   # shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
   read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
-    backportpackage --yes --upload="$PPA" --destination="$SERIES" --suffix="~$BUILD_ID" "$DSC"
+    backportpackage --yes --upload='$PPA' --destination='$SERIES' --suffix='~$BUILD_ID' '$DSC'
   "
 
   # Upload to Launchpad
