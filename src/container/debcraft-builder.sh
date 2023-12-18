@@ -30,20 +30,39 @@ then
   # Passed to dpkg-source:
   #   --diff-ignore (-i, ignore default file types e.g. .git folder)
   #   --tar-ignore (-I, passing ignores to tar)
-  gbp buildpackage --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore'
+  gbp buildpackage \
+    --git-builder='dpkg-buildpackage --no-sign --build=any,all --no-pre-clean --no-post-clean' \
+    --git-no-create-orig  --git-ignore-new
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  dpkg-buildpackage --no-sign --diff-ignore --tar-ignore
+  dpkg-buildpackage --no-sign --build=any,all --no-pre-clean --no-post-clean
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping clean steps and running in parallel
 #  '--build=any,all --no-pre-clean --no-post-clean'\
 #  '--jobs=auto '\
 
+# @TODO: At least for MariaDB seems rebuild needs 'debian/rules clean' target to run
+# otherwise dh_install fails, thus using '--no-pre-clean --no-post-clean'  is not
+# compatible with MariaDB
+#   dh_install: warning: Cannot find (any matches for) "usr/lib/mysql/plugin/ha_archive.so" (tried in ., debian/tmp)
+
+
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 ccache --show-stats  --verbose || true
+
+# @TODO: Why is Lintian silent?
+# Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
+# will likely always emit errors if package complex enough
+echo "Create lintian.log"
+# Seems that --color=auto isn't enough inside a container, so use 'always'.
+# Using --profle=debian is not needed as build container always matches target
+# Debian/Ubuntu release and Lintian in them should automatically default to
+# correct profile.
+lintian --verbose -EvIL +pedantic --color=always | tee "../lintian.log" || true
+
 
 cd /tmp/build || exit 1
 
@@ -56,15 +75,6 @@ do
   dpkg-deb -c "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> "filelist.log"
   echo "------------------------------------------------" >> "filelist.log"
 done
-
-# Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
-# will likely always emit errors if package complex enough
-echo "Create lintian.log"
-# Seems that --color=auto isn't enough inside a container, so use 'always'.
-# Using --profle=debian is not needed as build container always matches target
-# Debian/Ubuntu release and Lintian in them should automatically default to
-# correct profile.
-lintian -EvIL +pedantic --color=always ./*.changes | tee "lintian.log" || true
 
 # Crude but fast and simple way to clean away ANSI color codes from logs
 # @TODO: As 'less -K' and other tools support reading colored logs, we could
