@@ -65,7 +65,7 @@ debcraft_test "help" "  --version            display version and exit"
 
 # Prepare test git repository
 # @TODO: Clone remote only if needed, otherwise re-use local clones
-gbp clone --color=off --pristine-tar --debian-branch=master ~/debian/entr/pkg-entr/entr
+gbp clone --pristine-tar --debian-branch=master ~/debian/entr/pkg-entr/entr
 
 debcraft_test "build entr" "Please review the result and compare to previous build (if exists)"
 

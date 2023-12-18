@@ -9,11 +9,12 @@ set -o pipefail
 # show commands (debug)
 #set -x
 
+# This has no confirmed effect but setting just to be sure as some dpkg-* tools
+# are supposed to use it
+export DPKG_COLORS="always"
+
 # Reset ccache stats, silently
 ccache --zero-stats > /dev/null
-
-# Don't use colors as they garble the logs (unless 'tee' can be taught to filter our ANSI codes)
-export DPKG_COLORS=never
 
 if [ -d ".git" ]
 then
@@ -29,8 +30,7 @@ then
   # Passed to dpkg-source:
   #   --diff-ignore (-i, ignore default file types e.g. .git folder)
   #   --tar-ignore (-I, passing ignores to tar)
-  gbp buildpackage --git-color=off \
-    --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore'
+  gbp buildpackage --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore'
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
   dpkg-buildpackage --no-sign --diff-ignore --tar-ignore
@@ -60,8 +60,13 @@ done
 # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
 # will likely always emit errors if package complex enough
 echo "Create lintian.log"
-# Don't use color, otherwise logs become unreadable and diffs messy
+# Seems that --color=auto isn't enough inside a container, so use 'always'.
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian -EvIL +pedantic --color=never ./*.changes | tee "lintian.log" || true
+lintian -EvIL +pedantic --color=always ./*.changes | tee "lintian.log" || true
+
+# Crude but fast and simple way to clean away ANSI color codes from logs
+# @TODO: As 'less -K' and other tools support reading colored logs, we could
+# consider keeping around colored logs in addition to plain logs for some files
+sed -e 's/\x1b\[[0-9;]*[mK]//g' -i *.log
