@@ -123,3 +123,16 @@ export CONTAINER_RUN_ARGS
 export BUILD_ID
 
 log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
+
+
+# Previous successful build dirs
+# shellcheck disable=SC2086 # intentionally pass wildcards to ls
+PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo)")
+mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(
+  for f in ${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}
+    do
+      dirname "$f"
+    done
+)
+
+export PREVIOUS_SUCCESSFUL_BUILD_DIRS

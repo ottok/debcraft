@@ -46,6 +46,10 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
+# podman logs --follow --names --timestamps latest
+# journalctl --output=verbose -t "$CONTAINER"
+# journalctl --output=cat --lines=50 CONTAINER_ID=dd2227ee084c
+
 
 # Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
@@ -74,6 +78,8 @@ paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 echo
 log_info "Results visible in $BUILD_DIR"
 log_info "Please review the result and compare to previous build (if exists)"
+log_info "You can use for example:"
+log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
 # @TODO: Give tips on how/what to review and across which versions (e.g.
 # previous successful build on same branch, or previous release in same
 # Debian/Ubuntu series)
