@@ -46,20 +46,20 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
-
+# @TODO: Redirect all output to log if too verbose?
+# >> "$BUILD_DIR/build.log" \
+#
 # podman logs --follow --names --timestamps latest
 # journalctl --output=verbose -t "$CONTAINER"
 # journalctl --output=cat --lines=50 CONTAINER_ID=dd2227ee084c
 
-# @TODO: If we want to avoid sources being polluted but still want to see how it
-# looks like, test using ':O,upperdir=/some/upper,workdir=/some/work' in volumee
-# mounts
-
-# Using --userns=keep-id is slow, check if using mount flag U can help:
+# @TODO: Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
-
-# @TODO: Redirect all output to log if too verbose?
-# >> "$BUILD_DIR/build.log" \
+#
+# @TODO: If we want to avoid sources being polluted but still want to see how it
+# looks like, test using
+# '--volume=/...:/tmp/build/source:O,upperdir=/tmp/build/upper,workdir=/tmp/build/workdir'
+# (but requires Podman 4.x series)
 
 if [ -n "$FAILURE" ]
 then
@@ -75,7 +75,8 @@ MSG="Build $BUILD_ID of $PACKAGE completed!"
 echo
 log_info "$MSG"
 
-# Notify
+# Notify must run outside container (gbp/git-notify=on with python3-notify2
+# inside container fails with non-zero exit code)
 notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "$MSG"
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 

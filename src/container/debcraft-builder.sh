@@ -38,22 +38,20 @@ then
   #   --diff-ignore (-i, ignore default file types e.g. .git folder)
   #   --tar-ignore (-I, passing ignores to tar)
   gbp buildpackage \
-    --git-builder='dpkg-buildpackage --no-sign --build=any,all --no-pre-clean --no-post-clean' \
-    --git-no-create-orig  --git-ignore-new
+    --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
+    --git-no-create-orig
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  dpkg-buildpackage --no-sign --build=any,all --no-pre-clean --no-post-clean
+  dpkg-buildpackage --no-sign --build=any,all
 fi
 # @TODO: Test building just binaries to make build faster, and later also
-# test skipping clean steps and running in parallel
-#  '--build=any,all --no-pre-clean --no-post-clean'\
-#  '--jobs=auto '\
-
+# test skipping rules/clean steps with '--no-pre-clean --no-post-clean'
+# or run in parallel with '--jobs=auto'
+#
 # @TODO: At least for MariaDB seems rebuild needs 'debian/rules clean' target to run
 # otherwise dh_install fails, thus using '--no-pre-clean --no-post-clean'  is not
 # compatible with MariaDB
 #   dh_install: warning: Cannot find (any matches for) "usr/lib/mysql/plugin/ha_archive.so" (tried in ., debian/tmp)
-
 
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
@@ -68,7 +66,7 @@ echo "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian --verbose -EvIL +pedantic --color=always | tee "../lintian.log" || true
+lintian --debug --verbose -EvIL +pedantic --color=always | tee "../lintian.log" || true
 
 
 cd /tmp/build || exit 1

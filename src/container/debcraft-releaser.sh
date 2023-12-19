@@ -19,7 +19,8 @@ export DPKG_COLORS="always"
 #
 # Use -S so all tools (dpkg-build, dpkg-source) see it. Using --build=source
 # would not bee enough.
-gbp buildpackage --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
+gbp buildpackage \
+  --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
   -S
 
 cd /tmp/build || exit 1
@@ -31,4 +32,4 @@ echo "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian -EvIL +pedantic --color=always ./*.changes | tee "lintian.log" || true
+lintian --debug --verbose -EvIL +pedantic --color=always ./*.changes | tee "lintian.log" || true

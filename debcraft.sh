@@ -239,7 +239,7 @@ fi
 
 log_info "Running in path $PWD"
 
-if [ -n "$(git status --porcelain --ignored --untracked-files=all)" ] && false
+if [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
 then
   log_error "Git repository is not clean, cannot proceed with building."
   exit 1
