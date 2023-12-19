@@ -115,6 +115,9 @@ fi
 
 log_debug_var ACTION
 
+# @TODO: The below will run for any ACTION, but maybe downloading sources should
+# be refactored to be only a feature in 'build'. Also the commands should run
+# inside a Debcraft container with matching --distribution.
 case "$TARGET" in
   '')
     # If no target defined, default to current directory
@@ -122,9 +125,11 @@ case "$TARGET" in
     ;;
 
   http://* | https://* | git@*)
-    # Arguments with this form must be git urls @TODO: Use --depth=1 if gbp
-    # would support automatically fetching more commits until it sees the merge
-    # on the upstream branch and has enough to actually build the package
+    # Arguments with this form must be git urls
+    #
+    # @TODO: Use --depth=1 if gbp would support automatically fetching more
+    # commits until it sees the merge on the upstream branch and has enough to
+    # actually build the package
     gbp clone --verbose --pristine-tar "$TARGET"
     # shellcheck disable=SC2012
     NEWEST_DIRECTORY="$(ls --sort=time --format=single-column --group-directories-first | head --lines=1)"
@@ -147,12 +152,6 @@ case "$TARGET" in
     ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
     # From now on the TARGET is the resolved package source directory name without version
     TARGET="$PACKAGE"
-    ;;
-
-  *.changes)
-    # Use Debian .changes file if it contains sources
-    log_error "@TODO: Building source package from .changes file not implemented"
-    exit 1
     ;;
 
   */*)

@@ -16,6 +16,13 @@ export DPKG_COLORS="always"
 # Reset ccache stats, silently
 ccache --zero-stats > /dev/null
 
+# @TODO: Mimick debuild log
+# (https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION)
+# and always automatically write to '../<package>_<version>_<arch>.build'
+# https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
+#
+# Compare also to UMT (https://wiki.ubuntu.com/SecurityTeam/BuildEnvironment#Setting_up_and_using_UMT)
+
 if [ -d ".git" ]
 then
   # Always use git-buildpackage if possible

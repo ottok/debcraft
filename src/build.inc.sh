@@ -30,26 +30,30 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
 # will be no notifications or sounds to user.
 # shellcheck disable=SC2086
 "$CONTAINER_CMD" run \
-    --name "$CONTAINER" \
+    --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
     --cpus=4 \
-    -v "$CCACHE_DIR":/.ccache \
-    -v "$BUILD_DIR":/tmp/build \
-    -v "$PWD":/tmp/build/source \
-    -w /tmp/build/source \
-    -e CCACHE_DIR=/.ccache \
-    -e DEB_BUILD_OPTIONS="$DEB_BUILD_OPTIONS" \
+    --volume="$CCACHE_DIR":/.ccache \
+    --volume="$BUILD_DIR":/tmp/build \
+    --volume="$PWD":/tmp/build/source \
+    --workdir=/tmp/build/source \
+    --env="CCACHE_DIR=/.ccache" \
+    --env="DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
     /debcraft-builder \
     | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
+
 # podman logs --follow --names --timestamps latest
 # journalctl --output=verbose -t "$CONTAINER"
 # journalctl --output=cat --lines=50 CONTAINER_ID=dd2227ee084c
 
+# @TODO: If we want to avoid sources being polluted but still want to see how it
+# looks like, test using ':O,upperdir=/some/upper,workdir=/some/work' in volumee
+# mounts
 
 # Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes

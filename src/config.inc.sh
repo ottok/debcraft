@@ -100,7 +100,10 @@ then
   BUILD_ID="$BUILD_ID.$COMMIT_ID+$BRANCH_NAME"
 fi
 
-# Podman man page mentions support for architectures arm, arm64, 386, amd64, ppc64le, s390x
+# Podman man page mentions support for architectures arm, arm64, 386, amd64,
+# ppc64le, s390x as well as variants such as arm/v5 and arm/v7. See 'podman run'
+# man page --platform and --variant.
+#
 # @TODO: Figure out how to get 'amd64' from system and use it first, later allow user to choose:
 # - `uname -a` only has formax x86_64
 # - `lsb_release -a` and /etc/os-release only has distro name
@@ -127,12 +130,17 @@ log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAG
 
 # Previous successful build dirs
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
-PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo)")
-mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(
-  for f in ${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}
-    do
-      dirname "$f"
-    done
-)
+PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo)") || true
+if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}" ]
+then
+  mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(
+    for f in ${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}
+      do
+        dirname "$f"
+      done
+  )
+else
+  PREVIOUS_SUCCESSFUL_BUILD_FILES=()
+fi
 
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS

@@ -14,3 +14,6 @@ _debcraft() {
 }
 
 complete -o default -F _debcraft debcraft
+
+# @TODO: see this for tips?
+# https://salsa.debian.org/debian/devscripts/-/raw/main/scripts/debuild.bash_completion?ref_type=heads
