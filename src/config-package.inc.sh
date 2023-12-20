@@ -77,27 +77,39 @@ fi
 # - OSTYPE: linux-gnu
 #ARCH=
 
+case "$BUILD_DIRS_PATH" in
+  "")
+    # If BUILD_DIRS_PATH is not set, use use parent directory of TARGET
+    BUILD_DIRS_PATH="$(cd .. && pwd)"
+    ;;
+  *)
+    # If BUILD_DIRS_PATH is defined, use it as-is
+    if [ ! -d "$BUILD_DIRS_PATH" ]
+    then
+      log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH"
+      exit 1
+    fi
+esac
+
+# Additional sanity check
+if touch "$BUILD_DIRS_PATH/debcraft-test"
+then
+  rm "$BUILD_DIRS_PATH/debcraft-test"
+else
+  log_error "Unable to access '$BUILD_DIRS_PATH' - check permissions"
+  exit 1
+fi
+
 # Explicit exports
 export PACKAGE
 export BASEIMAGE
 export CONTAINER
 export BUILD_ID
+export BUILD_DIRS_PATH
 
 log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
 
 # Previous successful build dirs
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
-PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo) 2> /dev/null") || true
-if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}" ]
-then
-  mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(
-    for f in ${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}
-      do
-        dirname "$f"
-      done
-  )
-else
-  PREVIOUS_SUCCESSFUL_BUILD_FILES=()
-fi
-
+mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo 2> /dev/null)
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS

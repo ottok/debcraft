@@ -12,7 +12,7 @@ DOWNLOAD_CONTAINER="debcraft-${DOWNLOAD_BASENAME//:/-}"
 
 # @TODO: Skip building container in vain repeatedly
 
-CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container"
+CONTAINER_DIR="$(mktemp -d)/debcraft-container"
 
 log_info "Building container '$DOWNLOAD_CONTAINER' in '$CONTAINER_DIR' for downloader use"
 

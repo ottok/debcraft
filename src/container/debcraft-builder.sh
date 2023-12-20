@@ -24,7 +24,7 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # Mimic debuild log filename '../<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
-BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)"_"$(dpkg-parsechangelog --show-field=version)"_"$(dpkg-architecture --query DEB_HOST_ARCH)".build
+BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
 
 if [ -d ".git" ]
 then
@@ -64,6 +64,7 @@ ccache --show-stats  --verbose || true
 # @TODO: Why is Lintian silent?
 # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
 # will likely always emit errors if package complex enough
+echo
 echo "Create lintian.log"
 # Seems that --color=auto isn't enough inside a container, so use 'always'.
 # Using --profle=debian is not needed as build container always matches target
@@ -77,6 +78,7 @@ lintian --verbose -EvIL +pedantic --color=always | tee -a "../lintian.log" || tr
 cd /tmp/build || exit 1
 
 # Log package contents
+echo
 echo "Create filelist.log"
 for package in *.deb
 do

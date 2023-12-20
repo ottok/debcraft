@@ -14,7 +14,7 @@ set -o pipefail
 export DPKG_COLORS="always"
 
 # Mimic debuild log file naming
-BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)"_"$(dpkg-parsechangelog --show-field=version)"_source.build
+BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
 
 # Passed to dpkg-source:
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)

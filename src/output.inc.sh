@@ -24,7 +24,7 @@ then
 else
   # Print debug information not normally visible
   function log_debug() {
-    echo -e "\e[38;5;5mDEBUG: $1\e[0m"
+    echo -e "\e[38;5;5mDEBUG: $1 (at line $(caller))\e[0m"
   }
 
   # Print the variable name and value in one "log_debug_var example" call
@@ -34,7 +34,7 @@ else
     # E.g. value of $example
     eval 'echo -n $'"$1"
     # Intentionally using second source file but first lineno occurrence
-    echo -e " (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]}})\e[0m"
+    echo -e " (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
   }
 
   log_debug "Running Debcraft in debug mode"

@@ -167,13 +167,17 @@ then
   #ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
 
   # Newest directory contains the downloaded source package now, use it as TARGET
-  TARGET="$NEWEST_DIRECTORY"
+  export TARGET="$NEWEST_DIRECTORY"
 fi
+
+log_debug_var TARGET
 
 # The previous step guarantees that the source directory either exits, was
 # downloaded or the script execution stopped. From here onwards the script can
 # assume that $PWD is a working directory with sources.
 cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
+
+log_debug_var PWD
 
 if [ -f "debian/changelog" ]
 then
