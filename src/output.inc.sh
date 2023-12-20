@@ -44,7 +44,7 @@ fi
 #   CMD="podman build"
 #   eval $CMD &
 #   spinner $! "$CMD"
-spinner() {
+function spinner() {
   local PID="$1"
   local CMD="${2:-building}"
   local START_TIME="$EPOCHSECONDS"
@@ -83,7 +83,7 @@ spinner() {
 }
 
 # @TODO: Currently this has no real concept of knowing progress
-progress_bar() {
+function progress_bar() {
   BAR_WIDTH=$(($(tput cols)-20))
   printf -v BAR "%$((BAR_WIDTH))s" ''
   echo -n "Progress [${BAR// /.}]"

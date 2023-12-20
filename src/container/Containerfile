@@ -27,7 +27,11 @@ RUN update-ccache-symlinks
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 RUN ccache --show-stats  --verbose || true
 
+# Enable source repositories so debcraft-downloader can work
+COPY enable-source-repositories.sh /enable-source-repositories
+RUN /enable-source-repositories
+
+COPY debcraft-downloader.sh /debcraft-downloader
 COPY debcraft-builder.sh /debcraft-builder
 COPY debcraft-validator.sh /debcraft-validator
 COPY debcraft-releaser.sh /debcraft-releaser
-RUN chmod +x /debcraft-*

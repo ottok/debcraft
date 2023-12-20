@@ -41,10 +41,14 @@ function get_ubuntu_equivalent_from_debian_release() {
     # @TODO: Ideally read last line from /usr/share/distro-info/ubuntu.csv directly
     echo "noble"
   else
-    # Historical equivalents
+    # Historical equivalents for each Ubuntu release based on what Debian
+    # release happened around the same time and thus have most of the package
+    # versions identical in the repository
+    #
     # @TODO: Ideally read /usr/share/distro-info/ubuntu.csv directly
     case $SERIES in
       noble | mantic | lunar | jammy | hirsute | focal | disco | bionic | zesty)
+        # For every Ubuntu name always return it as-is
         echo "$SERIES"
         ;;
       bookworm)
@@ -64,7 +68,7 @@ function get_ubuntu_equivalent_from_debian_release() {
         echo "zesty" # or artful
         ;;
       *)
-        log_error "@TODO: Debian release to Ubuntu series mapping not implemented for $SERIES"
+        log_error "@TODO: Debian to Ubuntu relese mapping not implemented for $SERIES"
         exit 1
     esac
   fi

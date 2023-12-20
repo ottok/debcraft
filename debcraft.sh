@@ -10,9 +10,18 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]"
+  echo "usage: debcraft [options] <build|validate|release|prune> [<path|pkg|srcpkg|dsc|git-url>]"
   echo
-  echo "Debcraft is a tool to easily build and rebuild .deb packages."
+  echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
+  echo "as a subargument any of:"
+  echo "  * path to directory with program sources including a debian/ subdirectory"
+  echo "    with the Debian packaging instructions"
+  echo "  * path to a .dsc file and source tarballs that can be built into a .deb"
+  echo "  * Debian package name, or source package name, that apt can download"
+  echo "  * git http(s) or ssh url that can be downloaded and built"
+  echo
+  echo "The commands 'validate' and 'release' are intended to be used to finalilze"
+  echo "a package build. The command 'prune' will clean up temporary files by Debcraft."
   echo
   echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
@@ -115,139 +124,62 @@ fi
 
 log_debug_var ACTION
 
-# @TODO: The below will run for any ACTION, but maybe downloading sources should
-# be refactored to be only a feature in 'build'. Also the commands should run
-# inside a Debcraft container with matching --distribution.
-case "$TARGET" in
-  '')
-    # If no target defined, default to current directory
-    TARGET="$(pwd)"
-    ;;
+# Configure general program behaviour after user options and arguments have been parsed
+# shellcheck source=src/config-general.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
 
-  http://* | https://* | git@*)
-    # Arguments with this form must be git urls
-    #
-    # @TODO: Use --depth=1 if gbp would support automatically fetching more
-    # commits until it sees the merge on the upstream branch and has enough to
-    # actually build the package
-    gbp clone --verbose --pristine-tar "$TARGET"
-    # shellcheck disable=SC2012
-    NEWEST_DIRECTORY="$(ls --sort=time --format=single-column --group-directories-first | head --lines=1)"
-    PACKAGE="$NEWEST_DIRECTORY"
-    # From now on the TARGET is the resolved package source directory
-    TARGET="$PACKAGE"
-    ;;
-
-  *.dsc)
-    # Use Debian source .dcs control file
-    log_info "Use $TARGET and unpack associated Debian and source tar packages"
-    dpkg-source --extract "$TARGET"
-    # shellcheck disable=SC2012
-    NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"
-    # Use ctime above as dpkg-source will keep original mtime for packages
-    # Remove shortest pattern from end of variable, e.g. 'xz-utils-5.2.4' -> 'xz-utils'
-    # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
-    PACKAGE="${NEWEST_DIRECTORY%-*}"
-    # Ensure source directory exists with the package name, e.g. 'grep' -> 'grep-3.4'
-    ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
-    # From now on the TARGET is the resolved package source directory name without version
-    TARGET="$PACKAGE"
-    ;;
-
-  */*)
-    # Arguments with a single slash anywhere that didn't match a git url are
-    # assumed to be directory names, so use them as-is
-    log_info "Use package in path '$TARGET'"
-    ;;
-
-  *)
-    if [ -d "$TARGET" ]
-    then
-      # An argument that didn't match any of the above tests could be a directory
-      # name, and if so, use it as-is.
-      :
-    elif [ "$(apt-cache showsrc "$TARGET" | wc -l)" -gt 1 ]
-    then
-      # Otherwise assume check if it is a binary or source and try to get it
-      # with apt-source. If 'apt-cache showsrc' yields no results it will output
-      # 'W: Unable to locate package $TARGET' in stderr which would
-      # intentionally be visible for the user. The stdout will also have one
-      # line of output. If there is a result, the stdout would be much longer.
-      log_info "Download source package for '$TARGET'"
-      apt-get source "$TARGET"
-      # shellcheck disable=SC2012
-      NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"
-      # Use ctime above as dpkg-source will keep original mtime for packages
-      # Remove shortest pattern from end of variable, e.g. 'xz-utils-5.2.4' -> 'xz-utils'
-      # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
-      PACKAGE="${NEWEST_DIRECTORY%-*}"
-      # Ensure source directory exists with the package name, e.g. 'grep' -> 'grep-3.4'
-      ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
-      # From now on the TARGET is the resolved package source directory name without version
-      TARGET="$PACKAGE"
-    elif command -v "$TARGET" > /dev/null
-    then
-      # As a last attempt, try to find what command the $TARGET might be, and
-      # resolve the source package for it
-      log_info "Attempt to find source package for command '$TARGET'"
-      PACKAGE="$(dpkg --search "$(command -v "$TARGET")" | cut --delimiter=':' --field 1)"
-      if [ -n "$PACKAGE" ]
-      then
-        log_info "Download source package for '$PACKAGE'"
-        apt-get source "$PACKAGE"
-        # shellcheck disable=SC2012
-        NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"
-        # Use ctime above as dpkg-source will keep original mtime for packages
-        # Remove shortest pattern from end of variable, e.g. 'xz-utils-5.2.4' -> 'xz-utils'
-        # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
-        PACKAGE="${NEWEST_DIRECTORY%-*}"
-        # Ensure source directory exists with the package name, e.g. 'grep' -> 'grep-3.4'
-        ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
-        # From now on the TARGET is the resolved package source directory name without version
-        TARGET="$PACKAGE"
-      #elif [ -f /var/lib/command-not-found/commands.db ]
-      #then
-      # @TODO: Search command-not-found database if exists
-      else
-        log_error "Unable to find any Debian package for command '$TARGET'"
-        exit 1
-      fi
-    else
-      log_error "Unable to find any source package for argument '$TARGET'"
-      exit 1
-    fi
-    ;;
-esac
-
-# At this point in the code a directory with the sources should exist
-# From this point onwards $PWD will point to working directory with sources
-if [ -d "$TARGET" ]
+if [ -z "$TARGET" ]
 then
-  cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
+  # If no argument defined, default to current directory
+  TARGET="$(pwd)"
+elif [ ! -d "$TARGET" ]
+then
+  # If the argument exists, but didn't point to a valid path, try to use the
+  # argument to download the package
 
-  if [ -f "debian/changelog" ]
-  then
-    PACKAGE="$(dpkg-parsechangelog --show-field=source)"
-  else
-    log_error "No $TARGET/debian/changelog found, not a valid source package directory"
-    exit 1
-  fi
+  # shellcheck source=src/downloader.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/downloader.inc.sh"
+
+  # shellcheck disable=SC2012
+  NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"
+  # Note! Use ctime above as dpkg-source will keep original mtime for packages
+
+  # Remove shortest pattern from end of variable, e.g. 'xz-utils-5.2.4' -> 'xz-utils'
+  # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
+  #PACKAGE="${NEWEST_DIRECTORY%-*}"
+  # Ensure source directory exists with the package name, e.g. 'grep' -> 'grep-3.4'
+  #ln --verbose --force --symbolic "$NEWEST_DIRECTORY" "$PACKAGE"
+
+  # Newest directory contains the downloaded source package now, use it as TARGET
+  TARGET="$NEWEST_DIRECTORY"
+fi
+
+# The previous step guarentees that the source directory either exits, was
+# downloaded or the script exection stopped. From here onwards the script can
+# assume that $PWD is a working directory with sources.
+cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
+
+if [ -f "debian/changelog" ]
+then
+  # If dpkg-parsechangelog fails and emits exit code, Debcraft will
+  # intentionally halt completely at this point
+  PACKAGE="$(dpkg-parsechangelog --show-field=source)"
 else
-  log_error "Seems $TARGET is not a directory nor anything we can use"
+  log_error "No $TARGET/debian/changelog found, not a valid source package directory"
   exit 1
 fi
 
-log_info "Running in path $PWD"
+log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
 
-if [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+if [ -d ".git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
 then
-  log_error "Git repository is not clean, cannot proceed with building."
+  log_error "Git repository is not clean, cannot proceed building."
   exit 1
 fi
 
 # Configure program behaviour after user options and arguments have been parsed
-# shellcheck source=src/config.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/config.inc.sh"
+# shellcheck source=src/config-package.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/config-package.inc.sh"
 
 # @TODO: Uncommitted changes test - don't proceed in vain if git
 # clean/reset/commit needs to run first
