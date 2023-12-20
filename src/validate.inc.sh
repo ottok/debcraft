@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# @TODO: Move all of this to run inside the container
+
 log_info "Validate that the directory debian/patches/ contents and debian/patches/series file match by count"
 if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
 then

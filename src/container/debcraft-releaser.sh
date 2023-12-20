@@ -13,6 +13,9 @@ set -o pipefail
 # are supposed to use it
 export DPKG_COLORS="always"
 
+# Mimic debuild log file naming
+BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)"_"$(dpkg-parsechangelog --show-field=version)"_source.build
+
 # Passed to dpkg-source:
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)
 #   --tar-ignore (-I, passing ignores to tar)
@@ -21,7 +24,7 @@ export DPKG_COLORS="always"
 # would not bee enough.
 gbp buildpackage \
   --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
-  -S
+  -S | tee -a "$BUILD_LOG"
 
 cd /tmp/build || exit 1
 
@@ -32,4 +35,4 @@ echo "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian --debug --verbose -EvIL +pedantic --color=always ./*.changes | tee "lintian.log" || true
+lintian --verbose -EvIL +pedantic --color=always ./*.changes | tee -a "lintian.log" || true

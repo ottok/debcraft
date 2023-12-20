@@ -4,7 +4,7 @@ Debcraft is a tool for developers to make high quality Debian packages effortles
 
 The core design principles are:
 1. Be opinionated, make the correct thing automatically without asking user to make too many decisions, and when full automation is not possible, steer users to follow the beat practices in software development.
-2. Use git, git-buildpackage and quilt as Debian is on a path to standardize on them as shown by trends.debian.net.
+2. Use git, git-buildpackage and quilt as Debian is on a path to standardize on them as shown by https://trends.debian.net/.
 3. Unlike traditional chroot based tools, Debcraft uses Linux containers for improved isolation, security and reproducibility.
 4. Create build environment containers on the fly so users don't need to plan ahead what chroots or containers they have.
 5. Have extremely fast rebuilds as that is what users are likely to spend most of their time on.
@@ -27,19 +27,25 @@ ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 ## Use examples
 
 ```
-$ debcraft build .
-Running in path /home/otto/debian/entr/pkg-entr/entr
+$ debcraft build
+Running in path /home/otto/debian/entr/pkg-entr/entr that has Debian package sources for 'entr'
 Use 'podman' container image 'debcraft-entr-debian-sid' for package 'entr'
-Obey DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym'
-Building package in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1702477833.a4117db+master
-gbp:info: Creating /tmp/build/entr_5.3.orig.tar.gz
+Building container 'debcraft-entr-debian-sid' in '/home/otto/debian/entr/pkg-entr/debcraft-container-entr' for build ID '1703089647.a4117db+master'
+STEP 1/14: FROM debian:sid
+...
+COMMIT debcraft-entr-debian-sid
+--> 2c907056c5f
+Successfully tagged localhost/debcraft-entr-debian-sid:latest
+2c907056c5f0aea133329f92316bec70270ba8f505361b6d77b95329626763c2
+Previous build was in ../debcraft-build-entr-1703089512.a4117db+master
+Building package in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master
+Obey DEB_BUILD_OPTIONS=''
 gbp:info: Performing the build
- dpkg-buildpackage -us -uc -ui --diff-ignore --tar-ignore
 dpkg-buildpackage: info: source package entr
 dpkg-buildpackage: info: source version 5.3-1
 dpkg-buildpackage: info: source distribution unstable
 dpkg-buildpackage: info: source changed by Otto Kekäläinen <otto@debian.org>
- dpkg-source --diff-ignore --tar-ignore --before-build .
+ dpkg-source --before-build .
 dpkg-buildpackage: info: host architecture amd64
 dpkg-source: info: using patch list from debian/patches/series
 dpkg-source: info: applying libbsd-overlay.patch
@@ -52,14 +58,6 @@ dh clean --buildsystem=makefile
    dh_auto_clean -O--buildsystem=makefile
    dh_autoreconf_clean -O--buildsystem=makefile
    dh_clean -O--buildsystem=makefile
- dpkg-source --diff-ignore --tar-ignore -b .
-dpkg-source: info: using source format '3.0 (quilt)'
-dpkg-source: info: verifying ./entr_5.3.orig.tar.gz.asc
-dpkg-source: info: building entr using existing ./entr_5.3.orig.tar.gz
-dpkg-source: info: building entr using existing ./entr_5.3.orig.tar.gz.asc
-dpkg-source: info: using patch list from debian/patches/series
-dpkg-source: info: building entr in entr_5.3-1.debian.tar.xz
-dpkg-source: info: building entr in entr_5.3-1.dsc
  debian/rules binary
 dh binary --buildsystem=makefile
    dh_update_autotools_config -O--buildsystem=makefile
@@ -69,7 +67,7 @@ make[1]: Entering directory '/tmp/build/source'
 ln -sf Makefile.linux Makefile
 make[1]: Leaving directory '/tmp/build/source'
    dh_auto_build -O--buildsystem=makefile
-	make -j4 "INSTALL=install --strip-program=true"
+	make -j8 "INSTALL=install --strip-program=true"
 make[1]: Entering directory '/tmp/build/source'
 cc -g -O2 -ffile-prefix-map=/tmp/build/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.3\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
 entr.c: In function ‘run_utility’:
@@ -77,14 +75,20 @@ entr.c:416:17: warning: ignoring return value of ‘realpath’ declared with at
   416 |                 realpath(leading_edge->fn, arg_buf);
       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 make[1]: Leaving directory '/tmp/build/source'
-dh: command-omitted: The call to "dh_auto_test -O--buildsystem=makefile" was omitted due to "DEB_BUILD_OPTIONS=nocheck"
+   dh_auto_test -O--buildsystem=makefile
+	make -j8 test
+make[1]: Entering directory '/tmp/build/source'
+ls entr.1 | ./entr -zns 'wc $0'
+ 184  927 5126 /tmp/build/source/entr.1
+sh returned exit code 0
+make[1]: Leaving directory '/tmp/build/source'
    create-stamp debian/debhelper-build-stamp
    dh_testroot -O--buildsystem=makefile
    dh_prep -O--buildsystem=makefile
    debian/rules override_dh_auto_install
 make[1]: Entering directory '/tmp/build/source'
 dh_auto_install -- PREFIX=/usr
-	make -j4 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
+	make -j8 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
 make[2]: Entering directory '/tmp/build/source'
 install entr /tmp/build/source/debian/entr/usr/bin
 install -m 644 entr.1 /tmp/build/source/debian/entr/usr/share/man/man1
@@ -109,23 +113,45 @@ make[1]: Leaving directory '/tmp/build/source'
    dh_md5sums -O--buildsystem=makefile
    dh_builddeb -O--buildsystem=makefile
 dpkg-deb: building package 'entr' in '../entr_5.3-1_amd64.deb'.
- dpkg-genbuildinfo -O../entr_5.3-1_amd64.buildinfo
- dpkg-genchanges -O../entr_5.3-1_amd64.changes
-dpkg-genchanges: info: including full source code in upload
- dpkg-source --diff-ignore --tar-ignore --after-build .
+dpkg-deb: building package 'entr-dbgsym' in '../entr-dbgsym_5.3-1_amd64.deb'.
+ dpkg-genbuildinfo --build=binary -O../entr_5.3-1_amd64.buildinfo
+ dpkg-genchanges --build=binary -O../entr_5.3-1_amd64.changes
+dpkg-genchanges: info: binary-only upload (no source code included)
+ dpkg-source --after-build .
 dpkg-source: info: unapplying system-test-fixes.patch
 dpkg-source: info: unapplying simplified-build-test.patch
 dpkg-source: info: unapplying debug-system-test.patch
 dpkg-source: info: unapplying kfreebsd-support.patch
 dpkg-source: info: unapplying libbsd-overlay.patch
-dpkg-buildpackage: info: full upload (original source is included)
+dpkg-buildpackage: info: binary-only upload (no source included)
+Cache directory:    /.ccache
+Config file:        /.ccache/ccache.conf
+System config file: /etc/ccache.conf
+Stats updated:      Wed Dec 20 16:27:30 2023
 Local storage:
   Cache size (GiB): 0.0 / 5.0 ( 0.00%)
+  Files:              0
+  Hits:               0
+  Misses:             0
+  Reads:              0
+  Writes:             0
+Create lintian.log
+Create filelist.log
 
-Build 1702477833.a4117db+master of entr completed!
+Build completed in 5 seconds and created:
+total 64K
+ 20K entr-dbgsym_5.3-1_amd64.deb
+8.0K entr_5.3-1_amd64.build
+8.0K entr_5.3-1_amd64.buildinfo
+4.0K entr_5.3-1_amd64.changes
+ 20K entr_5.3-1_amd64.deb
+4.0K filelist.log
+   0 lintian.log
 
-Results visible in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1702477833.a4117db+master
-Please review the result and compare to previous build (if exists)
+Build 1703089647.a4117db+master of entr completed successfully
+Results visible in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master
+You can use for example:
+  meld ../debcraft-build-entr-1703089512.a4117db+master /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master &
 ```
 
 ## Documentation
@@ -134,21 +160,44 @@ See `debcraft --help` for detailed usage instructions.
 
 ```
 $ debcraft --help
-usage: debcraft [options] <build|validate|release|prune> [<path|srcpkg|binpkg|binary>]
+usage: debcraft [options] <build|validate|release|prune> [<path|pkg|srcpkg|dsc|git-url>]
 
-Debcraft is a tool to easily build and rebuild .deb packages.
+Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
+as a subargument any of:
+  * path to directory with program sources including a debian/ subdirectory
+    with the Debian packaging instructions
+  * path to a .dsc file and source tarballs that can be built into a .deb
+  * Debian package name, or source package name, that apt can download
+  * git http(s) or ssh url that can be downloaded and built
+
+The commands 'validate' and 'release' are intended to be used to finalilze
+a package build. The command 'prune' will clean up temporary files by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
 be honored (currently DEB_BUILD_OPTIONS='').
+Note that Debcraft builds never runs as root, and thus packages with
+DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
- --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
- --distribution       Linux distribution to build in (default: debian:sid)
- --container-command  container command to use (default: podman)
- --clean              ensure container base is updated and sources clean
- -h, --help           display this help and exit
- --version            display version and exit
+  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
+  --distribution       Linux distribution to build in (default: debian:sid)
+  --container-command  container command to use (default: podman)
+  --clean              ensure container base is updated and sources clean
+  -h, --help           display this help and exit
+  --version            display version and exit
 ```
+
+## Debian package
+
+The Debian package has intentionally not been created yet. For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
+
+## Feedback requested
+
+Please test out Debcraft and share your feedback. Bug reports at https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
+
+* Documentation: Is it easy to start using Debcraft? How could the documentation be clarified further?
+* Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Does the features and code architecture make sense?
+* Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
 
 ## Additional information
 
@@ -160,24 +209,9 @@ The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at 
 
 ### Roadmap
 
-Debcraft does not intend to replace well working existing tools like git-buildpackage, but rather build upon them making the overall process of as easy as possible. Current development focus is to make the `debcraft build` as easy and efficient as possible:
+Debcraft does not intend to replace well working existing tools like [git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/), but rather build upon them making the overall process of as easy as possible. **Current development focus is to make the `debcraft build` as easy and efficient as possible**. The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
 
-
-backportpackage --yes --upload=ppa:mysql-ubuntu/mariadb-10.6 --destination=jammy --suffix=~1702526461.c8a942aa86c+ubuntu.22.04 ./mariadb-10.6_10.6.16-0ubuntu0.22.04.1.dsc
-backportpackage -y -u ppa:mysql-ubuntu/mariadb-10.3 -d focal -S ~1702526170.e6790f33d+ubuntu.20.04 ./mariadb-10.3_10.3.39-0ubuntu0.20.04.1.dsc
-
-ppa:mysql-ubuntu/$PKG
-
-
-0. Custom DEB_BUILD_OPTIONS and PPA address
-0. Alaways use color and strip it from log files with some separate command?
-1. Fail early, e.g. if there are uncommitted changes and don't run the full build process.
-2. Skip generating the same source package completely, or use symlink to existing source package.
-3. Wrap all calls to dpkg-source, dpkg-buildpackage etc in Podman/Docker so that this tool actually can run on multiple distros.
-
-The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
-
-For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
+Search for _@TODO_ comments in the sources to see which parts are incomplete and pending to be written out.
 
 ### Programming language: Bash
 
@@ -202,6 +236,12 @@ To help with ensuring the above about code quality, the project has both Gitlab-
 ### Name
 
 Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the correct mindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
+
+### Related software
+
+* [dpkg-buildpackage](https://manpages.debian.org/unstable/dpkg-dev/dpkg-buildpackage.1.en.html)
+* [debuild](https://manpages.debian.org/unstable/devscripts/debuild.1.en.html)
+* [UMT](https://wiki.ubuntu.com/SecurityTeam/BuildEnvironment#Setting_up_and_using_UMT)
 
 ## Licence
 

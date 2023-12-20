@@ -29,15 +29,10 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
     /debcraft-releaser \
-    | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
-
-#     >> "$BUILD_DIR/build.log" \
 
 if [ -n "$FAILURE" ]
 then
-  tail -n 50 "$BUILD_DIR"/*.log
-  echo
   log_error "Source build failed - see logs in $BUILD_DIR for details"
   exit 1
 fi

@@ -68,7 +68,7 @@ function get_ubuntu_equivalent_from_debian_release() {
         echo "zesty" # or artful
         ;;
       *)
-        log_error "@TODO: Debian to Ubuntu relese mapping not implemented for $SERIES"
+        log_error "@TODO: Debian to Ubuntu release mapping not implemented for $SERIES"
         exit 1
     esac
   fi

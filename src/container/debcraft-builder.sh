@@ -13,15 +13,18 @@ set -o pipefail
 # are supposed to use it
 export DPKG_COLORS="always"
 
+# Use environment if set, otherwise use nice defaults
+echo "Obey DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'"
+
 # Reset ccache stats, silently
 ccache --zero-stats > /dev/null
 
-# @TODO: Mimick debuild log
-# (https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION)
-# and always automatically write to '../<package>_<version>_<arch>.build'
+BUILD_START_TIME="$EPOCHSECONDS"
+
+# Mimic debuild log filename '../<package>_<version>_<arch>.build'
+# https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
-#
-# Compare also to UMT (https://wiki.ubuntu.com/SecurityTeam/BuildEnvironment#Setting_up_and_using_UMT)
+BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)"_"$(dpkg-parsechangelog --show-field=version)"_"$(dpkg-architecture --query DEB_HOST_ARCH)".build
 
 if [ -d ".git" ]
 then
@@ -39,10 +42,10 @@ then
   #   --tar-ignore (-I, passing ignores to tar)
   gbp buildpackage \
     --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
-    --git-no-create-orig
+    --git-no-create-orig | tee -a "$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  dpkg-buildpackage --no-sign --build=any,all
+  dpkg-buildpackage --no-sign --build=any,all | tee -a "$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'
@@ -66,8 +69,10 @@ echo "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian --debug --verbose -EvIL +pedantic --color=always | tee "../lintian.log" || true
+lintian --verbose -EvIL +pedantic --color=always | tee -a "../lintian.log" || true
 
+# @TODO: Run Lintian in background (with & and later run 'wait') so that the
+# filelist log can be created in parallel? Will it make overall progress faster?
 
 cd /tmp/build || exit 1
 
@@ -84,4 +89,23 @@ done
 # Crude but fast and simple way to clean away ANSI color codes from logs
 # @TODO: As 'less -K' and other tools support reading colored logs, we could
 # consider keeping around colored logs in addition to plain logs for some files
-sed -e 's/\x1b\[[0-9;]*[mK]//g' -i *.log
+sed -e 's/\x1b\[[0-9;]*[mK]//g' -i ./*.log
+
+# Automatically do comparisons to previous build if exists
+if [ -d "old" ]
+then
+  for LOGFILE in filelist lintian
+  do
+    # For each log, create the diff but if there are no difference, remove the
+    # empty file
+    ! diff -u old/$LOGFILE.log $LOGFILE.log > $LOGFILE.log.diff || rm $LOGFILE.log.diff &
+  done
+fi
+
+# Wait to ensure all processes that were backgrounded earlier have completed too
+wait
+
+echo
+echo "Build completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
+# Don't show the mountpoint dir 'source'
+ls --width=5 --size --human-readable --color=always --ignore={source,old}

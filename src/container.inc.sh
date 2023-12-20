@@ -1,48 +1,37 @@
 #!/bin/bash
 
-# podman images --noheading --filter reference=debcraft-entr-debian-sid --format "table {{.ID}} {{.Repository}} {{.Tag}} {{.CreatedAt}} {{.CreatedSince}}"
+# @TODO: Skip building container in vain repeatedly
+# (if container already exists and is newer than debian/control mtime/ctime)
+#
+# podman images --noheading --filter reference="$CONTAINER" --format="table {{.ID}} {{.Repository}} {{.Tag}} {{.CreatedAt}} {{.CreatedSince}}"
 # 3ea068db053c  localhost/debcraft-entr-debian-sid  latest      2023-12-10 02:36:49 +0000 UTC 5 hours ago
-
-# build if
-# - container missing
-# - container exists, but timestamp older than debian/control file
-# - container exists, but is more than one day old and the previouis build for exact same commit passed, so use --pull to make sure base image is fully up-to-date
-
-# OR - always try to build and let 'podman build' decide if image missing or control file has updated?
-
+#
 # if [ -n "$("$CONTAINER_CMD" images --noheading --filter reference="$CONTAINER")" ] && [ -z "$DEBUG" ]
 #then
 #  log_info "Container '$CONTAINER' already exists and is newer than package 'control' file, no need to build it"
 
-
-#if podman images --noheading --filter reference="$CONTAINER" --format "table {{.ID}} {{.Repository}} {{.CreatedSince}}" | grep --quiet -F 'hours ago'
-#then
-#  return # returns to previous "source" in parent script debcraft.sh
-#fi
-
 CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
+
+log_info "Building container '$CONTAINER' in '$CONTAINER_DIR' for build ID '$BUILD_ID'"
+
 mkdir --verbose --parents "$CONTAINER_DIR"
-
-log_debug_var "CONTAINER_DIR"
-
 cp --archive "$DEBCRAFT_INSTALL_DIR"/src/container/* "$CONTAINER_DIR"
 
 # Make it visible what this temporary directory was used for
 echo "[$(date --iso-8601=seconds)] Building container $CONTAINER for build $BUILD_ID" >> "$CONTAINER_DIR/status.log"
 
-# Customize baseimage
+# Customize baseimage distribution release/seris to match package to be built
 sed "s/FROM debian:sid/FROM $BASEIMAGE/" -i "$CONTAINER_DIR/Containerfile"
 
-# Customize preinstalled build dependencies
+# Customize preinstalled build dependencies to match the package to be built
 cp debian/control "$CONTAINER_DIR/control"
 
 # Force pulling new base image
+# @TODO: Automatically use --pull when making sure dependencies are updated
 if [ -n "$CLEAN" ]
 then
   CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
 fi
-
-# @TODO: Automatically use --pull when making sure dependencies are updated
 
 # intentionally allow variable to expand to multiple arguments
 # shellcheck disable=SC2086

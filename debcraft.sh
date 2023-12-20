@@ -25,6 +25,8 @@ display_help() {
   echo
   echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
+  echo "Note that Debcraft builds never runs as root, and thus packages with"
+  echo "DEB_RULES_REQUIRES_ROOT are not supported."
   echo
   echo "optional arguments:"
   echo "  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)"
@@ -84,6 +86,10 @@ do
       export CLEAN="true"
       shift
       ;;
+    --copy)
+      export COPY="true"
+      shift
+      ;;
     -h | --help)
       display_help  # Call your function
       exit 0
@@ -129,6 +135,12 @@ log_debug_var ACTION
 # shellcheck source=src/config-general.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
 
+# @TODO: Nag of dependencies are not available: git, dpkg-parsechangelog, rsync,
+# notify-send, paplay, tee, sed
+#
+# Bash must be new enough to have 'mapfile'. For containers system must have
+# either Podman or Docker.
+
 if [ -z "$TARGET" ]
 then
   # If no argument defined, default to current directory
@@ -137,6 +149,9 @@ elif [ ! -d "$TARGET" ]
 then
   # If the argument exists, but didn't point to a valid path, try to use the
   # argument to download the package
+
+  # shellcheck source=src/downloader-container.inc.sh
+  source "$DEBCRAFT_INSTALL_DIR/src/downloader-container.inc.sh"
 
   # shellcheck source=src/downloader.inc.sh
   source "$DEBCRAFT_INSTALL_DIR/src/downloader.inc.sh"
@@ -155,8 +170,8 @@ then
   TARGET="$NEWEST_DIRECTORY"
 fi
 
-# The previous step guarentees that the source directory either exits, was
-# downloaded or the script exection stopped. From here onwards the script can
+# The previous step guarantees that the source directory either exits, was
+# downloaded or the script execution stopped. From here onwards the script can
 # assume that $PWD is a working directory with sources.
 cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
 
@@ -164,6 +179,9 @@ if [ -f "debian/changelog" ]
 then
   # If dpkg-parsechangelog fails and emits exit code, Debcraft will
   # intentionally halt completely at this point
+  #
+  # @TODO: Having dpkg-parsechangelog as a dependency is against the design
+  # principle of having Debcraft as an universal tool
   PACKAGE="$(dpkg-parsechangelog --show-field=source)"
 else
   log_error "No $TARGET/debian/changelog found, not a valid source package directory"
@@ -172,18 +190,11 @@ fi
 
 log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
 
-if [ -d ".git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+if [ -z "$COPY" ] && [ -d "$PWD/.git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
 then
-  log_error "Git repository is not clean, cannot proceed building."
+  log_error "Git repository is not clean, cannot proceed building unless --clean or --copy is used."
   exit 1
 fi
-
-# Configure program behaviour after user options and arguments have been parsed
-# shellcheck source=src/config-package.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/config-package.inc.sh"
-
-# @TODO: Uncommitted changes test - don't proceed in vain if git
-# clean/reset/commit needs to run first
 
 # Make sure sources are clean
 if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
@@ -195,6 +206,10 @@ then
   git submodule foreach --recursive git reset --hard
   git submodule update --init --recursive
 fi
+
+# Configure program behaviour after user options and arguments have been parsed
+# shellcheck source=src/config-package.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/config-package.inc.sh"
 
 # If the action needs to run in a container, automatically create it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ] || [ "$ACTION" == "release" ]

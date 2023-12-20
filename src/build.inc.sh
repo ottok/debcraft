@@ -1,33 +1,48 @@
 #!/bin/bash
 
-# Use environment if set, otherwise use nice defaults
-DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-parallel=4 nocheck noautodbgsym}"
-log_info "Obey DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'"
-
 # Use BUILD_DIRS_PATH
 CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
 # shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
 BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 
-mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
+mkdir --parents "$CCACHE_DIR" "$BUILD_DIR"
 
+# @TODO: Perhaps this can be removed as unnecessary?
 # Instead of plain 'chown -R' use find and only apply chmod on files that need
 # it to avoid excess disk writes and ctime updates in vain. Use 'edecdir' as
 # safer option to 'exec' and use the variant ending with plus so any non-zero
 # exit code will be surfaced and calling script aborted.
-find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+#find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+
+# Default source dir
+SOURCE_DIR="$PWD"
+
+# Copy sources if requested
+if [ -n "$COPY" ]
+then
+  log_info "Copying sources to build directory to not pollute current directory with build artifacts"
+  rsync --archive --exclude="**/.git/" "$PWD/" "$BUILD_DIR/source"
+  SOURCE_DIR="$BUILD_DIR/source"
+fi
+# @TODO: If we want to avoid sources being polluted but not duplicate files too
+# much or spend time on copying, try using overlays (but requires Podman 4.x series):
+# '--volume=/...:/tmp/build/source:O,upperdir=/tmp/build/upper,workdir=/tmp/build/workdir'
+
+if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+then
+  log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
+  CONTAINER_RUN_ARGS="--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/old $CONTAINER_RUN_ARGS "
+fi
 
 log_info "Building package in $BUILD_DIR"
-
-# Make it visible what this temporary directory was used for
-echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR/status.log"
 
 # Run build inside a container image with build dependencies defined in a Podmanfile
 # --tty needed for session to have colors automatically
 # --interactive needed for Ctrl+C to cancel build and stop container (and not
 #   just exit tty)
-# NOTE!: If build fails, script fails here (due to set pipefail) and there
-# will be no notifications or sounds to user.
+#
+# Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
+#
 # shellcheck disable=SC2086
 "$CONTAINER_CMD" run \
     --name="$CONTAINER" \
@@ -36,18 +51,17 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
     --cpus=4 \
     --volume="$CCACHE_DIR":/.ccache \
     --volume="$BUILD_DIR":/tmp/build \
-    --volume="$PWD":/tmp/build/source \
+    --volume="$SOURCE_DIR":/tmp/build/source \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
-    --env="DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'" \
+    --env="DEB*" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
     /debcraft-builder \
-    | tee -a "$BUILD_DIR/build.log" \
     || FAILURE="true"
 
-# @TODO: Redirect all output to log if too verbose?
-# >> "$BUILD_DIR/build.log" \
+# Intentionally do not log all output from the container. Those can be accessed
+# if needed via Podman/Docker logs:
 #
 # podman logs --follow --names --timestamps latest
 # journalctl --output=verbose -t "$CONTAINER"
@@ -55,36 +69,27 @@ echo "[$(date --iso-8601=seconds)] Starting container $CONTAINER" >> "$BUILD_DIR
 
 # @TODO: Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
-#
-# @TODO: If we want to avoid sources being polluted but still want to see how it
-# looks like, test using
-# '--volume=/...:/tmp/build/source:O,upperdir=/tmp/build/upper,workdir=/tmp/build/workdir'
-# (but requires Podman 4.x series)
 
 if [ -n "$FAILURE" ]
 then
-  tail -n 50 "$BUILD_DIR"/*.log
-  echo
   log_error "Build failed - see logs in $BUILD_DIR for details"
   exit 1
 fi
 
-# Use same message both on command-line and in notification
-MSG="Build $BUILD_ID of $PACKAGE completed!"
-
-echo
-log_info "$MSG"
-
 # Notify must run outside container (gbp/git-notify=on with python3-notify2
 # inside container fails with non-zero exit code)
-notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "$MSG"
+notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "Build $BUILD_ID of $PACKAGE completed!"
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 
 echo
-log_info "Results visible in $BUILD_DIR"
-log_info "Please review the result and compare to previous build (if exists)"
-log_info "You can use for example:"
-log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
+log_info "Results of completed build visible in $BUILD_DIR"
+
+if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+then
+  log_info "To compare build artifacts with those of previous similar build you can use for example:"
+  log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
+fi
+
 # @TODO: Give tips on how/what to review and across which versions (e.g.
 # previous successful build on same branch, or previous release in same
 # Debian/Ubuntu series)
