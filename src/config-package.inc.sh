@@ -87,7 +87,7 @@ log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAG
 
 # Previous successful build dirs
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
-PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo)") || true
+PREVIOUS_SUCCESSFUL_BUILD_FILES=("$(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo) 2> /dev/null") || true
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_FILES[*]}" ]
 then
   mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(

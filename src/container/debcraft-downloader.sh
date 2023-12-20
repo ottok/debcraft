@@ -34,7 +34,7 @@ case "$1" in
     ;;
 
   *)
-    if [ "$(apt-cache showsrc "$1" | wc -l)" -gt 1 ]
+    if [ "$(apt-cache showsrc "$1" | wc -l || true)" -gt 1 ]
     then
       # Check if it is a binary or source and try to get it with apt-source. If
       # 'apt-cache showsrc' yields no results it will output 'W: Unable to
@@ -48,16 +48,24 @@ case "$1" in
       # As a last attempt, try to find what command the $TARGET might be, and
       # resolve the source package for it
       echo "Attempt to find source package for command '$1' with 'dpkg --search'"
-      PACKAGE="$(dpkg --search "$(command -v "$1")" | cut --delimiter=':' --field 1)"
+      PACKAGE="$(dpkg --search "$(command -v "$1")" | cut --delimiter=':' --field 1 || true)"
       if [ -n "$PACKAGE" ]
       then
         echo "Download source package for '$PACKAGE'"
         apt-get source "$PACKAGE"
-      #elif [ -f /var/lib/command-not-found/commands.db ]
-      #then
-      # @TODO: Search command-not-found database if exists
       else
         echo "Unable to find any Debian package for command '$1'"
+        exit 1
+      fi
+    elif [ -f /var/lib/command-not-found/commands.db ]
+    then
+      PACKAGE="$(/usr/lib/command-not-found "$1" 2>&1 | grep --only-matching --perl-regexp "apt install \K([a-z0-9-]+)" | tail --lines=1 || true)"
+      if [ -n "$PACKAGE" ]
+      then
+        echo "Download source package '$PACKAGE' for command '$1'"
+        apt-get source "$PACKAGE"
+      else
+        echo "Unable to find any Debian package for command '$1' from commands.db"
         exit 1
       fi
     else

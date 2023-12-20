@@ -72,12 +72,13 @@ do
       shift
       ;;
     --distribution)
-      export DISTRIBUTION="$1"
-      shift
+      # The value is the next argument, e.g. '--distribution bookworm'
+      export DISTRIBUTION="$2"
+      shift 2
       ;;
     --container-command)
-      export CONTAINER_CMD="$1"
-      shift
+      export CONTAINER_CMD="$2"
+      shift 2
       ;;
     --clean)
       export CLEAN="true"

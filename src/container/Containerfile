@@ -31,6 +31,9 @@ RUN ccache --show-stats  --verbose || true
 COPY enable-source-repositories.sh /enable-source-repositories
 RUN /enable-source-repositories
 
+RUN apt-get install --yes command-not-found && \
+    apt-get update
+
 COPY debcraft-downloader.sh /debcraft-downloader
 COPY debcraft-builder.sh /debcraft-builder
 COPY debcraft-validator.sh /debcraft-validator
