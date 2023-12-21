@@ -143,8 +143,15 @@ source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
 # @TODO: Nag of dependencies are not available: git, dpkg-parsechangelog, rsync,
 # notify-send, paplay, tee, sed
 #
-# Bash must be new enough to have 'mapfile'. For containers system must have
-# either Podman or Docker.
+# Bash must be new enough to have 'mapfile'.
+
+# @TODO: This command seems very slow, can we avoid running it?
+if [ -z "$("$CONTAINER_CMD" images --noheading --filter reference=debcraft)" ]
+then
+  log_warn "No previous Debcraft container was found and thus the first run of"
+  log_warn "this tool is expected to be slow as the container base layer needs"
+  log_warn "to be built. Re-runs of Debcraft will be fast."
+fi
 
 if [ -z "$TARGET" ]
 then

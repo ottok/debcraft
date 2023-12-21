@@ -6,9 +6,6 @@
 # podman images --noheading --filter reference="$CONTAINER" --format="table {{.ID}} {{.Repository}} {{.Tag}} {{.CreatedAt}} {{.CreatedSince}}"
 # 3ea068db053c  localhost/debcraft-entr-debian-sid  latest      2023-12-10 02:36:49 +0000 UTC 5 hours ago
 #
-# if [ -n "$("$CONTAINER_CMD" images --noheading --filter reference="$CONTAINER")" ] && [ -z "$DEBUG" ]
-#then
-#  log_info "Container '$CONTAINER' already exists and is newer than package 'control' file, no need to build it"
 
 CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
 
