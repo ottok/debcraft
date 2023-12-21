@@ -145,8 +145,15 @@ source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
 #
 # Bash must be new enough to have 'mapfile'.
 
-# @TODO: This command seems very slow, can we avoid running it?
-if [ -z "$("$CONTAINER_CMD" images --noheading --filter reference=debcraft)" ]
+# Docker does not support '--noheading', so the command will always output at
+# least one line
+# Hack: Listing images is very slow on Podman, so branch off two different tests
+# shellcheck disable=2235 # two subshells necessary in this case
+if ([ "$CONTAINER_CMD" == 'podman' ] && \
+    ! grep --quiet debcraft ~/.local/share/containers/storage/overlay-images/images.json) \
+   || \
+   ([ "$CONTAINER_CMD" == 'docker' ] && \
+   [ "$("$CONTAINER_CMD" images debcraft | wc -l)" -eq 1 ])
 then
   log_warn "No previous Debcraft container was found and thus the first run of"
   log_warn "this tool is expected to be slow as the container base layer needs"

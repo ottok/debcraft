@@ -30,12 +30,13 @@ then
   CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
 fi
 
-# intentionally allow variable to expand to multiple arguments
-# shellcheck disable=SC2086
+# Podman does not need '--file=Containerfile', but needed for Docker compatiblity
+# shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
 "$CONTAINER_CMD" build  \
   --tag "$CONTAINER" \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
   $CONTAINER_BUILD_ARGS \
+  --file="$CONTAINER_DIR/Containerfile" \
   "$CONTAINER_DIR" \
   | tee -a "$CONTAINER_DIR/build.log" \
   || FAILURE="true"
