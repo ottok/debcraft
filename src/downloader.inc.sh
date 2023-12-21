@@ -13,7 +13,7 @@
     --workdir=/tmp/debcraft \
     $CONTAINER_RUN_ARGS \
     "$DOWNLOAD_CONTAINER" \
-    /debcraft-downloader "$TARGET" \
+    /debcraft-downloader.sh "$TARGET" \
     || FAILURE="true"
 
 if [ -n "$FAILURE" ]

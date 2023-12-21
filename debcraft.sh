@@ -35,6 +35,10 @@ display_help() {
   echo "  --clean              ensure container base is updated and sources clean"
   echo "  -h, --help           display this help and exit"
   echo "  --version            display version and exit"
+  echo
+  echo "To gain more Debian Developer knowledge, please read"
+  echo "https://www.debian.org/doc/manuals/developers-reference/"
+  echo "and https://www.debian.org/doc/debian-policy/"
 }
 
 # If Debcraft itself was run in a git repository, include the git commit id
@@ -51,8 +55,9 @@ display_version() {
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
 
-# shellcheck source=src/output.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/output.inc.sh"
+# Output formatting library is reused inside container as well
+# shellcheck source=src/container/output.inc.sh
+source "$DEBCRAFT_INSTALL_DIR/src/container/output.inc.sh"
 
 # shellcheck source=src/distributions.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/distributions.inc.sh"
@@ -234,6 +239,10 @@ case "$ACTION" in
   release)
     # shellcheck source=src/release.inc.sh
     source "$DEBCRAFT_INSTALL_DIR/src/release.inc.sh"
+    # shellcheck source=src/release-ppa.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/release-ppa.inc.sh"
+    # shellcheck source=src/release-dput.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/release-dput.inc.sh"
     ;;
   prune)
     # For debcraft-* containers: podman volume prune --force && podman system prune --force

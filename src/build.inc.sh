@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Use BUILD_DIRS_PATH
+# Define variable only used in build
 CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
-# shellcheck disable=SC2153 # BUILD_DIR is defined in calling parent Debcraft
-BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 
-mkdir --parents "$CCACHE_DIR" "$BUILD_DIR"
+# Create directories, including 'source' subdirectory as the container mount
+# would create it anyway
+mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
 
 # @TODO: Perhaps this can be removed as unnecessary?
 # Instead of plain 'chown -R' use find and only apply chmod on files that need
@@ -13,9 +13,6 @@ mkdir --parents "$CCACHE_DIR" "$BUILD_DIR"
 # safer option to 'exec' and use the variant ending with plus so any non-zero
 # exit code will be surfaced and calling script aborted.
 #find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
-
-# Default source dir
-SOURCE_DIR="$PWD"
 
 # Copy sources if requested
 if [ -n "$COPY" ]
@@ -31,10 +28,16 @@ fi
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
-  CONTAINER_RUN_ARGS="--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/old $CONTAINER_RUN_ARGS "
+  mkdir --parents "$BUILD_DIR/previous"
+  CONTAINER_RUN_ARGS=" --volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/previous $CONTAINER_RUN_ARGS"
 fi
 
-log_info "Building package in $BUILD_DIR"
+log_info "Building package at $BUILD_DIR"
+
+if [ -n "$DEBUG" ]
+then
+  set -x
+fi
 
 # Run build inside a container image with build dependencies defined in a Podmanfile
 # --tty needed for session to have colors automatically
@@ -48,16 +51,15 @@ log_info "Building package in $BUILD_DIR"
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
-    --cpus=4 \
     --volume="$CCACHE_DIR":/.ccache \
     --volume="$BUILD_DIR":/tmp/build \
-    --volume="$SOURCE_DIR":/tmp/build/source \
+    --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
-    /debcraft-builder \
+    /debcraft-builder.sh \
     || FAILURE="true"
 
 # Intentionally do not log all output from the container. Those can be accessed
@@ -70,6 +72,26 @@ log_info "Building package in $BUILD_DIR"
 # @TODO: Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
 
+if [ -n "$DEBUG" ]
+then
+  set +x
+fi
+
+if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+then
+  # Clean up temporary mount directory from polluting build artifacts
+  # if a "previous" directory was mounted
+  rmdir "$BUILD_DIR/previous"
+fi
+
+if [ -z "$COPY" ]
+then
+  # Clean up temporary mount directory from polluting build artifacts
+  # if a "source" directory was mounted (i.e. COPY was *not* used)
+  rmdir "$BUILD_DIR/source"
+fi
+
+# If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
   log_error "Build failed - see logs in $BUILD_DIR for details"
@@ -82,7 +104,7 @@ notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgen
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 
 echo
-log_info "Results of completed build visible in $BUILD_DIR"
+log_info "Artifacts at $BUILD_DIR"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then

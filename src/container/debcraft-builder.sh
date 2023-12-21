@@ -9,16 +9,18 @@ set -o pipefail
 # show commands (debug)
 #set -x
 
+# shellcheck source=src/container/output.inc.sh
+source "/output.inc.sh"
+
 # This has no confirmed effect but setting just to be sure as some dpkg-* tools
 # are supposed to use it
 export DPKG_COLORS="always"
 
 # Use environment if set, otherwise use nice defaults
-echo "Obey DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'"
+log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 
-# Reset ccache stats, silently
+# Prepare stats
 ccache --zero-stats > /dev/null
-
 BUILD_START_TIME="$EPOCHSECONDS"
 
 # Mimic debuild log filename '../<package>_<version>_<arch>.build'
@@ -36,10 +38,6 @@ then
   # Instead use dpkg-buildpackage directly (debuild would use it anyway) and also
   # instruct it to only build binary packages, skipping source package generation
   # and skipping related cleanup steps.
-  #
-  # Passed to dpkg-source:
-  #   --diff-ignore (-i, ignore default file types e.g. .git folder)
-  #   --tar-ignore (-I, passing ignores to tar)
   gbp buildpackage \
     --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
     --git-no-create-orig | tee -a "$BUILD_LOG"
@@ -59,13 +57,12 @@ fi
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
-ccache --show-stats  --verbose || true
+ccache --show-stats --verbose || true
 
-# @TODO: Why is Lintian silent?
 # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
 # will likely always emit errors if package complex enough
 echo
-echo "Create lintian.log"
+log_info "Create lintian.log"
 # Seems that --color=auto isn't enough inside a container, so use 'always'.
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
@@ -79,7 +76,7 @@ cd /tmp/build || exit 1
 
 # Log package contents
 echo
-echo "Create filelist.log"
+log_info "Create filelist.log"
 for package in *.deb
 do
   # shellcheck disable=SC2129
@@ -94,13 +91,13 @@ done
 sed -e 's/\x1b\[[0-9;]*[mK]//g' -i ./*.log
 
 # Automatically do comparisons to previous build if exists
-if [ -d "old" ]
+if [ -d "previous" ]
 then
-  for LOGFILE in filelist lintian
+  for LOGFILE in *.log
   do
     # For each log, create the diff but if there are no difference, remove the
     # empty file
-    ! diff -u old/$LOGFILE.log $LOGFILE.log > $LOGFILE.log.diff || rm $LOGFILE.log.diff &
+    ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.log.diff" || rm "$LOGFILE.log.diff" &
   done
 fi
 
@@ -108,6 +105,6 @@ fi
 wait
 
 echo
-echo "Build completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
+log_info "Build completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
 # Don't show the mountpoint dir 'source'
-ls --width=5 --size --human-readable --color=always --ignore={source,old}
+ls --width=5 --size --human-readable --color=always --ignore={source,previous}

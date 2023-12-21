@@ -16,10 +16,10 @@ if [ -z "$DEBUG" ]
 then
   # If not running in DEBUG mode, don't do anything on these
   function log_debug() {
-    true
+    :
   }
   function log_debug_var() {
-    true
+    :
   }
 else
   # Print debug information not normally visible
@@ -29,12 +29,8 @@ else
 
   # Print the variable name and value in one "log_debug_var example" call
   function log_debug_var() {
-    # E.g. "example:"
-    echo -ne "\e[38;5;5m$1: "
-    # E.g. value of $example
-    eval 'echo -n $'"$1"
-    # Intentionally using second source file but first lineno occurrence
-    echo -e " (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
+    # Outputs variable type and contents, e.g 'declare -x ACTION="release"'
+    echo -e "\e[38;5;5mDEBUG: $(declare -p "$1") (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
   }
 
   log_debug "Running Debcraft in debug mode"

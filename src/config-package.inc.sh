@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Define BASEIMAGE
 case "$DISTRIBUTION" in
   "")
     # If DISTRIBUTION is not set, try to guess it
@@ -100,16 +101,46 @@ else
   exit 1
 fi
 
+# Actions 'build' and 'validate' operate on the BUILD_DIR
+BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
+# Action 'release' places artifacts in a differently named directory
+RELEASE_DIR="$BUILD_DIRS_PATH/debcraft-release-$PACKAGE-$BUILD_ID"
+
 # Explicit exports
 export PACKAGE
 export BASEIMAGE
 export CONTAINER
 export BUILD_ID
 export BUILD_DIRS_PATH
+export BUILD_DIR
+export RELEASE_DIR
 
 log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
 
-# Previous successful build dirs
+# Previous successful builds that produced a .buildinfo file
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
-mapfile -t PREVIOUS_SUCCESSFUL_BUILD_DIRS < <(ls --sort=time --format=single-column --group-directories-first --directory ../debcraft-build-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo 2> /dev/null)
+mapfile -t PREVIOUS_SUCCESSFUL_BUILDINFO_FILES < <(
+  ls --sort=time --format=single-column --group-directories-first --directory \
+    ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo \
+    2> /dev/null
+)
+
+# Convert into two arrays of path names
+PREVIOUS_SUCCESSFUL_BUILD_DIRS=()
+PREVIOUS_SUCCESSFUL_RELEASE_DIRS=()
+for BUILDINFO_FILE in ${PREVIOUS_SUCCESSFUL_BUILDINFO_FILES[*]}
+do
+  case $BUILDINFO_FILE in
+    */debcraft-build-*)
+      PREVIOUS_SUCCESSFUL_BUILD_DIRS+=("$(dirname "$BUILDINFO_FILE")")
+      ;;
+    */debcraft-release-*)
+      PREVIOUS_SUCCESSFUL_RELEASE_DIRS+=("$(dirname "$BUILDINFO_FILE")")
+      ;;
+  esac
+done
+log_debug_var PREVIOUS_SUCCESSFUL_BUILD_DIRS
+log_debug_var PREVIOUS_SUCCESSFUL_RELEASE_DIRS
+
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS
+export PREVIOUS_SUCCESSFUL_RELEASE_DIRS
