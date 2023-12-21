@@ -28,6 +28,9 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
 BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
 
+# Teach user what is done and why
+log_info "Running 'dpkg-buildpackage --build=any,all' to create .deb packages"
+
 if [ -d ".git" ]
 then
   # Always use git-buildpackage if possible

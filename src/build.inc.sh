@@ -115,3 +115,5 @@ fi
 # @TODO: Give tips on how/what to review and across which versions (e.g.
 # previous successful build on same branch, or previous release in same
 # Debian/Ubuntu series)
+
+# @TODO: Remind user to visit Vcs-Browser url and contribute

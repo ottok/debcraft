@@ -14,6 +14,14 @@ source "/output.inc.sh"
 
 VALIDATION_ERRORS=()
 
+# @TODO: Nag if remote git branches for debian/upstream/pristine-tar have newer stuff than locally (risk for new local changes to be in vain)
+
+# @TODO: Nag if git tags are missing for past debian/changelog releases (i.e. forgot to run 'gbp tag')
+
+# @TODO: Nag if local git tags have not been pushed (i.e. forgot to run 'gbp push')
+
+# @TODO: codespell --interactive=0 --check-filenames --check-hidden debian/
+
 log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
 if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
 then

@@ -209,7 +209,11 @@ The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at 
 
 ### Roadmap
 
-Debcraft does not intend to replace well working existing tools like [git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/), but rather build upon them making the overall process of as easy as possible. **Current development focus is to make the `debcraft build` as easy and efficient as possible**. The `release` and `validate` commands will be polished later. Pruning is manual for the time being as well. More commands, such as `update` to automatically import a new upstream version or `polish` to run [lintian-brush]() and other tools to automatically improve the package source code, might be added later.
+Debcraft does not intend to replace well working existing tools like [git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/), but rather build upon them making the overall process of as easy as possible. **Current development focus is to make the `debcraft build` as easy and efficient as possible** and it is already quite capable. The `release` is already fully usable. The `prune` currently does nothing.
+
+The `validate` command only does static testing for the source directory without modifying anything. Something like `polish` to run [lintian-brush](https://manpages.debian.org/unstable/lintian-brush/lintian-brush.1.en.html) and other tools to automatically improve the package source code might be added later, or a command to run dynamic tests on the built binaries (create local repo, run piuparts, autopkgtests, some of the Salsa-CI tests locally etc).
+
+To help Debian Developers with recurring work, a command such as `update` to automatically import a new upstream version might also be implemented later.
 
 Search for _@TODO_ comments in the sources to see which parts are incomplete and pending to be written out.
 
