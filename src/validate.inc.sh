@@ -29,7 +29,7 @@ fi
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Validation found issues - plese read the output above carefully"
+  log_error "Validation found issues - please read the output above carefully"
   exit 1
 fi
 

@@ -34,7 +34,7 @@ function debcraft_test() {
   echo "completed with: $TEST_OUTPUT_LAST_LINE"
   echo "expected start: $EXPECTED_OUTPUT_LAST_LINE_START"
 
-  # Note wildcard at end - the expexted result only needs to match the start
+  # Note wildcard at end - the expected result only needs to match the start
   if [[ "$TEST_OUTPUT_LAST_LINE" == "$EXPECTED_OUTPUT_LAST_LINE_START_START"* ]] && \
      [[ "$RET" == 0 ]]
   then

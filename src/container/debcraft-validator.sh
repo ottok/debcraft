@@ -21,6 +21,12 @@ VALIDATION_ERRORS=()
 # @TODO: Nag if local git tags have not been pushed (i.e. forgot to run 'gbp push')
 
 # @TODO: codespell --interactive=0 --check-filenames --check-hidden debian/
+# @TODO: find * -type f | xargs spellintian --picky
+# @TODO: enchant-2 -d en -a debian/changelog # ispell line format, does not work for a human
+# @TODO: aspell -d en -c debian/changelog # interactive mode, checks whole file not just latest entry
+# @TODO: aspell --mode=debctrl -c debian/control
+# @TODO: find -name *.md -exec aspell --mode=markdown -c "{}" +;
+# @TODO: hunspell -d en_US debian/changelog # interactive mode
 
 log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
 if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
@@ -48,9 +54,17 @@ then
   VALIDATION_ERRORS+=('debian-rules-syntax')
 fi
 
+if ! head --lines=1 debian/rules | grep --quiet -F '#!/usr/bin/make -f'
+then
+  log_error "Debian policy violation: debian/rules must start with '#!/usr/bin/make -f'"
+  log_error "https://www.debian.org/doc/debian-policy/ch-source.html#main-building-script-debian-rules"
+  VALIDATION_ERRORS+=('debian-rules-makefile')
+fi
+
 log_info "Validating that all shell scripts in debian/rules pass Shellcheck..."
-SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u |cut -d ':' -f 1 | xargs)"
-BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)"
+# End with  '|| true' to avoid emitting error codes in case no files were found
+SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u | cut -d ':' -f 1 || true)"
+BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u | cut -d ':' -f 1 || true)"
 if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
 then
   # shellcheck disable=SC2086 # intentional expansion of arguments
@@ -64,5 +78,6 @@ fi
 # Emit non-zero exit code if there was errors
 if [ -n "${VALIDATION_ERRORS[*]}" ]
 then
+  log_error "Failed on errors: ${VALIDATION_ERRORS[*]}"
   exit 1
 fi

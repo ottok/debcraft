@@ -84,9 +84,26 @@ for package in *.deb
 do
   # shellcheck disable=SC2129
   echo "$package" | cut -d '_' -f 1 >> "filelist.log"
-  dpkg-deb -c "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> "filelist.log"
+  dpkg-deb --contents "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> "filelist.log"
   echo "------------------------------------------------" >> "filelist.log"
 done
+
+log_info "Create maintainer-scripts.log"
+for package in *.deb
+do
+  # shellcheck disable=SC2129
+  PACKAGE_NAME="$(echo "$package" | cut -d '_' -f 1)"
+  # Extract to directory with package name
+  dpkg-deb --control "$package" "$PACKAGE_NAME"
+  # Delete files not worth tracking
+  (cd "$PACKAGE_NAME" && rm --force control md5sums templates)
+  # USe tail to list contents in one single file with headers between
+  # Allow command to fail, which typically happens when directory is empty
+  tail --lines=9999 "$PACKAGE_NAME"/* >> maintainer-scripts.log || true
+  # Clean up temporary directory
+  rm --recursive --force "$PACKAGE_NAME"
+done
+
 
 # Crude but fast and simple way to clean away ANSI color codes from logs
 # @TODO: As 'less -K' and other tools support reading colored logs, we could
@@ -103,6 +120,15 @@ then
     ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.log.diff" || rm "$LOGFILE.log.diff" &
   done
 fi
+
+# Note: Command `dpkg-deb --info filename.deb` just lists package size and
+# debian/control snippet, not very useful for comparisons.
+#
+# Note: File list from commands `dpkg-deb --contents filename.deb` and `dpkg
+# --contents filename.deb` is identical and contains fimestamps (of upstream
+# release date?), so a diff would always show every single line as having
+# changes and thus not suitable for comparisons.
+
 
 # Wait to ensure all processes that were backgrounded earlier have completed too
 wait

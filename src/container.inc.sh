@@ -30,7 +30,7 @@ then
   CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
 fi
 
-# Podman does not need '--file=Containerfile', but needed for Docker compatiblity
+# Podman does not need '--file=Containerfile', but needed for Docker compatibility
 # shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
 "$CONTAINER_CMD" build  \
   --tag "$CONTAINER" \
