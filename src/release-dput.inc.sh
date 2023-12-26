@@ -7,6 +7,7 @@ if [ -f ~/.devscripts ] && [ -z "$DEBUG" ]
 then
   log_info "After thorouh review, sign the package and upload with:"
   log_info "  (cd $RELEASE_DIR && debsign *.changes && dput *.changes)"
+  # @TODO: Or from dput-ng recommend `dput --full-upload-log *.changes`?
   log_info
   log_info "Remember to tag the exact commit that was uploaded about 10 minutes"
   log_info "later after seeing acknowledgement email from ftp-master:"

@@ -21,6 +21,7 @@ VALIDATION_ERRORS=()
 # @TODO: Nag if local git tags have not been pushed (i.e. forgot to run 'gbp push')
 
 # @TODO: codespell --interactive=0 --check-filenames --check-hidden debian/
+# @TODO: ^ automatically fix with extra parameter --write
 # @TODO: find * -type f | xargs spellintian --picky
 # @TODO: enchant-2 -d en -a debian/changelog # ispell line format, does not work for a human
 # @TODO: aspell -d en -c debian/changelog # interactive mode, checks whole file not just latest entry
@@ -72,6 +73,8 @@ then
   then
     log_error "Shellcheck reported issues, please run it manually"
     VALIDATION_ERRORS+=('shellcheck')
+
+    # @TODO: Automatically fix by applyig diff from `shellcheck -x --enable=all --format=diff`
   fi
 fi
 
