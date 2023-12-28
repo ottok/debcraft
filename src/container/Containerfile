@@ -21,7 +21,8 @@ RUN apt-get update && \
 # Validator dependencies
 RUN apt-get install --yes --no-install-recommends \
   python3-debian \
-  shellcheck
+  shellcheck \
+  diffoscope-minimal
 
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \

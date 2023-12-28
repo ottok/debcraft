@@ -29,6 +29,25 @@ VALIDATION_ERRORS=()
 # @TODO: find -name *.md -exec aspell --mode=markdown -c "{}" +;
 # @TODO: hunspell -d en_US debian/changelog # interactive mode
 
+# @TODO: suspicious-source --verbose --directory . # no output if no findings, and most findings false positives
+
+# @TODO: 'duck -v --color=always' check validity or URLS in debian/control, debian/upstream, debian/copyright etc
+
+# @TODO: adequate # Findings for listdc++6 and libc6 out-of-the-box, but could
+# be useful if current package installed and added to
+# '/var/lib/adequate/pending' for limiting checks to it
+
+# @TODO: licensecheck # only lists what licenses if found without actually
+# validating anything about debian/copyright correctness
+
+# @TODO: find -name *.pot -exec i18nspector "{}" +; find -name *.po -exec i18nspector "{}" +;
+
+# @TODO: blhc --all --debian --line-numbers --color *.build
+# or alternatively as Salsa-CI uses: blhc --debian --line-numbers --color ${SALSA_CI_BLHC_ARGS} ${WORKING_DIR}/*.build || [ $? -eq 1 ]
+# However both versions result in blhc outputting 'No compiler commands' so I am not sure if it works at all?
+
+# @TODO: diffoscope --html report.html old.deb new.deb
+
 log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
 if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
 then
@@ -74,7 +93,7 @@ then
     log_error "Shellcheck reported issues, please run it manually"
     VALIDATION_ERRORS+=('shellcheck')
 
-    # @TODO: Automatically fix by applyig diff from `shellcheck -x --enable=all --format=diff`
+    # @TODO: Automatically fix by applying diff from `shellcheck -x --enable=all --format=diff`
   fi
 fi
 
