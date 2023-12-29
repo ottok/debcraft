@@ -13,6 +13,7 @@ RUN apt-get update && \
     devscripts \
     eatmydata \
     equivs \
+    fakeroot \
     git \
     git-buildpackage \
     lintian \
@@ -20,9 +21,10 @@ RUN apt-get update && \
 
 # Validator dependencies
 RUN apt-get install --yes --no-install-recommends \
+  diffoscope-minimal \
   python3-debian \
   shellcheck \
-  diffoscope-minimal
+  xxd
 
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
