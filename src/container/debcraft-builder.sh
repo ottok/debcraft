@@ -88,6 +88,7 @@ do
   echo "------------------------------------------------" >> "filelist.log"
 done
 
+echo
 log_info "Create maintainer-scripts.log"
 for package in *.deb
 do
@@ -97,9 +98,12 @@ do
   dpkg-deb --control "$package" "$PACKAGE_NAME"
   # Delete files not worth tracking
   (cd "$PACKAGE_NAME" && rm --force control md5sums templates)
-  # USe tail to list contents in one single file with headers between
-  # Allow command to fail, which typically happens when directory is empty
-  tail --lines=9999 "$PACKAGE_NAME"/* >> maintainer-scripts.log || true
+  # Skip if directory is empty
+  if [ -n "$(ls --almost-all "$PACKAGE_NAME/")" ]
+  then
+    # Use tail to list contents in one single file with headers between
+    tail --lines=9999 "$PACKAGE_NAME"/* >> maintainer-scripts.log
+  fi
   # Clean up temporary directory
   rm --recursive --force "$PACKAGE_NAME"
 done

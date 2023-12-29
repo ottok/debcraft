@@ -20,7 +20,7 @@ fi
 log_info "DEBCRAFT_PPA set as '$DEBCRAFT_PPA'"
 
 # ppa:otto/ppa -> otto/ppa
-PPA="${DEBCRAFT_PPA#:*}"
+PPA="${DEBCRAFT_PPA#*:}"
 # otto/ppa -> otto
 PPA_OWNER="${PPA%/*}"
 # otto/ppa -> ppa
@@ -50,4 +50,4 @@ eval "$CMD"
 # Return to original directory where sources reside
 cd - || exit 1
 
-log_info "Review build results at https://bugs.launchpad.net/~${PPA_OWNER}/+archive/ubuntu/${PPA_NAME}/+builds?build_text=&build_state=all"
+log_info "Review build results at https://launchpad.net/~${PPA_OWNER}/+archive/ubuntu/${PPA_NAME}/+builds?build_text=&build_state=all"

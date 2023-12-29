@@ -15,7 +15,7 @@ function get_baseimage_from_distribution_name() {
     experimental | sid | trixie | bookworm | bullseye | buster)
       echo "debian:$NAME"
       ;;
-    noble | jammy | focal)
+    noble | mantic | jammy | focal)
       echo "ubuntu:$NAME"
       ;;
     *)
