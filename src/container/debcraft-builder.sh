@@ -88,6 +88,11 @@ do
   echo "------------------------------------------------" >> "filelist.log"
 done
 
+# @TODO: Both of these have the same output showing what files are new/changed
+# and could be easily done, but offers no additional value:
+#   debdiff --from previous/*.deb --to *.deb
+#   debdiff previous/*.changes *.changes
+
 echo
 log_info "Create maintainer-scripts.log"
 for package in *.deb
@@ -119,10 +124,21 @@ if [ -d "previous" ]
 then
   for LOGFILE in *.log
   do
-    # For each log, create the diff but if there are no difference, remove the
-    # empty file
-    ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.log.diff" || rm "$LOGFILE.log.diff" &
+    # For each log, if a previous one with same name is found, create a diff
+    # file but if there are no difference, remove the empty file
+    if [ -f "previous/$LOGFILE" ]
+    then
+      ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.diff" || rm "$LOGFILE.diff" &
+    fi
   done
+
+  echo
+  log_info "Create diffoscope report comparing to previous build"
+  # Exit status is zero only if inputs are identical, so ignore exit code
+  diffoscope --html=diffoscope.html \
+    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
+    --exclude=previous --exclude=source \
+    . previous/ || true
 fi
 
 # Note: Command `dpkg-deb --info filename.deb` just lists package size and

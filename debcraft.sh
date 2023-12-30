@@ -176,8 +176,9 @@ then
   source "$DEBCRAFT_INSTALL_DIR/src/downloader.inc.sh"
 
   # shellcheck disable=SC2012
-  NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"
+  NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1 || true)"
   # Note! Use ctime above as dpkg-source will keep original mtime for packages
+  # and ensure it never emits exit codes, only text output
 
   # Remove shortest pattern from end of variable, e.g. 'xz-utils-5.2.4' -> 'xz-utils'
   # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
@@ -219,6 +220,9 @@ then
   exit 1
 fi
 
+# @TODO: If repository is a git clone, but not a `gbp clone`, it can be converted
+# to gbp with `gbp pull --verbose --ignore-branch --pristine-tar --track-missing`
+
 # Make sure sources are clean
 if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
 then
@@ -259,9 +263,7 @@ case "$ACTION" in
     source "$DEBCRAFT_INSTALL_DIR/src/release-dput.inc.sh"
     ;;
   prune)
-    # For debcraft-* containers: podman volume prune --force && podman system prune --force
-    # Delete also all mktemp generated directories, build dirs, caches etc
-    log_error "@TODO: Pruning not implemented"
-    exit 1
+    # shellcheck source=src/prune.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/prune.inc.sh"
     ;;
 esac

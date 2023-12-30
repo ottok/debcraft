@@ -62,7 +62,7 @@ case "$1" in
       fi
     elif [ -f /var/lib/command-not-found/commands.db ]
     then
-      PACKAGE="$(/usr/lib/command-not-found "$1" 2>&1 | grep --only-matching --perl-regexp "apt install \K([a-z0-9-]+)" | tail --lines=1 || true)"
+      PACKAGE="$(/usr/lib/command-not-found "$1" 2>&1 | grep --only-matching --perl-regexp "apt install \K([a-z0-9-\.]+)" | tail --lines=1 || true)"
       if [ -n "$PACKAGE" ]
       then
         log_info "Download source package '$PACKAGE' for command '$1'"
@@ -77,3 +77,6 @@ case "$1" in
     fi
     ;;
 esac
+
+# shellcheck disable=SC2035,SC2012 # globbing all files intentional
+log_info "Debcraft downloader created $(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1)"

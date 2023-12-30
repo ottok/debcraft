@@ -65,8 +65,16 @@ then
   do
     # For each log, create the diff but if there are no difference, remove the
     # empty file
-    ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.log.diff" || rm "$LOGFILE.log.diff" &
+    ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.diff" || rm "$LOGFILE.diff" &
   done
+
+  echo
+  log_info "Create diffoscope report comparing to previous build"
+  # Exit status is zero only if inputs are identical, so ignore exit code
+  diffoscope --html=diffoscope.html \
+    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
+    --exclude=previous --exclude=source \
+    . previous/ || true
 fi
 
 # Wait to ensure all processes that were backgrounded earlier have completed too

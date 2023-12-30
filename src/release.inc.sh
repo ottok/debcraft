@@ -61,6 +61,9 @@ then
   rmdir "$RELEASE_DIR/previous"
 fi
 
+# Clean up temporary mount directory from polluting build artifacts
+rmdir "$RELEASE_DIR/source"
+
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then

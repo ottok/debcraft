@@ -28,9 +28,13 @@ case "$DISTRIBUTION" in
       BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
     fi
     ;;
-  *)
-    # If DISTRIBUTION is defined, use it to set BASEIMAGE
+  *:*)
+    # If DISTRIBUTION is defined and has colon demarking components, use as-is
     BASEIMAGE="$DISTRIBUTION"
+    ;;
+  *)
+    # If DISTRIBUTION is defined in some other format, ensure it maps to BASEIMAGE
+    BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
 esac
 
 # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
@@ -120,7 +124,7 @@ log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAG
 # Previous successful builds that produced a .buildinfo file
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
 mapfile -t PREVIOUS_SUCCESSFUL_BUILDINFO_FILES < <(
-  ls --sort=time --format=single-column --group-directories-first --directory \
+  ls --sort=time --time=ctime --format=single-column --group-directories-first --directory \
     ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo \
     2> /dev/null
 )
