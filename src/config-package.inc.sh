@@ -129,6 +129,9 @@ mapfile -t PREVIOUS_SUCCESSFUL_BUILDINFO_FILES < <(
     2> /dev/null
 )
 
+# @TODO: If there are no previous builds of the same branch, check for _any_
+# previous builds of same package and suggest that as the comparison point
+
 # Convert into two arrays of path names
 PREVIOUS_SUCCESSFUL_BUILD_DIRS=()
 PREVIOUS_SUCCESSFUL_RELEASE_DIRS=()

@@ -29,6 +29,8 @@ VALIDATION_ERRORS=()
 # @TODO: find -name *.md -exec aspell --mode=markdown -c "{}" +;
 # @TODO: hunspell -d en_US debian/changelog # interactive mode
 
+# @TODO: For each manpage run: MANROFFSEQ='' MANWIDTH=80 man --warnings -E UTF-8 -l -Tutf8 -Z $MANPAGE >/dev/null
+
 # @TODO: suspicious-source --verbose --directory . # no output if no findings, and most findings false positives
 
 # @TODO: 'duck -v --color=always' check validity or URLS in debian/control, debian/upstream, debian/copyright etc
@@ -36,6 +38,9 @@ VALIDATION_ERRORS=()
 # @TODO: adequate # Findings for listdc++6 and libc6 out-of-the-box, but could
 # be useful if current package installed and added to
 # '/var/lib/adequate/pending' for limiting checks to it
+
+# @TODO: Run autopkgtest inside container: autopkgtest -- null
+# @TODO: However, autopkgtest need root to install dependencies first, so might need custom container
 
 # @TODO: licensecheck # only lists what licenses if found without actually
 # validating anything about debian/copyright correctness
