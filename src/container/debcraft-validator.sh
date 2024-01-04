@@ -9,4 +9,102 @@ set -o pipefail
 # show commands (debug)
 #set -x
 
-echo "Nothing to validate here yet!"
+# shellcheck source=src/container/output.inc.sh
+source "/output.inc.sh"
+
+VALIDATION_ERRORS=()
+
+# @TODO: Nag if remote git branches for debian/upstream/pristine-tar have newer stuff than locally (risk for new local changes to be in vain)
+
+# @TODO: Nag if git tags are missing for past debian/changelog releases (i.e. forgot to run 'gbp tag')
+
+# @TODO: Nag if local git tags have not been pushed (i.e. forgot to run 'gbp push')
+
+# @TODO: codespell --interactive=0 --check-filenames --check-hidden debian/
+# @TODO: ^ automatically fix with extra parameter --write
+# @TODO: find * -type f | xargs spellintian --picky
+# @TODO: enchant-2 -d en -a debian/changelog # ispell line format, does not work for a human
+# @TODO: aspell -d en -c debian/changelog # interactive mode, checks whole file not just latest entry
+# @TODO: aspell --mode=debctrl -c debian/control
+# @TODO: find -name *.md -exec aspell --mode=markdown -c "{}" +;
+# @TODO: hunspell -d en_US debian/changelog # interactive mode
+
+# @TODO: For each manpage run: MANROFFSEQ='' MANWIDTH=80 man --warnings -E UTF-8 -l -Tutf8 -Z $MANPAGE >/dev/null
+
+# @TODO: suspicious-source --verbose --directory . # no output if no findings, and most findings false positives
+
+# @TODO: 'duck -v --color=always' check validity or URLS in debian/control, debian/upstream, debian/copyright etc
+
+# @TODO: adequate # Findings for listdc++6 and libc6 out-of-the-box, but could
+# be useful if current package installed and added to
+# '/var/lib/adequate/pending' for limiting checks to it
+
+# @TODO: Run autopkgtest inside container: autopkgtest -- null
+# @TODO: However, autopkgtest need root to install dependencies first, so might need custom container
+
+# @TODO: licensecheck # only lists what licenses if found without actually
+# validating anything about debian/copyright correctness
+
+# @TODO: find -name *.pot -exec i18nspector "{}" +; find -name *.po -exec i18nspector "{}" +;
+
+# @TODO: blhc --all --debian --line-numbers --color *.build
+# or alternatively as Salsa-CI uses: blhc --debian --line-numbers --color ${SALSA_CI_BLHC_ARGS} ${WORKING_DIR}/*.build || [ $? -eq 1 ]
+# However both versions result in blhc outputting 'No compiler commands' so I am not sure if it works at all?
+
+# @TODO: diffoscope --html report.html old.deb new.deb
+
+log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
+if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
+then
+  log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
+  find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
+  sort debian/patches/series > /tmp/patches-series-sorted
+  diff --side-by-side /tmp/patches-series-sorted /tmp/patches-directory-sorted
+  VALIDATION_ERRORS+=('patches-mismatch')
+fi
+
+log_info "Validating that the files in debian/ are properly formatted and sorted..."
+if [ -n "$(wrap-and-sort --wrap-always --dry-run)" ]
+then
+  log_error "The directory debian/ contains files that could be automatically formatted and sorted with 'wrap-and-sort':"
+  wrap-and-sort --wrap-always --dry-run
+  VALIDATION_ERRORS+=('wrap-and-sort')
+fi
+
+log_info "Validating that the debian/rules can be parsed by Make..."
+if ! make --dry-run --makefile=debian/rules > /dev/null
+then
+  log_error "Make fails to parse the debian/rules file:"
+  make --dry-run --makefile=debian/rules
+  VALIDATION_ERRORS+=('debian-rules-syntax')
+fi
+
+if ! head --lines=1 debian/rules | grep --quiet -F '#!/usr/bin/make -f'
+then
+  log_error "Debian policy violation: debian/rules must start with '#!/usr/bin/make -f'"
+  log_error "https://www.debian.org/doc/debian-policy/ch-source.html#main-building-script-debian-rules"
+  VALIDATION_ERRORS+=('debian-rules-makefile')
+fi
+
+log_info "Validating that all shell scripts in debian/rules pass Shellcheck..."
+# End with  '|| true' to avoid emitting error codes in case no files were found
+SH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/sh' | sort -u | cut -d ':' -f 1 || true)"
+BASH_SCRIPTS="$(grep -Irnw debian/ -e '^#!.*/bash' | sort -u | cut -d ':' -f 1 || true)"
+if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
+then
+  # shellcheck disable=SC2086 # intentional expansion of arguments
+  if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || ! shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
+  then
+    log_error "Shellcheck reported issues, please run it manually"
+    VALIDATION_ERRORS+=('shellcheck')
+
+    # @TODO: Automatically fix by applying diff from `shellcheck -x --enable=all --format=diff`
+  fi
+fi
+
+# Emit non-zero exit code if there was errors
+if [ -n "${VALIDATION_ERRORS[*]}" ]
+then
+  log_error "Failed on errors: ${VALIDATION_ERRORS[*]}"
+  exit 1
+fi

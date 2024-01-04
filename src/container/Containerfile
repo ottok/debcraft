@@ -3,27 +3,44 @@ FROM debian:sid
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Debian build essentials and Debcraft essentials
+# Unfortunately this is almost 500 MB but here is no way around it. Luckily due
+# to caching all rebuilds and all later containers will build much faster.
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
-    devscripts \
-    equivs \
-    curl \
     ccache \
+    curl \
+    devscripts \
+    eatmydata \
+    equivs \
     git \
     git-buildpackage \
-    pristine-tar \
-    eatmydata \
-    lintian
+    lintian \
+    pristine-tar
 
-RUN update-ccache-symlinks
-RUN mkdir --verbose --parents ccache
-RUN ccache --show-stats
+# Validator dependencies
+RUN apt-get install --yes --no-install-recommends \
+  python3-debian \
+  shellcheck \
+  diffoscope-minimal
 
 COPY control /
 RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
-COPY debcraft-builder.sh /debcraft-builder
-COPY debcraft-validator.sh /debcraft-validator
-COPY debcraft-releaser.sh /debcraft-releaser
-RUN chmod +x /debcraft-*
+# Should be automatic and not needed at all, but run one more time just to be sure
+RUN update-ccache-symlinks
+
+# Older ccache does not support '--verbose' but will print stats anyway, just
+# followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
+# "Bullseye") however require '--verbose' to show any cache hit stats at all.
+RUN ccache --show-stats  --verbose || true
+
+# Enable source repositories so debcraft-downloader can work
+COPY enable-source-repositories.sh /enable-source-repositories
+RUN /enable-source-repositories
+
+RUN apt-get install --yes command-not-found && \
+    apt-get update
+
+COPY *.sh /
