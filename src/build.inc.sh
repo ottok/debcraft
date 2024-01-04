@@ -7,12 +7,11 @@ CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
 # would create it anyway
 mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
 
-# @TODO: Perhaps this can be removed as unnecessary?
 # Instead of plain 'chown -R' use find and only apply chmod on files that need
-# it to avoid excess disk writes and ctime updates in vain. Use 'edecdir' as
+# it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as
 # safer option to 'exec' and use the variant ending with plus so any non-zero
 # exit code will be surfaced and calling script aborted.
-#find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
 
 # Copy sources if requested
 if [ -n "$COPY" ]
@@ -110,6 +109,7 @@ if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
+  log_info "  browse $BUILD_DIR/diffoscope.html"
 fi
 
 # @TODO: Give tips on how/what to review and across which versions (e.g.

@@ -49,8 +49,6 @@ fi
 
 if [ -n "$FAILURE" ]
 then
-  tail "$CONTAINER_DIR"/*.log
-  echo
-  log_error "Container build failed - see logs in $CONTAINER_DIR for details"
+  log_error "Container build failed - see output above for details"
   exit 1
 fi

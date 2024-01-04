@@ -1,3 +1,8 @@
+#!/usr/bin/make -f
+# SPDX-FileCopyrightText: 2024 Otto Kekäläinen <otto@debian.org>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Ensure errors are emitted past the pipes to tee
 SHELL=/bin/bash -o pipefail
 
@@ -8,7 +13,6 @@ all: build test install
 build-depends:
 	@echo "Check all build dependencies are present"
 	dpkg -l | grep -e codespell -e shellcheck - help2man
-
 
 test: test-static test-debcraft
 

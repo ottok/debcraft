@@ -10,7 +10,7 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft [options] <build|validate|release|prune> [<path|pkg|srcpkg|dsc|git-url>]"
+  echo "usage: debcraft [options] <build|validate|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
   echo
   echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
   echo "as a subargument any of:"
@@ -21,7 +21,8 @@ display_help() {
   echo "  * git http(s) or ssh url that can be downloaded and built"
   echo
   echo "The commands 'validate' and 'release' are intended to be used to finalilze"
-  echo "a package build. The command 'prune' will clean up temporary files by Debcraft."
+  echo "a package build. The command 'shell' can be used to pay around in the container"
+  echo "and 'prune' will clean up temporary files by Debcraft."
   echo
   echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
@@ -113,7 +114,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | validate | release | prune)
+    build | validate | release | shell | prune)
       export ACTION="$1"
       shift
       ;;
@@ -261,6 +262,10 @@ case "$ACTION" in
     source "$DEBCRAFT_INSTALL_DIR/src/release-ppa.inc.sh"
     # shellcheck source=src/release-dput.inc.sh
     source "$DEBCRAFT_INSTALL_DIR/src/release-dput.inc.sh"
+    ;;
+  shell)
+    # shellcheck source=src/shell.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/shell.inc.sh"
     ;;
   prune)
     # shellcheck source=src/prune.inc.sh

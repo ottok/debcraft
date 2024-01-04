@@ -15,6 +15,7 @@ SEPARATOR="$(printf "%$(tput cols)s" | sed 's/ /=/g')"
 function debcraft_test() {
   COMMAND_TO_TEST="$1"
   EXPECTED_OUTPUT_LAST_LINE_START="$2"
+  IGNORE_NONZERO_EXIT_CODE="$3"
 
   ((TEST_NUMBER=TEST_NUMBER+1))
 
@@ -22,8 +23,13 @@ function debcraft_test() {
   echo "Executing test number $TEST_NUMBER (debcraft $COMMAND_TO_TEST)..."
   echo
 
-  eval "$DEBCRAFT_CMD $COMMAND_TO_TEST" | tee "$TEMPDIR/test-$TEST_NUMBER.log" || echo "WARNING: Exit code not zero"
-  RET=$?
+  eval "$DEBCRAFT_CMD $COMMAND_TO_TEST" | tee "$TEMPDIR/test-$TEST_NUMBER.log" || RET=$?
+
+  # Reset exit code to zero if test should not fail on it
+  if [ -n "$IGNORE_NONZERO_EXIT_CODE" ]
+  then
+    RET=''
+  fi
 
   # Get last line and strip colors and other ANSI codes
   TEST_OUTPUT_LAST_LINE="$(tail --lines=1 "$TEMPDIR/test-$TEST_NUMBER.log" | sed -e 's/\x1b\[[0-9;]*[mK]//g')"
@@ -36,12 +42,11 @@ function debcraft_test() {
 
   # Note wildcard at end - the expected result only needs to match the start
   if [[ "$TEST_OUTPUT_LAST_LINE" == "$EXPECTED_OUTPUT_LAST_LINE_START_START"* ]] && \
-     [[ "$RET" == 0 ]]
+     [ -z "$RET" ]
   then
     echo "TEST PASSED"
   else
-    echo "ERROR: TEST FAILED"
-    echo "Exit code: $RET"
+    echo "ERROR: TEST FAILED (exit code $RET)"
     echo "For full test log see $TEMPDIR/test-$TEST_NUMBER.log"
     exit 1
   fi
@@ -60,12 +65,12 @@ cd "$TEMPDIR" || exit 1
 
 echo "Using directory $TEMPDIR for logs and artifacts in "
 
-debcraft_test "help" "and https://www.debian.org/doc/debian-policy/"
+debcraft_test "help" "and https://www.debian.org/doc/debian-policy/" IGNORE_NONZERO_EXIT_CODE
 
 # Prepare test git repository
 # @TODO: Clone remote only if needed, otherwise reuse local clones
 echo "$SEPARATOR" # Extra separator for test bed modifications
-gbp clone --pristine-tar --debian-branch=master ~/debian/entr/pkg-entr/entr
+gbp clone --pristine-tar --debian-branch=debian/latest ~/debian/entr/pkg-entr/entr
 debcraft_test "build entr" "Artifacts at"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications

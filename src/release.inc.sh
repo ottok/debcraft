@@ -22,7 +22,7 @@ mkdir --parents "$RELEASE_DIR/source"
 # Note use of RELEASE directory, *not* BUILD
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
-  log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}"
+  log_info "Previous release was in ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}"
   mkdir --parents "$RELEASE_DIR/previous"
   CONTAINER_RUN_ARGS=" --volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/previous $CONTAINER_RUN_ARGS"
 fi
@@ -78,4 +78,5 @@ if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]} $RELEASE_DIR &"
+  log_info "  browse $RELEASE_DIR/diffoscope.html"
 fi

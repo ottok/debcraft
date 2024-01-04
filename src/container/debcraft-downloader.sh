@@ -31,6 +31,9 @@ case "$1" in
     ;;
 
   *.dsc)
+    # @TODO: Currently this supports only local .dsc files, but to be useful
+    # for easy mentors.debian.net workflow, it should also support remote .dsc
+    # files like dget does
     log_info "Unpack $1 and associated Debian and source tar packages with 'dpkg-source'"
     # Use Debian source .dcs control file
     dpkg-source --extract "$1"
