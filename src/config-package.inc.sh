@@ -24,8 +24,16 @@ case "$DISTRIBUTION" in
       then
         DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --offset=1 --count=1)"
       fi
-      # Let function map dpkg-parsechangelog value to a sensible baseimage
-      BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
+
+      # If really on UNRELEASED was only option, default to debian:sid, which
+      # is a possible scenario and sensible action on completely new packages
+      if [ -z "$DISTRIBUTION" ]
+      then
+        BASEIMAGE="debian:sid"
+      else
+        # Let function map dpkg-parsechangelog value to a sensible baseimage
+        BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
+      fi
     fi
     ;;
   *:*)
