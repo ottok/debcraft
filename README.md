@@ -4,7 +4,7 @@ Debcraft is a tool for developers to make high quality Debian packages effortles
 
 The core design principles are:
 1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the beat practices in software development.
-2. Use git, git-buildpackage and quilt as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
+2. Use [git](https://tracker.debian.org/pkg/git), [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
 3. **Use Linux containers** (not chroot like traditional Debian tools do) for improved isolation, security and reproducibility.
 4. **Create build environment containers on the fly** so users don't need to plan ahead what containers or chroots to have.
 5. **Be extremely fast** in what users are likely to spend most of their time on: rebuilds.
