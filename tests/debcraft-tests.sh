@@ -70,7 +70,7 @@ debcraft_test "help" "and https://www.debian.org/doc/debian-policy/" IGNORE_NONZ
 # Prepare test git repository
 # @TODO: Clone remote only if needed, otherwise reuse local clones
 echo "$SEPARATOR" # Extra separator for test bed modifications
-gbp clone --pristine-tar --debian-branch=debian/latest ~/debian/entr/pkg-entr/entr
+gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
 debcraft_test "build entr" "Artifacts at"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
@@ -88,12 +88,22 @@ git clean -fdx
 rm --recursive --force --verbose .git
 debcraft_test "build" "  meld /tmp"
 
+cd ..
+
+mkdir hello-debhelper
+cd hello-debhelper
+for FILE in https://archive.debian.org/debian/pool/main/h/hello-debhelper/hello-debhelper_2.9.1.{tar.xz,dsc}
+do
+  curl -LO "$FILE"
+done
+debcraft_test "build hello-debhelper_2.9.1.dsc"
+
 # Run remaining tests from top-level
 cd ..
 
 debcraft_test "build molly-guard" "Artifacts at"
 
-debcraft_test "build https://salsa.debian.org/patryk/libnitrokey.git" "Artifacts at"
+debcraft_test "build https://salsa.debian.org/patryk/qnapi.git" "Artifacts at"
 
 echo "$SEPARATOR"
 echo "Success! All $TEST_NUMBER Debcraft tests passed."

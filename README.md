@@ -28,67 +28,45 @@ ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 
 ```
 $ debcraft build
-Running in path /home/otto/debian/entr/pkg-entr/entr that has Debian package sources for 'entr'
+Running in path ~/entr/entr that has Debian package sources for 'entr'
 Use 'podman' container image 'debcraft-entr-debian-sid' for package 'entr'
-Building container 'debcraft-entr-debian-sid' in '/home/otto/debian/entr/pkg-entr/debcraft-container-entr' for build ID '1703089647.a4117db+master'
-STEP 1/14: FROM debian:sid
+Building container 'debcraft-entr-debian-sid' in '~/entr/debcraft-container-entr' for build ID '1705046461.1964390+debian.latest'
+STEP 1/12: FROM debian:sid
 ...
 COMMIT debcraft-entr-debian-sid
---> 2c907056c5f
+--> d9975574b37
 Successfully tagged localhost/debcraft-entr-debian-sid:latest
-2c907056c5f0aea133329f92316bec70270ba8f505361b6d77b95329626763c2
-Previous build was in ../debcraft-build-entr-1703089512.a4117db+master
-Building package in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master
-Obey DEB_BUILD_OPTIONS=''
+d9975574b37ac5ff5fd1874ee935a8d35152126798d339a53c076cd0461c9354
+Previous build was in ~/entr/debcraft-build-entr-1705046398.1964390+debian.latest
+Building package at ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest
+Running 'dpkg-buildpackage --build=any,all' to create .deb packages
 gbp:info: Performing the build
 dpkg-buildpackage: info: source package entr
-dpkg-buildpackage: info: source version 5.3-1
+dpkg-buildpackage: info: source version 5.5-1
 dpkg-buildpackage: info: source distribution unstable
 dpkg-buildpackage: info: source changed by Otto Kekäläinen <otto@debian.org>
  dpkg-source --before-build .
-dpkg-buildpackage: info: host architecture amd64
-dpkg-source: info: using patch list from debian/patches/series
-dpkg-source: info: applying libbsd-overlay.patch
-dpkg-source: info: applying kfreebsd-support.patch
-dpkg-source: info: applying debug-system-test.patch
-dpkg-source: info: applying simplified-build-test.patch
-dpkg-source: info: applying system-test-fixes.patch
- debian/rules clean
-dh clean --buildsystem=makefile
-   dh_auto_clean -O--buildsystem=makefile
-   dh_autoreconf_clean -O--buildsystem=makefile
-   dh_clean -O--buildsystem=makefile
- debian/rules binary
-dh binary --buildsystem=makefile
-   dh_update_autotools_config -O--buildsystem=makefile
-   dh_autoreconf -O--buildsystem=makefile
-   debian/rules override_dh_auto_configure
+...
+make -j4 "INSTALL=install --strip-program=true"
 make[1]: Entering directory '/tmp/build/source'
-ln -sf Makefile.linux Makefile
-make[1]: Leaving directory '/tmp/build/source'
-   dh_auto_build -O--buildsystem=makefile
-	make -j8 "INSTALL=install --strip-program=true"
-make[1]: Entering directory '/tmp/build/source'
-cc -g -O2 -ffile-prefix-map=/tmp/build/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.3\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
+cc -g -O2 -ffile-prefix-map=/tmp/build/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.5\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
+entr.c: In function ‘print_child_status’:
+entr.c:289:9: warning: ignoring return value of ‘write’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  289 |         write(STDOUT_FILENO, buf, len);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 entr.c: In function ‘run_utility’:
-entr.c:416:17: warning: ignoring return value of ‘realpath’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-  416 |                 realpath(leading_edge->fn, arg_buf);
+entr.c:433:17: warning: ignoring return value of ‘realpath’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  433 |                 realpath(leading_edge->fn, arg_buf);
       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 make[1]: Leaving directory '/tmp/build/source'
-   dh_auto_test -O--buildsystem=makefile
-	make -j8 test
-make[1]: Entering directory '/tmp/build/source'
-ls entr.1 | ./entr -zns 'wc $0'
- 184  927 5126 /tmp/build/source/entr.1
-sh returned exit code 0
-make[1]: Leaving directory '/tmp/build/source'
+dh: command-omitted: The call to "dh_auto_test -O--buildsystem=makefile" was omitted due to "DEB_BUILD_OPTIONS=nocheck"
    create-stamp debian/debhelper-build-stamp
    dh_testroot -O--buildsystem=makefile
    dh_prep -O--buildsystem=makefile
    debian/rules override_dh_auto_install
 make[1]: Entering directory '/tmp/build/source'
 dh_auto_install -- PREFIX=/usr
-	make -j8 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
+	make -j4 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
 make[2]: Entering directory '/tmp/build/source'
 install entr /tmp/build/source/debian/entr/usr/bin
 install -m 644 entr.1 /tmp/build/source/debian/entr/usr/share/man/man1
@@ -112,14 +90,13 @@ make[1]: Leaving directory '/tmp/build/source'
    dh_gencontrol -O--buildsystem=makefile
    dh_md5sums -O--buildsystem=makefile
    dh_builddeb -O--buildsystem=makefile
-dpkg-deb: building package 'entr' in '../entr_5.3-1_amd64.deb'.
-dpkg-deb: building package 'entr-dbgsym' in '../entr-dbgsym_5.3-1_amd64.deb'.
- dpkg-genbuildinfo --build=binary -O../entr_5.3-1_amd64.buildinfo
- dpkg-genchanges --build=binary -O../entr_5.3-1_amd64.changes
+dpkg-deb: building package 'entr' in '../entr_5.5-1_amd64.deb'.
+ dpkg-genbuildinfo --build=binary -O../entr_5.5-1_amd64.buildinfo
+ dpkg-genchanges --build=binary -O../entr_5.5-1_amd64.changes
 dpkg-genchanges: info: binary-only upload (no source code included)
  dpkg-source --after-build .
+dpkg-source: info: unapplying fix-spelling.patch
 dpkg-source: info: unapplying system-test-fixes.patch
-dpkg-source: info: unapplying simplified-build-test.patch
 dpkg-source: info: unapplying debug-system-test.patch
 dpkg-source: info: unapplying kfreebsd-support.patch
 dpkg-source: info: unapplying libbsd-overlay.patch
@@ -127,7 +104,7 @@ dpkg-buildpackage: info: binary-only upload (no source included)
 Cache directory:    /.ccache
 Config file:        /.ccache/ccache.conf
 System config file: /etc/ccache.conf
-Stats updated:      Wed Dec 20 16:27:30 2023
+Stats updated:      Fri Jan 12 08:01:04 2024
 Local storage:
   Cache size (GiB): 0.0 / 5.0 ( 0.00%)
   Files:              0
@@ -135,24 +112,29 @@ Local storage:
   Misses:             0
   Reads:              0
   Writes:             0
+
 Create lintian.log
+
 Create filelist.log
 
-Build completed in 5 seconds and created:
-total 64K
- 20K entr-dbgsym_5.3-1_amd64.deb
-8.0K entr_5.3-1_amd64.build
-8.0K entr_5.3-1_amd64.buildinfo
-4.0K entr_5.3-1_amd64.changes
- 20K entr_5.3-1_amd64.deb
+Create maintainer-scripts.log
+
+Create diffoscope report comparing to previous build
+
+Build completed in 10 seconds and created:
+total 72K
+ 32K diffoscope.html
+4.0K entr_5.5-1_amd64.build
+8.0K entr_5.5-1_amd64.buildinfo
+4.0K entr_5.5-1_amd64.changes
+ 20K entr_5.5-1_amd64.deb
 4.0K filelist.log
    0 lintian.log
 
-Build 1703089647.a4117db+master of entr completed successfully
-Results visible in /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master
-You can use for example:
-  meld ../debcraft-build-entr-1703089512.a4117db+master /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master &
-  browse /home/otto/debian/entr/pkg-entr/debcraft-build-entr-1703089647.a4117db+master/diffoscope.html
+Artifacts at ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest
+To compare build artifacts with those of previous similar build you can use for example:
+  meld ~/entr/debcraft-build-entr-1705046398.1964390+debian.latest ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest &
+  browse ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest/diffoscope.html
 ```
 
 ## Documentation
@@ -261,4 +243,4 @@ Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craf
 
 ## Licence
 
-Debcraft is free and open source software as published under GPL vesion 3.
+Debcraft is free and open source software as published under GPL version 3.

@@ -22,6 +22,12 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # Mimic debuild log file naming
 BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
 
+# @TODO: If pristine-tar branch exists, attempt to export so when package builds
+# it would already have access to upstream source tarball and signature so they
+# are used
+#log_info "Create original source package and signature using pristine-tar"
+#pristine-tar checkout ../entr_5.5.orig.tar.gz -s ../entr_5.5.orig.tar.gz.asc
+
 # Passed to dpkg-source:
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)
 #   --tar-ignore (-I, passing ignores to tar)
