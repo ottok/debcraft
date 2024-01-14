@@ -67,16 +67,16 @@ rmdir "$RELEASE_DIR/source"
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Source build failed - see logs in $RELEASE_DIR for details"
+  log_error "Source build failed - see logs in file://$RELEASE_DIR for details"
   exit 1
 fi
 
 echo
-log_info "Artifacts at $RELEASE_DIR"
+log_info "Artifacts at file://$RELEASE_DIR"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]} $RELEASE_DIR &"
-  log_info "  browse $RELEASE_DIR/diffoscope.html"
+  log_info "  browse file://$RELEASE_DIR/diffoscope.html"
 fi

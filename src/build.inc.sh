@@ -71,6 +71,8 @@ fi
 # @TODO: Using --userns=keep-id is slow, check if using mount flag U can help:
 # https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
 
+# @TODO: Lintian supports build artifacts both in '..' and in '../build-area'
+
 if [ -n "$DEBUG" ]
 then
   set +x
@@ -93,7 +95,7 @@ fi
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Build failed - see logs in $BUILD_DIR for details"
+  log_error "Build failed - see logs in file://$BUILD_DIR for details"
   exit 1
 fi
 
@@ -103,13 +105,13 @@ notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgen
 paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
 
 echo
-log_info "Artifacts at $BUILD_DIR"
+log_info "Artifacts at file://$BUILD_DIR"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
-  log_info "  browse $BUILD_DIR/diffoscope.html"
+  log_info "  browse file://$BUILD_DIR/diffoscope.html"
 fi
 
 # @TODO: Give tips on how/what to review and across which versions (e.g.

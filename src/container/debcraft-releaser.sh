@@ -46,7 +46,7 @@ log_info "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile. Show info and overrides to be as verbose as possible.
-lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental --show-overrides | tee -a "../lintian.log" || true
+lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental --show-overrides ../*.changes | tee -a "../lintian.log" || true
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current
 # branch (adhering to gbp.conf) this script could additionally draft a
@@ -80,7 +80,7 @@ then
   diffoscope --html=diffoscope.html \
     --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
     --exclude=previous --exclude=source \
-    . previous/ || true
+    previous/ . || true
 fi
 
 # Wait to ensure all processes that were backgrounded earlier have completed too

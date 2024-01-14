@@ -70,7 +70,7 @@ log_info "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian --verbose -EvIL +pedantic --color=always | tee -a "../lintian.log" || true
+lintian --verbose -EvIL +pedantic --color=always ../*.changes | tee -a "../lintian.log" || true
 
 # @TODO: Run Lintian in background (with & and later run 'wait') so that the
 # filelist log can be created in parallel? Will it make overall progress faster?
@@ -92,6 +92,8 @@ done
 # and could be easily done, but offers no additional value:
 #   debdiff --from previous/*.deb --to *.deb
 #   debdiff previous/*.changes *.changes
+
+# @TODO: Log output of `ldd -v` for each binary to track how dynamic dependencies change?
 
 echo
 log_info "Create maintainer-scripts.log"
@@ -138,7 +140,7 @@ then
   diffoscope --html=diffoscope.html \
     --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
     --exclude=previous --exclude=source \
-    . previous/ || true
+    previous/ . || true
 fi
 
 # Note: Command `dpkg-deb --info filename.deb` just lists package size and
