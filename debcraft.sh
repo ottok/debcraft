@@ -129,7 +129,7 @@ done
 if [ -z "$ACTION" ]
 then
   # IF ACTION isempty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|validate|release|prune>"
+  log_error "Argument '$TARGET' not one of <build|validate|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -215,10 +215,14 @@ fi
 
 log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
 
-if [ -z "$COPY" ] && [ -d "$PWD/.git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+# Make sure sources are clean on actions that depend on it
+if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
 then
-  log_error "Git repository is not clean, cannot proceed building unless --clean or --copy is used."
-  exit 1
+  if [ -z "$COPY" ] && [ -d "$PWD/.git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+  then
+    log_error "Git repository is not clean, cannot proceed building unless --clean or --copy is used."
+    exit 1
+  fi
 fi
 
 # @TODO: If repository is a git clone, but not a `gbp clone`, it can be converted
