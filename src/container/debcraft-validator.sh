@@ -53,14 +53,18 @@ VALIDATION_ERRORS=()
 
 # @TODO: diffoscope --html report.html old.deb new.deb
 
-log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
-if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
+# Skip test if there are no patches
+if [ -f debian/patches/series ]
 then
-  log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
-  find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
-  sort debian/patches/series > /tmp/patches-series-sorted
-  diff --side-by-side /tmp/patches-series-sorted /tmp/patches-directory-sorted
-  VALIDATION_ERRORS+=('patches-mismatch')
+  log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
+  if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
+  then
+    log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
+    find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
+    sort debian/patches/series > /tmp/patches-series-sorted
+    diff --side-by-side /tmp/patches-series-sorted /tmp/patches-directory-sorted
+    VALIDATION_ERRORS+=('patches-mismatch')
+  fi
 fi
 
 log_info "Validating that the files in debian/ are properly formatted and sorted..."
