@@ -28,6 +28,7 @@ cp debian/control "$CONTAINER_DIR/control"
 if [ -n "$CLEAN" ]
 then
   CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
+  log_debug_var CONTAINER_BUILD_ARGS
 fi
 
 # Podman does not need '--file=Containerfile', but needed for Docker compatibility

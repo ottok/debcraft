@@ -6,8 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Debian build essentials and Debcraft essentials
 # Unfortunately this is almost 500 MB but here is no way around it. Luckily due
 # to caching all rebuilds and all later containers will build much faster.
-RUN apt-get update && \
-    apt-get install --yes --no-install-recommends \
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
     ccache \
     curl \
     devscripts \
@@ -20,14 +20,15 @@ RUN apt-get update && \
     pristine-tar
 
 # Validator dependencies
-RUN apt-get install --yes --no-install-recommends \
+RUN apt-get install -q --yes --no-install-recommends \
   diffoscope-minimal \
   python3-debian \
   shellcheck \
   xxd
 
 COPY control /
-RUN DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
+RUN apt-get update -q && \
+    DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
 # Should be automatic and not needed at all, but run one more time just to be sure
@@ -42,7 +43,7 @@ RUN ccache --show-stats  --verbose || true
 COPY enable-source-repositories.sh /enable-source-repositories
 RUN /enable-source-repositories
 
-RUN apt-get install --yes command-not-found && \
-    apt-get update
+RUN apt-get install -q --yes command-not-found && \
+    apt-get update -q
 
 COPY *.sh /
