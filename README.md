@@ -2,29 +2,62 @@
 
 Debcraft is a tool for developers to make high quality Debian packages effortlessly.
 
-The core design principles are:
-1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the beat practices in software development.
-2. Use [git](https://tracker.debian.org/pkg/git), [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
-3. **Use Linux containers** (not chroot like traditional Debian tools do) for improved isolation, security and reproducibility.
-4. **Create build environment containers on the fly** so users don't need to plan ahead what containers or chroots to have.
-5. **Be extremely fast** in what users are likely to spend most of their time on: rebuilds.
-6. **Store logs and artifacts from builds and help users review changes** between builds and package versions to maximize users' understanding of how their changes affect the outcome.
-7. **Don't expect users to run the latest version of Debian** or even Debian or Ubuntu at all. The barrier to run Debcraft should be as low as possible, so that anyone can participate in debugging Debian package builds and improving them.
-8. **Encourage users to collaborate** and submit improvements upstream and on Salsa instead of just making their own private Debian packages.
-9. **Teach users about the Debian policy** gradually and in context, so that over time users grow towards Debian maintainership.
+> **Alpha quality!** Please test out Debcraft and share your feedback. Bug reports at https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
+>
+> * Documentation: Is it easy to start using Debcraft? How could the documentation be clarified further?
+> * Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Does the features and code architecture make sense?
+> * Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
 
+## Usage
 
-## Installation
-
-For the time being Debcraft is not available in the Debian repositories or even as a package at all. To use it, simply clone the git repository and link the script from any directory you have in your `$PATH`, such as `$HOME/bin`
+### Typical usage examples
 
 ```
-git clone
-cd debcraft
-ln -s ${PWD}/debcraft.sh ~/bin/debcraft
+debcraft build <package name to be downloaded>
+debcraft build --distribution bullseye --container-command docker <package>
+debcraft build <path to Debian sources>
+debcraft build --clean <path to Debian sources>
+DEBCRAFT_PPA=ppa:otto/ppa debcraft release <path to sources>
+DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build mariadb
 ```
 
-## Use examples
+### Command reference
+
+```
+$ debcraft --help
+usage: debcraft [options] <build|validate|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]
+
+Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
+as a subargument any of:
+  * path to directory with program sources including a debian/ subdirectory
+    with the Debian packaging instructions
+  * path to a .dsc file and source tarballs that can be built into a .deb
+  * Debian package name, or source package name, that apt can download
+  * git http(s) or ssh url that can be downloaded and built
+
+The commands 'validate' and 'release' are intended to be used to finalilze
+a package build. The command 'shell' can be used to pay around in the container
+and 'prune' will clean up temporary files by Debcraft.
+
+In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
+be honored (currently DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym').
+Note that Debcraft builds never runs as root, and thus packages with
+DEB_RULES_REQUIRES_ROOT are not supported.
+
+optional arguments:
+  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
+  --distribution       Linux distribution to build in (default: debian:sid)
+  --container-command  container command to use (default: podman)
+  --clean              ensure container base is updated and sources clean
+  -h, --help           display this help and exit
+  --version            display version and exit
+
+To gain more Debian Developer knowledge, please read
+https://www.debian.org/doc/manuals/developers-reference/
+and https://www.debian.org/doc/debian-policy/
+```
+
+## Example output from build
 
 ```
 $ debcraft build
@@ -137,57 +170,34 @@ To compare build artifacts with those of previous similar build you can use for 
   browse ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest/diffoscope.html
 ```
 
-## Documentation
+## Installation
 
-See `debcraft --help` for detailed usage instructions.
+For the time being Debcraft is not available in the Debian repositories or even as a package at all. To use it, simply clone the git repository and link the script from any directory you have in your `$PATH`, such as `$HOME/bin`
 
 ```
-$ debcraft --help
-usage: debcraft [options] <build|validate|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]
-
-Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
-as a subargument any of:
-  * path to directory with program sources including a debian/ subdirectory
-    with the Debian packaging instructions
-  * path to a .dsc file and source tarballs that can be built into a .deb
-  * Debian package name, or source package name, that apt can download
-  * git http(s) or ssh url that can be downloaded and built
-
-The commands 'validate' and 'release' are intended to be used to finalilze
-a package build. The command 'shell' can be used to pay around in the container
-and 'prune' will clean up temporary files by Debcraft.
-
-In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym').
-Note that Debcraft builds never runs as root, and thus packages with
-DEB_RULES_REQUIRES_ROOT are not supported.
-
-optional arguments:
-  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
-  --distribution       Linux distribution to build in (default: debian:sid)
-  --container-command  container command to use (default: podman)
-  --clean              ensure container base is updated and sources clean
-  -h, --help           display this help and exit
-  --version            display version and exit
-
-To gain more Debian Developer knowledge, please read
-https://www.debian.org/doc/manuals/developers-reference/
-and https://www.debian.org/doc/debian-policy/
+git clone
+cd debcraft
+ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 ```
 
 ## Debian package
 
 The Debian package has intentionally not been created yet. For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
 
-## Feedback requested
+## Development
 
-Please test out Debcraft and share your feedback. Bug reports at https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
+### Design tenets
 
-* Documentation: Is it easy to start using Debcraft? How could the documentation be clarified further?
-* Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Does the features and code architecture make sense?
-* Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
-
-## Additional information
+The core design principles are:
+1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the beat practices in software development.
+2. Use [git](https://tracker.debian.org/pkg/git), [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
+3. **Use Linux containers** (not chroot like traditional Debian tools do) for improved isolation, security and reproducibility.
+4. **Create build environment containers on the fly** so users don't need to plan ahead what containers or chroots to have.
+5. **Be extremely fast** in what users are likely to spend most of their time on: rebuilds.
+6. **Store logs and artifacts from builds and help users review changes** between builds and package versions to maximize users' understanding of how their changes affect the outcome.
+7. **Don't expect users to run the latest version of Debian** or even Debian or Ubuntu at all. The barrier to run Debcraft should be as low as possible, so that anyone can participate in debugging Debian package builds and improving them.
+8. **Encourage users to collaborate** and submit improvements upstream and on Salsa instead of just making their own private Debian packages.
+9. **Teach users about the Debian policy** gradually and in context, so that over time users grow towards Debian maintainership.
 
 ### Development as an open source project
 
@@ -239,6 +249,7 @@ Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craf
 
 * [dpkg-buildpackage](https://manpages.debian.org/unstable/dpkg-dev/dpkg-buildpackage.1.en.html)
 * [debuild](https://manpages.debian.org/unstable/devscripts/debuild.1.en.html)
+* [Deb-o-matic](https://debomatic.github.io/)
 * [UMT](https://wiki.ubuntu.com/SecurityTeam/BuildEnvironment#Setting_up_and_using_UMT)
 
 ## Licence
