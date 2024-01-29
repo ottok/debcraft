@@ -38,6 +38,7 @@ fi
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
+    --cap-add SYS_PTRACE \
     --volume="$CCACHE_DIR":/.ccache \
     --volume="$SHELL_DIR":/tmp/build \
     $EXTRA_CONTAINER_MOUNTS \
