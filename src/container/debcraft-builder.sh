@@ -43,6 +43,7 @@ then
   # and skipping related cleanup steps.
   gbp buildpackage \
     --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
+    --git-ignore-branch \
     --git-no-create-orig | tee -a "$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
