@@ -8,18 +8,81 @@ Debcraft is a tool for developers to make high quality Debian packages effortles
 > * Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Does the features and code architecture make sense?
 > * Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
 
+## Why should I care?
+
+Typically, Debian Developer's workflows revolve around brewing an isolated
+build environment, which is then used to test-build the given Debian package.
+The problem is that there's no standard way of achieving the said isolation.
+Some DDs use VMs, some use Docker Containers, and some use LXD containers.
+It's up to the developer which way they want to go.
+
+If you have not yet chosen your path and want to start working on a
+Debian package, *debcraft* is a one-stop-shop that will set up the build
+environment while following best practices.
+
 ## Usage
 
 ### Typical usage examples
 
-```
+#### Build a package straight from Debian Archive (Debian Sid)
+
+```shell
 debcraft build <package name to be downloaded>
+```
+
+*debcraft* will download the package from Debian *Sid* and will build the
+package in a clean Sid environment inside a Podman Container.
+
+#### Build against different release with specific Docker command
+
+```shell
 debcraft build --distribution bullseye --container-command docker <package>
+```
+
+The above command will build against *Bullseye* instead of *Sid*. You've also
+specified the Docker command to be *docker*. By default, it's *podman*.
+
+#### Build from a local directory
+
+```shell
 debcraft build <path to Debian sources>
+```
+
+When working on a package, you already have it somewhere locally on your
+system. And you'll want to test-build your changes. The above command will
+point *debcraft* to your local directory instead of the Debian Archive.
+
+#### Build against most recent Sid and with cleaned sources
+
+```shell
 debcraft build --clean <path to Debian sources>
+```
+
+Here *debcraft* will `--pull` the container and will `git clean` before
+building.
+
+#### Build from Ubuntu PPA
+
+```shell
 DEBCRAFT_PPA=ppa:otto/ppa debcraft release <path to sources>
+```
+
+*debcraft* will pull the sources from the specified PPA instead of Debian
+Archive.
+
+#### Specify additional useful options
+
+```shell
 DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build mariadb
 ```
+
+*Debcraft* uses `git-buildpackage` for building, so you can pass additional
+options to it via the `DEB_BUILD_OPTIONS` environment variable.
+
+Under the hood, `git-buildpackage` uses `dpgk-buildpackage`, which -- in
+turn -- uses `DEB_BUILD_OPTIONS` environment variable. See
+[`dpkg-buildpackage(1)](https://manpages.org/dpkg-buildpackage) for more info
+on `DEB_BUILD_OPTIONS` env variable.
 
 ### Command reference
 
