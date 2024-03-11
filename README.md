@@ -58,8 +58,7 @@ point *debcraft* to your local directory instead of the Debian Archive.
 debcraft build --clean <path to Debian sources>
 ```
 
-Here *debcraft* will `--pull` the container and will `git clean` before
-building.
+Ensure *debcraft* will run `git clean` before building.
 
 #### Build from Ubuntu PPA
 
@@ -111,7 +110,8 @@ optional arguments:
   --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
   --distribution       Linux distribution to build in (default: debian:sid)
   --container-command  container command to use (default: podman)
-  --clean              ensure container base is updated and sources clean
+  --pull               ensure container base is updated
+  --clean              ensure and sources are clean
   -h, --help           display this help and exit
   --version            display version and exit
 

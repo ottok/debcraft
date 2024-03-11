@@ -33,7 +33,8 @@ display_help() {
   echo "  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)"
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
-  echo "  --clean              ensure container base is updated and sources clean"
+  echo "  --pull               ensure container base is updated"
+  echo "  --clean              ensure sources are clean"
   echo "  -h, --help           display this help and exit"
   echo "  --version            display version and exit"
   echo
@@ -87,6 +88,10 @@ do
     --container-command)
       export CONTAINER_CMD="$2"
       shift 2
+      ;;
+    --pull)
+      export PULL="true"
+      shift
       ;;
     --clean)
       export CLEAN="true"

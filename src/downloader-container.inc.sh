@@ -29,9 +29,9 @@ sed "s/FROM debian:sid/FROM $DOWNLOAD_BASENAME/" -i "$CONTAINER_DIR/Containerfil
 sed '/COPY control/,/^$/d' -i "$CONTAINER_DIR/Containerfile"
 
 # Force pulling new base image if requested
-if [ -n "$CLEAN" ]
+if [ -n "$PULL" ]
 then
-  CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
+  CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --no-cache --pull=true"
 fi
 
 # intentionally allow variable to expand to multiple arguments

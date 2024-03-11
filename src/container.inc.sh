@@ -25,9 +25,10 @@ cp debian/control "$CONTAINER_DIR/control"
 
 # Force pulling new base image
 # @TODO: Automatically use --pull when making sure dependencies are updated
-if [ -n "$CLEAN" ]
+# @TODO: Consider using '--cache-ttl=1h' in Podman 4.x series
+if [ -n "$PULL" ]
 then
-  CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --pull"
+  CONTAINER_BUILD_ARGS="${CONTAINER_BUILD_ARGS} --no-cache --pull=true"
   log_debug_var CONTAINER_BUILD_ARGS
 fi
 
