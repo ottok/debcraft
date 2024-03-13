@@ -40,6 +40,7 @@ fi
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
+    --network=none \
     --volume="$RELEASE_DIR":/tmp/build \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \

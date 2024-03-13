@@ -42,6 +42,7 @@ fi
 # --tty needed for session to have colors automatically
 # --interactive needed for Ctrl+C to cancel build and stop container (and not
 #   just exit tty)
+# --network=none to ensure build is hermetic and does not download anything
 #
 # Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
 #
@@ -50,6 +51,7 @@ fi
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \
+    --network=none \
     --volume="$CCACHE_DIR":/.ccache \
     --volume="$BUILD_DIR":/tmp/build \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
