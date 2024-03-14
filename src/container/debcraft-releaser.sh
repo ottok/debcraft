@@ -76,11 +76,16 @@ then
 
   echo
   log_info "Create diffoscope report comparing to previous build"
-  # Exit status is zero only if inputs are identical, so ignore exit code
-  diffoscope --html=diffoscope.html \
+  # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
+  # than that, the output is probably massive and unreadable. Diffoscope is more
+  # useful for hunting small changes which might be hard to find with other
+  # tools.
+  timeout --verbose --kill-after=8m 5m \
+    diffoscope --html=diffoscope.html \
     --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
     --exclude=previous --exclude=source \
     previous/ . || true
+    # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
 # Wait to ensure all processes that were backgrounded earlier have completed too
