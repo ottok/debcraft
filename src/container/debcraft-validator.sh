@@ -29,7 +29,7 @@ VALIDATION_ERRORS=()
 # @TODO: find -name *.md -exec aspell --mode=markdown -c "{}" +;
 # @TODO: hunspell -d en_US debian/changelog # interactive mode
 
-# @TODO: For each manpage run: MANROFFSEQ='' MANWIDTH=80 man --warnings -E UTF-8 -l -Tutf8 -Z $MANPAGE >/dev/null
+# @TODO: For each manpage run: LC_ALL=C.UTF-8 MANROFFSEQ='' MANWIDTH=80 man --warnings -E UTF-8 -l -Tutf8 -Z $MANPAGE >/dev/null
 
 # @TODO: suspicious-source --verbose --directory . # no output if no findings, and most findings false positives
 
@@ -40,16 +40,23 @@ VALIDATION_ERRORS=()
 # '/var/lib/adequate/pending' for limiting checks to it
 
 # @TODO: Run autopkgtest inside container: autopkgtest -- null
-# @TODO: However, autopkgtest need root to install dependencies first, so might need custom container
+# @TODO: However, autopkgtest needs root to install dependencies first, so needs to have build first, local repo and apt permissions
 
-# @TODO: licensecheck # only lists what licenses if found without actually
+# @TODO: licensecheck --check=. --recursive --copyright . # only lists what licenses if found without actually
 # validating anything about debian/copyright correctness
 
-# @TODO: find -name *.pot -exec i18nspector "{}" +; find -name *.po -exec i18nspector "{}" +;
+# @TODO: 'debmake -kk' produces diff that updates licenses for debian/copyright, but not years, and also seems incomplete
+
+# @TODO: find . -type f \( -iname '*.po' -o -iname '*.pot' -o -iname '*.mo' -o -iname '*.gmo' \) -exec i18nspector --jobs 1 {} +
+# @TODO: find . -type f \( -iname '*.po' -o -iname '*.pot' \) -exec msgfmt --check --check-compatibility --check-accelerators --output-file=/dev/null {} \;
+
+# @TODO: find . -type f \( -iname '*.yaml' -o -iname '*.yml' -o -iwholename ./debian/upstream/metadata -o -iwholename ./debian/upstream/edam \) -exec yamllint {} +
 
 # @TODO: blhc --all --debian --line-numbers --color *.build
 # or alternatively as Salsa-CI uses: blhc --debian --line-numbers --color ${SALSA_CI_BLHC_ARGS} ${WORKING_DIR}/*.build || [ $? -eq 1 ]
 # However both versions result in blhc outputting 'No compiler commands' so I am not sure if it works at all?
+
+# @TODO: If allowed to modify package, run 'lintian-brush --no-update-changelog --modern --uncertain'?
 
 # @TODO: diffoscope --html report.html old.deb new.deb
 
