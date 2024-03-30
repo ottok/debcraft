@@ -223,7 +223,10 @@ log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
 # Make sure sources are clean on actions that depend on it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
 then
-  if [ -z "$COPY" ] && [ -d "$PWD/.git" ] && [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+  if [ -z "$CLEAN" ] &&
+     [ -z "$COPY" ] &&
+     [ -d "$PWD/.git" ] &&
+     [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
   then
     log_error "Git repository is not clean, cannot proceed building unless --clean or --copy is used."
     exit 1
