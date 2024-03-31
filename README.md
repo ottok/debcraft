@@ -226,7 +226,9 @@ To compare build artifacts with those of previous similar build you can use for 
 
 ## Installation
 
-For the time being Debcraft is not available in the Debian repositories or even as a package at all. To use it, simply clone the git repository and link the script from any directory you have in your `$PATH`, such as `$HOME/bin`
+For the time being Debcraft is not available in the Debian repositories or even
+as a package at all. To use it, simply clone the git repository and link the
+script from any directory you have in your `$PATH`, such as `$HOME/bin`
 
 ```
 git clone
@@ -236,7 +238,12 @@ ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 
 ## Debian package
 
-The Debian package has intentionally not been created yet. For now the only way to install this is via a `git clone`, which should be fine to early adopters and also make the step to doing `git commits` and submitting them to the project low friction. When the tool is more mature it will be packaged and made available in Debian officially, as well as for other Linux distros where developers might want to work on packaging that targets multiple distros, Debian included.
+The Debian package has intentionally not been created yet. For now the only way
+to install this is via a `git clone`, which should be fine to early adopters and
+also make the step to doing `git commits` and submitting them to the project low
+friction. When the tool is more mature it will be packaged and made available in
+Debian officially, as well as for other Linux distros where developers might
+want to work on packaging that targets multiple distros, Debian included.
 
 ## Development
 
@@ -255,49 +262,99 @@ The core design principles are:
 
 ### Development as an open source project
 
-**This project is open source and contributions are welcome!** The project maintains a promise that the initial review will happen in 48h for all Merge Requests received. The [code review will be conducted professionally]() and the code base aims to maintain a very high qualiy bar, so please reserve time to polish your code submission in a couple of review rounds.
+**This project is open source and contributions are welcome!** The project
 
-The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
+maintains a promise that the initial review will happen in 48h for all Merge
+Requests received. The [code review will be conducted professionally]() and the
+code base aims to maintain a very high qualiy bar, so please reserve time to
+polish your code submission in a couple of review rounds.
+
+The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at
+https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
 
 ### Roadmap
 
-Debcraft does not intend to replace well working existing tools like [git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/), but rather build upon them, making the overall process of as easy as possible. **Current development focus is to make the `debcraft build` as easy and efficient as possible** and it is already quite capable. The `release` is also already fully usable.
+Debcraft does not intend to replace well working existing tools like
+[git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/),
+but rather build upon them, making the overall process of as easy as possible.
+**Current development focus is to make the `debcraft build` as easy and
+efficient as possible** and it is already quite capable. The `release` is also
+already fully usable.
 
-The `validate` command only does static testing for the source directory without modifying anything. Something like `polish` to run [lintian-brush](https://manpages.debian.org/unstable/lintian-brush/lintian-brush.1.en.html) and other tools to automatically improve the package source code might be added later, or a command to run dynamic tests on the built binaries (create local repo, run piuparts, autopkgtests, some of the Salsa-CI tests locally etc).
+The `validate` command only does static testing for the source directory without
+modifying anything. Something like `polish` to run
+[lintian-brush](https://manpages.debian.org/unstable/lintian-brush/lintian-brush.1.en.html)
+and other tools to automatically improve the package source code might be added
+later, or a command to run dynamic tests on the built binaries (create local
+repo, run piuparts, autopkgtests, some of the Salsa-CI tests locally etc).
 
 The `prune` command currently does nothing.
 
-To help Debian Developers with recurring work, a command such as `update` to automatically import a new upstream version might also be implemented later.
+To help Debian Developers with recurring work, a command such as `update` to
+automatically import a new upstream version might also be implemented later.
 
-Search for `@TODO` comments in the sources to see which parts are incomplete and pending to be written out.
+Search for `@TODO` comments in the sources to see which parts are incomplete and
+pending to be written out.
 
 ### Programming language: Bash
 
-Bash was specifically chosen as the main language for this tool in order to keep the code contribution barrier as low as possible. Additionally, as Debcraft mainly builds upon invoking other programs via their command-line interface, using Bash scripting helps keep the code base small and lean compared to using a proper programming language to run tens of subshells. If the limitations of Bash (e.g. lack of proper testing framework, limited control of output with merely ANSI codes, overly simplistic error handling etc) starts to feel limiting, parts of this tool might be rewritten in a fast to develop language like Python, Mojo, Nim, Zig or Rust.
+Bash was specifically chosen as the main language for this tool in order to keep
+the code contribution barrier as low as possible. Additionally, as Debcraft
+mainly builds upon invoking other programs via their command-line interface,
+using Bash scripting helps keep the code base small and lean compared to using a
+proper programming language to run tens of subshells. If the limitations of Bash
+(e.g. lack of proper testing framework, limited control of output with merely
+ANSI codes, overly simplistic error handling etc) starts to feel limiting, parts
+of this tool might be rewritten in a fast to develop language like Python, Mojo,
+Nim, Zig or Rust.
 
-Note that Bash is used to its fullest. There is no need to restrict functionality to POSIX compatibility as Debcraft will always run on Linux using Linux containers anyway.
+Note that Bash is used to its fullest. There is no need to restrict
+functionality to POSIX compatibility as Debcraft will always run on Linux using
+Linux containers anyway.
 
 ### High quality, secure and performant code
 
-Despite being written with Bash, Debcraft still aims to highest possible code quality by enforcing that the code base in Shellcheck clean along with other applicable static testing, such as spellchecking. While running `set -e` is in effect to stop execution on any error unless explicitly handled.
+Despite being written with Bash, Debcraft still aims to highest possible code
+quality by enforcing that the code base in Shellcheck clean along with other
+applicable static testing, such as spellchecking. While running `set -e` is in
+effect to stop execution on any error unless explicitly handled.
 
-The Bash code should avoid spawning subshells if it can be avoided. For example us in-line [Bash parameter substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html) instead of spawning `sed` commands in subshells.
+The Bash code should avoid spawning subshells if it can be avoided. For example
+us in-line [Bash parameter
+substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html) instead
+of spawning `sed` commands in subshells.
 
-There are no fixed release dates or fixed milestone scopes. Maintaining high quality triumps other priorities. This tool is intended to automate Debian packaging work that has existed for decades, and the tools should be robust enough to stand the test of time and serve for decades to come.
+There are no fixed release dates or fixed milestone scopes. Maintaining high
+quality triumps other priorities. This tool is intended to automate Debian
+packaging work that has existed for decades, and the tools should be robust
+enough to stand the test of time and serve for decades to come.
 
 ### Prioritize readability
 
-It is more important for code to be easy to read and reason about than quick to write. Therefore, always spend a bit of extra effort to make things clear and easy to read. For example, write `--parameter` instead of just `-p` when possible. Most commands are also run with `--verbose` intentionally to expose to users what is happening.
+It is more important for code to be easy to read and reason about than quick to
+write. Therefore, always spend a bit of extra effort to make things clear and
+easy to read. For example, write `--parameter` instead of just `-p` when
+possible. Most commands are also run with `--verbose` intentionally to expose to
+users what is happening.
 
-Automation in a developer tool does not mean that things should be hidden - in this tool automation is transparent, doing as much as possible on behalf of the user but still transparent about what is being done.
+Automation in a developer tool does not mean that things should be hidden - in
+this tool automation is transparent, doing as much as possible on behalf of the
+user but still transparent about what is being done.
 
 ### Testing
 
-To help with ensuring the above about code quality, the project has both GitLab CI for automatic testing and a simple `make test` command to run the same testing locally while developing.
+To help with ensuring the above about code quality, the project has both GitLab
+CI for automatic testing and a simple `make test` command to run the same
+testing locally while developing.
 
 ### Name
 
-Why the name _Debcraft_? Because the name _debuild_ was already taken. The 'craft' also helps setting users in the correct mindset, hinting towards that producing high quality Debian packages and maintaining operating system over many years and decades is not just a pure technical task, but involves following industry wisdoms, anticipating unknowns and hand-crafting and tuning things to be as perfect as possible.
+Why the name _Debcraft_? Because the name _debuild_ was already taken. The
+'craft' also helps setting users in the correct mindset, hinting towards that
+producing high quality Debian packages and maintaining operating system over
+many years and decades is not just a pure technical task, but involves following
+industry wisdoms, anticipating unknowns and hand-crafting and tuning things to
+be as perfect as possible.
 
 ### Related software
 
