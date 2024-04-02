@@ -156,10 +156,10 @@ source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
 # least one line
 # Hack: Listing images is very slow on Podman, so branch off two different tests
 # shellcheck disable=2235 # two subshells necessary in this case
-if ([ "$CONTAINER_CMD" == 'podman' ] && \
+if ([ "$CONTAINER_TYPE" == 'podman' ] && \
     ! grep --quiet debcraft ~/.local/share/containers/storage/overlay-images/images.json) \
    || \
-   ([ "$CONTAINER_CMD" == 'docker' ] && \
+   ([ "$CONTAINER_TYPE" == 'docker' ] && \
    [ "$("$CONTAINER_CMD" images 'debcraft*' | wc -l)" -eq 1 ])
 then
   log_warn "No previous Debcraft container was found and thus the first run of"

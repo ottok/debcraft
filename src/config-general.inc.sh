@@ -15,20 +15,20 @@ then
   fi
 fi
 
-# Define customizations if needed
-case "$CONTAINER_CMD" in
-  docker)
-    # Using Docker is valid option but requires some extra args to work
-    CONTAINER_RUN_ARGS="--user=${UID}"
-    ;;
-  podman)
-    CONTAINER_RUN_ARGS="--userns=keep-id"
-    ;;
-  *)
-    log_error "Invalid value in --container-command=$CONTAINER_CMD"
-    exit 1
-esac
+# Determine container type and customizations if needed
+version=$(${CONTAINER_CMD} --version)
+if [[ $version =~ 'podman' ]]; then
+  CONTAINER_TYPE='podman'
+  CONTAINER_RUN_ARGS='--userns=keep-id'
+elif [[ $version =~ 'Docker' ]]; then
+  CONTAINER_TYPE='docker'
+  CONTAINER_RUN_ARGS="--user=${UID}"
+else
+  log_error "Invalid value in --container-command=$CONTAINER_CMD"
+  exit 1
+fi
 
 # Explicit exports
 export CONTAINER_CMD
+export CONTAINER_TYPE
 export CONTAINER_RUN_ARGS
