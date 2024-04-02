@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # to caching all rebuilds and all later containers will build much faster.
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
+    blhc \
     ccache \
     curl \
     devscripts \

@@ -78,6 +78,14 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 # @TODO: Run Lintian in background (with & and later run 'wait') so that the
 # filelist log can be created in parallel? Will it make overall progress faster?
 
+# Run blhc, ignore errors caused by findings.
+# Strip all ANSI terminal escape sequences, since otherwise blhc will not
+# recognize the format.
+echo
+log_info "Create blhc.log"
+sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > build_nocolor.log
+blhc --all --color build_nocolor.log | tee -a "../blhc.log" || true
+
 cd /tmp/build || exit 1
 
 # Log package contents
