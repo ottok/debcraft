@@ -103,8 +103,14 @@ fi
 
 # Notify must run outside container (gbp/git-notify=on with python3-notify2
 # inside container fails with non-zero exit code)
-notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "Build $BUILD_ID of $PACKAGE completed!"
-paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga
+if command -v notify-send >/dev/null 2>&1
+then
+  notify-send --icon=/usr/share/icons/Humanity/actions/48/dialog-apply.svg --urgency=low "Build $BUILD_ID of $PACKAGE completed!" || true
+fi
+if command -v paplay >/dev/null 2>&1
+then
+  paplay --volume=65536 /usr/share/sounds/freedesktop/stereo/complete.oga || true
+fi
 
 echo
 log_info "Artifacts at file://$BUILD_DIR"
