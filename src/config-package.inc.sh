@@ -99,7 +99,12 @@ case "$BUILD_DIRS_PATH" in
     # If BUILD_DIRS_PATH is defined, use it as-is
     if [ ! -d "$BUILD_DIRS_PATH" ]
     then
-      log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH"
+      if [ ! -e "$BUILD_DIRS_PATH" ]
+      then
+        log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: directory does not exist"
+      else
+        log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: not a directory"
+      fi
       exit 1
     fi
 esac
