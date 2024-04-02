@@ -9,6 +9,12 @@ then
   elif command -v docker > /dev/null
   then
     CONTAINER_CMD="docker"
+  elif command -v distrobox-host-exec >/dev/null 2>&1 && distrobox-host-exec podman --version >/dev/null 2>&1
+  then
+    CONTAINER_CMD="distrobox-host-exec podman"
+  elif command -v distrobox-host-exec >/dev/null 2>&1 && distrobox-host-exec docker --version >/dev/null 2>&1
+  then
+    CONTAINER_CMD="distrobox-host-exec docket"
   else
     log_error "Either 'podman' or 'docker' must be available to use Debcraft"
     exit 1

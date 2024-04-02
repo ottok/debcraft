@@ -47,7 +47,7 @@ fi
 # Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
 #
 # shellcheck disable=SC2086
-"$CONTAINER_CMD" run \
+$CONTAINER_CMD run \
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \

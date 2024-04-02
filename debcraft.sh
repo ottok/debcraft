@@ -160,7 +160,7 @@ if ([ "$CONTAINER_TYPE" == 'podman' ] && \
     ! grep --quiet debcraft ~/.local/share/containers/storage/overlay-images/images.json 2>/dev/null) \
    || \
    ([ "$CONTAINER_TYPE" == 'docker' ] && \
-   [ "$("$CONTAINER_CMD" images 'debcraft*' | wc -l)" -eq 1 ])
+   [ "$($CONTAINER_CMD images 'debcraft*' | wc -l)" -eq 1 ])
 then
   log_warn "No previous Debcraft container was found and thus the first run of"
   log_warn "this tool is expected to be slow as the container base layer needs"

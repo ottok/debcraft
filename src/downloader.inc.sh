@@ -6,7 +6,7 @@
 #   just exit tty)
 #
 # shellcheck disable=SC2086
-"$CONTAINER_CMD" run \
+$CONTAINER_CMD run \
     --name="$DOWNLOAD_CONTAINER" \
     --interactive --tty --rm \
     --volume="$PWD":/tmp/debcraft \

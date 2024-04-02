@@ -36,7 +36,7 @@ fi
 
 # See build.inc.sh for explanation of container run parameters
 # shellcheck disable=SC2086
-"$CONTAINER_CMD" run \
+$CONTAINER_CMD run \
     --name="$CONTAINER" \
     --interactive --tty --rm \
     --shm-size=1G \

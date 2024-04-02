@@ -34,7 +34,7 @@ fi
 
 # Podman does not need '--file=Containerfile', but needed for Docker compatibility
 # shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
-"$CONTAINER_CMD" build  \
+$CONTAINER_CMD build  \
   --tag "$CONTAINER" \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
   $CONTAINER_BUILD_ARGS \
