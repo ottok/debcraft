@@ -77,8 +77,8 @@ log_debug "Parse option/argument: $1"
 do
   case "$1" in
     --build-dirs-path)
-      export BUILD_DIRS_PATH="$1"
-      shift
+      export BUILD_DIRS_PATH="$2"
+      shift 2
       ;;
     --distribution)
       # The value is the next argument, e.g. '--distribution bookworm'
