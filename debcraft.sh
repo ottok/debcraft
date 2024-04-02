@@ -34,6 +34,7 @@ display_help() {
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
   echo "  --pull               ensure container base is updated"
+  echo "  --copy               perform the build on a copy of the package directory"
   echo "  --clean              ensure sources are clean"
   echo "  -h, --help           display this help and exit"
   echo "  --version            display version and exit"
