@@ -113,7 +113,10 @@ if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
-  log_info "  browse file://$BUILD_DIR/diffoscope.html"
+  if [ -f "$BUILD_DIR/diffoscope.html" ]
+  then
+    log_info "  browse file://$BUILD_DIR/diffoscope.html"
+  fi
 fi
 
 # @TODO: Give tips on how/what to review and across which versions (e.g.

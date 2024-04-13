@@ -79,5 +79,8 @@ if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]} $RELEASE_DIR &"
-  log_info "  browse file://$RELEASE_DIR/diffoscope.html"
+  if [ -f "$RELEASE_DIR/diffoscope.html" ]
+  then
+    log_info "  browse file://$RELEASE_DIR/diffoscope.html"
+  fi
 fi
