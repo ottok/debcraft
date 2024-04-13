@@ -97,7 +97,7 @@ done
 # @TODO: Log output of `ldd -v` for each binary to track how dynamic dependencies change?
 
 echo
-log_info "Create maintainer-scripts.log"
+log_info "Create control.log and maintainer-scripts.log"
 for package in *.deb
 do
   # shellcheck disable=SC2129
@@ -105,17 +105,29 @@ do
   # Extract to directory with package name
   dpkg-deb --control "$package" "$PACKAGE_NAME"
   # Delete files not worth tracking
-  (cd "$PACKAGE_NAME" && rm --force control md5sums templates)
-  # Skip if directory is empty
+  (cd "$PACKAGE_NAME" && rm --force md5sums templates)
+
+  # Copy 'control' contents into common file, but skip if directory has none
+  if [ -n "$(ls --almost-all "$PACKAGE_NAME/control")" ]
+  then
+    # Use tail to list contents in one single file with headers between
+    echo "==> $PACKAGE_NAME/control <==" >> control.log
+    tail --lines=9999 "$PACKAGE_NAME"/control >> control.log
+  fi
+
+  # Clean up 'control' files, not needed in next step
+  rm --recursive --force "$PACKAGE_NAME/control"
+
+  # Copy 'pre/post/inst/rm' contents into common file, but skip if directory has none
   if [ -n "$(ls --almost-all "$PACKAGE_NAME/")" ]
   then
     # Use tail to list contents in one single file with headers between
     tail --lines=9999 "$PACKAGE_NAME"/* >> maintainer-scripts.log
   fi
-  # Clean up temporary directory
+
+  # Clean up temporary directory completely
   rm --recursive --force "$PACKAGE_NAME"
 done
-
 
 # Crude but fast and simple way to clean away ANSI color codes from logs
 # @TODO: As 'less -K' and other tools support reading colored logs, we could
