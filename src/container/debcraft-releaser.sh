@@ -27,7 +27,7 @@ BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog -
 # used.
 if [ -n "$(git branch --list pristine-tar)" ]
 then
-  SIGNATURE_FILE=$(git ls-tree --name-only pristine-tar | grep .asc$ | tail -n 1)
+  SIGNATURE_FILE=$(git ls-tree --name-only pristine-tar | grep .asc$ | sort -V | tail -n 1)
   if [ -n "$SIGNATURE_FILE" ]
   then
     TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
