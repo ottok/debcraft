@@ -60,41 +60,18 @@ VALIDATION_ERRORS=()
 
 # @TODO: diffoscope --html report.html old.deb new.deb
 
-# Skip test if there are no patches
-if [ -f debian/patches/series ]
+log_info "Validating files in debian/ in general with Debputy..."
+if ! debputy lint --spellcheck > /dev/null
 then
-  log_info "Validating that the directory debian/patches/ contents and debian/patches/series file match by count..."
-  if [ "$(find debian/patches/ -type f -not -name series | wc -l)" != "$(wc -l < debian/patches/series)" ]
-  then
-    log_error "The directory debian/patches/ file count does not match that in debian/series. Check if these are unaccounted patches:"
-    find debian/patches -type f -not -name series -printf "%P\n" | sort > /tmp/patches-directory-sorted
-    sort debian/patches/series > /tmp/patches-series-sorted
-    diff --side-by-side /tmp/patches-series-sorted /tmp/patches-directory-sorted
-    VALIDATION_ERRORS+=('patches-mismatch')
-  fi
+  log_error "Debputy reported issues, please run 'debputy lint --spellcheck'"
+  VALIDATION_ERRORS+=('debputy-lint')
 fi
 
-log_info "Validating that the files in debian/ are properly formatted and sorted..."
-if [ -n "$(wrap-and-sort --wrap-always --dry-run)" ]
+log_info "Validating that files in debian/ are properly formatted and sorted..."
+if ! debputy reformat --style black --no-auto-fix > /dev/null
 then
-  log_error "The directory debian/ contains files that could be automatically formatted and sorted with 'wrap-and-sort':"
-  wrap-and-sort --wrap-always --dry-run
-  VALIDATION_ERRORS+=('wrap-and-sort')
-fi
-
-log_info "Validating that the debian/rules can be parsed by Make..."
-if ! make --dry-run --makefile=debian/rules > /dev/null
-then
-  log_error "Make fails to parse the debian/rules file:"
-  make --dry-run --makefile=debian/rules
-  VALIDATION_ERRORS+=('debian-rules-syntax')
-fi
-
-if ! head --lines=1 debian/rules | grep --quiet -F '#!/usr/bin/make -f'
-then
-  log_error "Debian policy violation: debian/rules must start with '#!/usr/bin/make -f'"
-  log_error "https://www.debian.org/doc/debian-policy/ch-source.html#main-building-script-debian-rules"
-  VALIDATION_ERRORS+=('debian-rules-makefile')
+  log_error "Debputy reported issues, please run 'debputy reformat --style black'"
+  VALIDATION_ERRORS+=('deputy-reformat-black')
 fi
 
 log_info "Validating that all shell scripts in debian/rules pass Shellcheck..."

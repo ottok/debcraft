@@ -21,9 +21,17 @@ RUN apt-get update -q && \
     pristine-tar
 
 # Validator dependencies
+# @TODO: dh-debputy and python3-pygls only available in latest Debian Sid 2024,
+# this needs some rethinking to be compatible with building containers of older
+# Debian and Ubuntu releases
 RUN apt-get install -q --yes --no-install-recommends \
+  dh-debputy \
   diffoscope-minimal \
+  hunspell-en-us \
   python3-debian \
+  python3-hunspell \
+  python3-levenshtein \
+  python3-lsprotocol \
   shellcheck \
   xxd
 
