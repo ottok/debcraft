@@ -15,7 +15,7 @@ function get_baseimage_from_distribution_name() {
     experimental | sid | trixie | bookworm | bullseye | buster)
       echo "debian:$NAME"
       ;;
-    noble | mantic | jammy | focal)
+    oracular | noble | mantic | jammy | focal)
       echo "ubuntu:$NAME"
       ;;
     *)
@@ -47,7 +47,7 @@ function get_ubuntu_equivalent_from_debian_release() {
     #
     # @TODO: Ideally read /usr/share/distro-info/ubuntu.csv directly
     case $SERIES in
-      noble | mantic | lunar | jammy | hirsute | focal | disco | bionic | zesty)
+      oracular | noble | mantic | lunar | jammy | hirsute | focal | disco | bionic | zesty)
         # For every Ubuntu name always return it as-is
         echo "$SERIES"
         ;;
