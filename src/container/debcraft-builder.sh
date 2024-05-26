@@ -22,6 +22,8 @@ log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 # Prepare stats
 ccache --zero-stats > /dev/null
 BUILD_START_TIME="$EPOCHSECONDS"
+# Set PATH for ccache
+export PATH="/usr/lib/ccache:${PATH}"
 
 # Mimic debuild log filename '../<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
