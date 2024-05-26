@@ -48,6 +48,6 @@ $CONTAINER_CMD build  \
 
 if [ -n "$FAILURE" ]
 then
-  log_error "Container build failed - see output above for details"
+  log_error "Container build failed - see output above for details. If apt fails on missing packages, try '--pull' to build container from scratch."
   exit 1
 fi
