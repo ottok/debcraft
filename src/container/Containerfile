@@ -35,6 +35,11 @@ RUN apt-get install -q --yes --no-install-recommends \
   shellcheck \
   xxd
 
+# Validator dependencies
+RUN apt-get install -q --yes --no-install-recommends \
+  apt-utils \
+  autopkgtest
+
 COPY control /
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \

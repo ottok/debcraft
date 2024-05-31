@@ -10,7 +10,7 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft [options] <build|validate|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
+  echo "usage: debcraft [options] <build|validate|test|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
   echo
   echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
   echo "as a subargument any of:"
@@ -137,7 +137,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | validate | release | shell | prune)
+    build | validate | test | release | shell | prune)
       export ACTION="$1"
       shift
       ;;
@@ -294,6 +294,10 @@ case "$ACTION" in
   validate)
     # shellcheck source=src/validate.inc.sh
     source "$DEBCRAFT_LIB_DIR/validate.inc.sh"
+    ;;
+  test)
+    # shellcheck source=src/test.inc.sh
+    source "$DEBCRAFT_INSTALL_DIR/src/test.inc.sh"
     ;;
   release)
     # shellcheck source=src/release.inc.sh
