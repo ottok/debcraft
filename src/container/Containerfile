@@ -26,6 +26,7 @@ RUN apt-get update -q && \
 # will fail until dh-debputy with dependencies is available via backports:
 # https://salsa.debian.org/debian/debputy/-/issues/76#note_512583
 RUN apt-get install -q --yes --no-install-recommends \
+  autopkgtest \
   apt-utils \
   dh-debputy \
   diffoscope-minimal \

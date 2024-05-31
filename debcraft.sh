@@ -10,7 +10,7 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft [options] <build|validate|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
+  echo "usage: debcraft [options] <build|validate|test|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
   echo
   echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
   echo "as a subargument any of:"
@@ -20,9 +20,14 @@ display_help() {
   echo "  * Debian package name, or source package name, that apt can download"
   echo "  * git http(s) or ssh URL that can be downloaded and built"
   echo
+
   echo "The commands 'validate' and 'release' are intended to be used to finalize"
-  echo "a package build. The command 'shell' can be used to pay around in the container"
-  echo "and 'prune' will clean up temporary files by Debcraft."
+  echo "a package build. The command 'test' will run the Debian-specific regression"
+  echo "test suite if the package has autopkgtest support, and drop to a shell for"
+  echo "investigation if tests failed to pass. The command 'shell' can be used to"
+  echo "play around in the container and 'prune' will clean up temporary files by"
+  echo "Debcraft."
+
   echo
   echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
@@ -96,7 +101,7 @@ source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
 
 if [ -z "$1" ]
 then
-  log_error "Missing argument <build|validate|release|shell|prune>"
+  log_error "Missing argument <build|validate|test|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -153,7 +158,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | validate | release | shell | prune)
+    build | validate | test | release | shell | prune)
       export ACTION="$1"
       shift
       ;;
@@ -168,7 +173,7 @@ done
 if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|validate|release|shell|prune>"
+  log_error "Argument '$TARGET' not one of <build|validate|test|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -320,6 +325,10 @@ case "$ACTION" in
   validate)
     # shellcheck source=src/validate.inc.sh
     source "$DEBCRAFT_LIB_DIR/validate.inc.sh"
+    ;;
+  test)
+    # shellcheck source=src/test.inc.sh
+    source "$DEBCRAFT_LIB_DIR/test.inc.sh"
     ;;
   release)
     # shellcheck source=src/release.inc.sh
