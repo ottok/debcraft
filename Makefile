@@ -8,26 +8,11 @@ SHELL=/bin/bash -o pipefail
 
 DESTDIR:=tmp
 
-all: build test install
+all: build install
 
 build-depends:
 	@echo "Check all build dependencies are present"
 	dpkg -l | grep -e codespell -e shellcheck -e help2man
-
-test: test-static test-debcraft
-
-# All generic static tests that don't need Debcraft to actually run
-# @TODO: Evaluate using '-o all' to run extra validation (https://github.com/koalaman/shellcheck/wiki/Optional)
-# @TODO: podman build --validate Containerfile?
-test-static:
-	@echo "Running static tests"
-	codespell --interactive=0 --check-filenames --check-hidden --skip=.git
-	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
-
-# Run Debcraft and ensure it behaves as expected
-test-debcraft:
-	@echo "Running Debcraft tests"
-	tests/debcraft-tests.sh
 
 build: manpage build-depends
 
@@ -56,3 +41,18 @@ install: build
 install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
 	ln --symbolic --verbose ${PWD}/debcraft.sh ~/bin/debcraft
+
+test: test-static test-debcraft
+
+# All generic static tests that don't need Debcraft to actually run
+# @TODO: Evaluate using '-o all' to run extra validation (https://github.com/koalaman/shellcheck/wiki/Optional)
+# @TODO: podman build --validate Containerfile?
+test-static:
+	@echo "Running static tests"
+	codespell --interactive=0 --check-filenames --check-hidden --skip=.git
+	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
+
+# Run Debcraft and ensure it behaves as expected
+test-debcraft:
+	@echo "Running Debcraft tests"
+	tests/debcraft-tests.sh
