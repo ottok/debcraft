@@ -1,0 +1,8 @@
+#!/usr/bin/make -f
+
+override_dh_auto_test:
+	@echo "RULES.$@"
+	@echo "Skip tests as they require Podman or Docker, which is not supported in most build environments"
+
+%:
+	dh $@

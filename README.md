@@ -236,14 +236,15 @@ cd debcraft
 ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 ```
 
-## Debian package
+### Debian package
 
-The Debian package has intentionally not been created yet. For now the only way
-to install this is via a `git clone`, which should be fine to early adopters and
-also make the step to doing `git commits` and submitting them to the project low
-friction. When the tool is more mature it will be packaged and made available in
-Debian officially, as well as for other Linux distros where developers might
-want to work on packaging that targets multiple distros, Debian included.
+Debcraft is available on Debian unstable since July 2024. Install it with:
+
+```
+apt install --yes debcraft
+```
+
+If you do not have Podman nor Docker installed, it will install Podman by default.
 
 ## Development
 

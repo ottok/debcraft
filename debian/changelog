@@ -1,0 +1,5 @@
+debcraft (0.1.0) unstable; urgency=medium
+
+  * Initial release to Debian
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 01 Jul 2024 17:23:06 -0700
