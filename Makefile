@@ -12,7 +12,7 @@ all: build test install
 
 build-depends:
 	@echo "Check all build dependencies are present"
-	dpkg -l | grep -e codespell -e shellcheck - help2man
+	dpkg -l | grep -e codespell -e shellcheck -e help2man
 
 test: test-static test-debcraft
 
@@ -29,7 +29,7 @@ test-debcraft:
 	@echo "Running Debcraft tests"
 	tests/debcraft-tests.sh
 
-build: manpage
+build: manpage build-depends
 
 # @TODO: Use '--include manpage-extras' to include additional info or write the
 # README.md as ronn or Pandoc compatible Markdown and convert README.md to man
@@ -39,18 +39,20 @@ build: manpage
 # https://eddieantonio.ca/blog/2015/12/18/authoring-manpages-in-markdown-with-pandoc/
 manpage:
 	@echo "Generate man page for Debcraft"
-	mkdir --verbose --parents $(DESTDIR)/share/man/man1
+	mkdir --verbose --parents $(DESTDIR)/usr/share/man/man1
 	help2man \
 		--name "Debcraft" \
 		--source "Debcraft" \
 		--section 1 \
 		--manual "Debcraft usage" \
-		--output $(DESTDIR)/share/man/man1/debcraft.1 \
+		--output $(DESTDIR)/usr/share/man/man1/debcraft.1 \
 		--no-info \
 		./debcraft.sh
 
-# @TODO: Install scripts, man page, bash autocomplete etc in proper system
-# locations honoring $(DESTDIR)
-install:
+install: build
+	mkdir -p $(DESTDIR)/usr/bin
+	install -v -p debcraft.sh $(DESTDIR)/usr/bin/debcraft
+
+install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
 	ln --symbolic --verbose ${PWD}/debcraft.sh ~/bin/debcraft
