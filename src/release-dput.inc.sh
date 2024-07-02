@@ -5,7 +5,7 @@ echo
 
 if [ -f ~/.devscripts ] && [ -z "$DEBUG" ]
 then
-  log_info "After thorouh review, sign the package and upload with:"
+  log_info "After thorough review, sign the package and upload with:"
   log_info "  (cd $RELEASE_DIR && debsign *.changes && dput ftp-master *.changes)"
   # @TODO: Or from dput-ng recommend `dput --full-upload-log *.changes`?
   # @TODO: Or for special cases like stable updates recommend `dput --delayed=7 ftp-master *.changes`?
