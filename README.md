@@ -2,7 +2,7 @@
 
 * **Easy**: Build any Debian/Ubuntu package in one single command. If you don't
   have the package or source already downloaded, it will be done automatically.
-  Also, a build container (both Podman and Dockeer supported) is automatically
+  Also, a build container (both Podman and Docker supported) is automatically
   built using the target Debian or Ubuntu suite in `debian/changelog` and with
   exact build dependencies from `debian/control`. Users are spared from having
   to manually prepare ahead or maintain [sbuild](https://wiki.debian.org/sbuild)
