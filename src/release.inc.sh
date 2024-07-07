@@ -27,6 +27,13 @@ then
   CONTAINER_RUN_ARGS=" --volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/previous $CONTAINER_RUN_ARGS"
 fi
 
+if [ -n "${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}" ]
+then
+  log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}"
+  mkdir --parents "$RELEASE_DIR/last-tagged"
+  CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
+fi
+
 log_info "Building source package for release at $RELEASE_DIR"
 
 if [ -n "$DEBUG" ]
@@ -62,6 +69,13 @@ then
   rmdir "$RELEASE_DIR/previous"
 fi
 
+if [ -n "${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}" ]
+then
+  # Clean up temporary mount directory from polluting build artifacts
+  # if a "previous" directory was mounted
+  rmdir "$RELEASE_DIR/last-tagged"
+fi
+
 # Clean up temporary mount directory from polluting build artifacts
 rmdir "$RELEASE_DIR/source"
 
@@ -77,10 +91,22 @@ log_info "Artifacts at file://$RELEASE_DIR"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
+  echo
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]} $RELEASE_DIR &"
   if [ -f "$RELEASE_DIR/diffoscope.html" ]
   then
     log_info "  browse file://$RELEASE_DIR/diffoscope.html"
+  fi
+fi
+
+if [ -n "${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}" ]
+then
+  echo
+  log_info "To compare build artifacts with the previous tagged release run:"
+  log_info "  meld ${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]} $RELEASE_DIR &"
+  if [ -f "$RELEASE_DIR/diffoscope.html" ]
+  then
+    log_info "  browse file://$RELEASE_DIR/diffoscope.last-tagged.html"
   fi
 fi

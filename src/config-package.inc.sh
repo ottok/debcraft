@@ -138,7 +138,7 @@ log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAG
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls
 mapfile -t PREVIOUS_SUCCESSFUL_BUILDINFO_FILES < <(
   ls --sort=time --time=ctime --format=single-column --group-directories-first --directory \
-    ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*${BRANCH_NAME}/*.buildinfo \
+    ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*+${BRANCH_NAME}/*.buildinfo \
     2> /dev/null
 )
 
@@ -164,3 +164,48 @@ log_debug_var PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS
 export PREVIOUS_SUCCESSFUL_RELEASE_DIRS
+
+# If PWD has a git repository try looking up latest tagged releases
+if [ -d "$PWD/.git" ]
+then
+  if [ -z "$(git tag --list)" ]
+  then
+    echo "ERROR: Debcraft unable to view latest git tag. Please run 'git fetch --tags'."
+    exit 1
+  fi
+
+  # Get the first tag encountered when traversing branch history
+  NAME_OF_LAST_TAG="$(git describe --first-parent --abbrev=0)"
+  log_debug_var NAME_OF_LAST_TAG
+  # The '^{}' will dereference the tag to the commit id
+  COMMIT_ID_OF_LAST_TAG="$(git rev-parse --short "$NAME_OF_LAST_TAG"^{})"
+  log_debug_var COMMIT_ID_OF_LAST_TAG
+
+  # Previous successful builds that produced a .buildinfo with a commit matching
+  # the latest tagged release, ignoring branch name
+  # shellcheck disable=SC2086 # intentionally pass wildcards to ls
+  mapfile -t LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES < <(
+    ls --sort=time --time=ctime --format=single-column --group-directories-first --directory \
+      ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*.${COMMIT_ID_OF_LAST_TAG}+*/*.buildinfo \
+      2> /dev/null
+  )
+
+  log_debug_var LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES
+
+  # Convert into two arrays of path names
+  LAST_TAGGED_SUCCESSFUL_BUILD_DIRS=()
+  LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS=()
+  for BUILDINFO_FILE in "${LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES[@]}"
+  do
+   case $BUILDINFO_FILE in
+     */debcraft-build-*)
+       LAST_TAGGED_SUCCESSFUL_BUILD_DIRS+=("$(dirname "$BUILDINFO_FILE")")
+       ;;
+     */debcraft-release-*)
+       LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS+=("$(dirname "$BUILDINFO_FILE")")
+       ;;
+   esac
+  done
+  log_debug_var LAST_TAGGED_SUCCESSFUL_BUILD_DIRS
+  log_debug_var LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS
+fi

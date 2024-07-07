@@ -166,8 +166,34 @@ then
   timeout --verbose --kill-after=8m 5m \
     diffoscope --html=diffoscope.html \
     --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
-    --exclude=previous --exclude=source \
+    --exclude=previous --exclude=last-tagged --exclude=source \
     previous/ . || true
+    # Exit status is zero only if inputs are identical, so ignore exit code
+fi
+
+# @TODO: This is a duplicate of above as boilerplate before refactoring into
+# functions
+# Automatically do comparisons to previous build if exists
+if [ -d "last-tagged" ]
+then
+  for LOGFILE in *.log
+  do
+    # For each log, create the diff but if there are no difference, remove the
+    # empty file
+    ! diff -u "last-tagged/$LOGFILE" "$LOGFILE" > "$LOGFILE.last-tagged.diff" || rm "$LOGFILE.last-tagged.diff" &
+  done
+
+  echo
+  log_info "Create diffoscope report comparing to last tagged build"
+  # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
+  # than that, the output is probably massive and unreadable. Diffoscope is more
+  # useful for hunting small changes which might be hard to find with other
+  # tools.
+  timeout --verbose --kill-after=8m 5m \
+    diffoscope --html=diffoscope.last-tagged.html \
+    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
+    --exclude=previous --exclude=last-tagged --exclude=source \
+    last-tagged/ . || true
     # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
@@ -186,4 +212,4 @@ wait
 echo
 log_info "Build completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
 # Don't show the mountpoint dir 'source'
-ls --width=5 --size --human-readable --color=always --ignore={source,previous}
+ls --width=5 --size --human-readable --color=always --ignore={source,previous,last-tagged}
