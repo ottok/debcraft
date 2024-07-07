@@ -9,11 +9,11 @@ echo
 
 if [ -z "$DEBCRAFT_PPA" ] || [ -n "$DEBUG" ]
 then
-  log_info "No DEBCRAFT_PPA defined, skip upload to Launchpad"
+  log_info "No environment variable DEBCRAFT_PPA defined, skip upload to Launchpad"
   echo
   log_info "See https://help.launchpad.net/Packaging/PPA on how anybody can sign"
   log_info "up for an account on Launchpad to build Debian/Ubuntu packages on"
-  log_info "multiple architectures and release them in a personal repository"
+  log_info "multiple architectures and release them in a personal repository."
   return # skip the rest of this file and return bach to calling script
 fi
 

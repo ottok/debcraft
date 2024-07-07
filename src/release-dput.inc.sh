@@ -3,7 +3,11 @@
 # Newline to separate output from whatever preceded
 echo
 
-if [ -f ~/.devscripts ] && [ -z "$DEBUG" ]
+if [ -z "$DEBUG" ] && {
+    [ -f ~/.devscripts ] || {
+      [ -n "$DEBSIGN_KEYID" ] && [ -n "$DEBEMAIL" ] && [ -n "$DEBFULLNAME" ]
+    }
+  }
 then
   log_info "After thorough review, sign the package and upload with:"
   log_info "  (cd $RELEASE_DIR && debsign *.changes && dput ftp-master *.changes)"
@@ -15,7 +19,10 @@ then
   log_info "  gbp tag --verbose && gbp push --verbose"
 else
   log_info "To submit a package to Debian or Ubuntu officially you need to have"
-  log_info "your PGP key in the Debian/Ubuntu keyring and configured in ~/.devscripts"
+  log_info "your PGP key in the Debian/Ubuntu keyring, and configured in"
+  # shellcheck disable=2088  # tilde not intended to be expanded on this line
+  log_info "~/.devscripts or the DEBSIGN_KEYID/DEBFULLNAME/DEBEMAIL environment"
+  log_info "variables defined in your shell."
   log_info "Before you can be an uploading Debian Developer, you need to have a"
   log_info "track record of sponsored package maintainership and high quality"
   log_info "contributions - see https://www.debian.org/devel/join/newmaint"
