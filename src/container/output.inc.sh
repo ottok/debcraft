@@ -1,15 +1,15 @@
 #!/bin/bash
 
 function log_error() {
-  echo -e "\e[38;5;1mERROR: $1\e[0m" >&2
+  echo -e "\e[38;5;1mERROR: $*\e[0m" >&2
 }
 
 function log_warn() {
-  echo -e "\e[38;5;3mWARNING: $1\e[0m" >&2
+  echo -e "\e[38;5;3mWARNING: $*\e[0m" >&2
 }
 
 function log_info() {
-  echo -e "\e[38;5;33m$1\e[0m"
+  echo -e "\e[38;5;33m$*\e[0m"
 }
 
 if [ -z "$DEBUG" ]
