@@ -29,7 +29,7 @@ PPA_NAME="${PPA#*/}"
 # Launchpad uploads depend on signed source package, thus can't be done inside a container
 if ! command -v backportpackage > /dev/null
 then
-  log_error "No 'backportpackage found, please install 'ubuntu-dev-tools'"
+  log_error "No 'backportpackage' found, please install 'ubuntu-dev-tools'"
   exit 1
 fi
 
@@ -39,15 +39,28 @@ cd "$RELEASE_DIR" || exit 1
 DSC="$(ls ./*.dsc)"
 CMD="backportpackage --yes --upload='$DEBCRAFT_PPA' --destination='$SERIES' --suffix='~$BUILD_ID' '$DSC'"
 
-echo
-read -r -p "Press Ctrl+C to cancel or press enter to proceed with:
-$CMD
+echo "Upload using command:
+  $CMD
 "
 
-# If Ctrl+C was not issued, upload to Launchpad
-eval "$CMD"
+while true
+do
+  read -r -p "Proceed with upload to PPA using the command above [Y|n]?  " selection
+  case $selection in
+    ''|[Yy]*)
+      eval "$CMD"
+      log_info "Review build results at https://launchpad.net/~${PPA_OWNER}/+archive/ubuntu/${PPA_NAME}/+builds?build_text=&build_state=all"
+      break
+      ;;
+    [Nn]*)
+      log_warn "Upload to PPA skipped"
+      break
+      ;;
+    *)
+      log_warn "Invalid selection. Please enter y or n."
+      ;;
+  esac
+done
 
 # Return to original directory where sources reside
 cd - || exit 1
-
-log_info "Review build results at https://launchpad.net/~${PPA_OWNER}/+archive/ubuntu/${PPA_NAME}/+builds?build_text=&build_state=all"
