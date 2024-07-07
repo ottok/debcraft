@@ -58,6 +58,13 @@ display_version() {
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
 
+# Debug flag detection must run before output.inc.sh is loaded
+case "$@" in
+  *--debug*)
+    export DEBUG="true"
+    ;;
+esac
+
 # Output formatting library is reused inside container as well
 # shellcheck source=src/container/output.inc.sh
 source "$DEBCRAFT_INSTALL_DIR/src/container/output.inc.sh"
@@ -100,6 +107,10 @@ do
       ;;
     --copy)
       export COPY="true"
+      shift
+      ;;
+    --debug)
+      # Debug mode detection is already done earlier, ignore it at this stage
       shift
       ;;
     -h | --help)
