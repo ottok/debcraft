@@ -224,12 +224,22 @@ log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
 # Make sure sources are clean on actions that depend on it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
 then
+  # Every deb build potentially generates these temporary files, and it is safe
+  # to assume that they should be deleted before restarting the build, so do it
+  # automatically to make the overall experience friendlier
+  rm -rf debian/.debhelper debian/debhelper-build-stamp \
+         debian/debhelper.log debian/*.debhelper.log \
+         debian/substvars debian/*.substvars debian/files
+
+  # If there are still more files, the user needs to make a decision
   if [ -z "$CLEAN" ] &&
      [ -z "$COPY" ] &&
      [ -d "$PWD/.git" ] &&
      [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
   then
-    log_error "Git repository is not clean, cannot proceed building unless --clean or --copy is used."
+    log_error "Modified or additional files found"\
+              "\n$(git status --porcelain --ignored --untracked-files=all | head)"\
+              "\nCannot proceed building unless --clean or --copy is used."
     exit 1
   fi
 fi

@@ -83,8 +83,8 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 # recognize the format.
 echo
 log_info "Create blhc.log"
-sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > build_nocolor.log
-blhc --all --color build_nocolor.log | tee -a "../blhc.log" || true
+sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > /tmp/build_nocolor.log
+blhc --all --color /tmp/build_nocolor.log | tee -a "../blhc.log" || true
 
 cd /tmp/build || exit 1
 
