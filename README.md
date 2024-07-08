@@ -10,8 +10,8 @@
   and it also teaches users about Debian packaging in context.
 
 * **Fast**: Container layer caching is utilized to make builds and re-builds
-  blazingly fast. Debian packages that support [ccache](https://ccache.dev/) build
-  even faster.
+  blazingly fast. Debian packages that support [ccache](https://ccache.dev/)
+  build even faster.
 
 * **Secure**: Builds happen inside hermetic containers with no network access.
   This ensures all dependencies are properly managed and the built binaries
@@ -22,11 +22,16 @@
   by Debcraft also helps audit changes in Debian package sources and build
   artifacts.
 
-> **Feedback welcome!** Debcraft is still in early development and your feedback is greatly appreciated. Bug reports at https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
+> **Feedback welcome!** Debcraft is still in early development and your feedback
+> is greatly appreciated. Bug reports at
+> https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
 >
-> * Documentation: Is it easy to start using Debcraft? How could the documentation be clarified further?
-> * Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Do the features and code architecture make sense?
-> * Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
+> * Documentation: Is it easy to start using Debcraft? How could the
+>   documentation be clarified further?
+> * Structure: Are you able to productively use Debcraft? Is the tool easy to
+>   reason about? Do the features and code architecture make sense?
+> * Compatibility: Does Debcraft work on your laptop and with your favorite
+>   Linux distro / release / package?
 
 ## Usage
 
@@ -244,22 +249,39 @@ Debcraft is available on Debian unstable since July 2024. Install it with:
 apt install debcraft
 ```
 
-If you do not have Podman nor Docker installed, it will install Podman by default.
+If you do not have Podman nor Docker installed, it will install Podman by
+default.
 
 ## Development
 
 ### Design tenets
 
 The core design principles are:
-1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the best practices in software development.
-2. Use [git](https://tracker.debian.org/pkg/git), [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
-3. **Use Linux containers** (not chroot like traditional Debian tools do) for improved isolation, security and reproducibility.
-4. **Create build environment containers on the fly** so users don't need to plan ahead what containers or chroots to have.
-5. **Be extremely fast** in what users are likely to spend most of their time on: rebuilds.
-6. **Store logs and artifacts from builds and help users review changes** between builds and package versions to maximize users' understanding of how their changes affect the outcome.
-7. **Don't expect users to run the latest version of Debian** or even Debian or Ubuntu at all. The barrier to run Debcraft should be as low as possible, so that anyone can participate in debugging Debian package builds and improving them.
-8. **Encourage users to collaborate** and submit improvements upstream and on Salsa instead of just making their own private Debian packages.
-9. **Teach users about the Debian policy** gradually and in context, so that over time users grow towards Debian maintainership.
+1. **Be opinionated, make the correct thing automatically** without asking user
+   to make too many decisions, and when full automation is not possible, steer
+   users to follow the best practices in software development.
+2. Use [git](https://tracker.debian.org/pkg/git),
+   [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and
+   [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to
+   standardize on them as shown by the [Debian Trends
+   website](https://trends.debian.net/).
+3. **Use Linux containers** (not chroot like traditional Debian tools do) for
+   improved isolation, security and reproducibility.
+4. **Create build environment containers on the fly** so users don't need to
+   plan ahead what containers or chroots to have.
+5. **Be extremely fast** in what users are likely to spend most of their time
+   on: rebuilds.
+6. **Store logs and artifacts from builds and help users review changes**
+   between builds and package versions to maximize users' understanding of how
+   their changes affect the outcome.
+7. **Don't expect users to run the latest version of Debian** or even Debian or
+   Ubuntu at all. The barrier to run Debcraft should be as low as possible, so
+   that anyone can participate in debugging Debian package builds and improving
+   them.
+8. **Encourage users to collaborate** and submit improvements upstream and on
+   Salsa instead of just making their own private Debian packages.
+9. **Teach users about the Debian policy** gradually and in context, so that
+   over time users grow towards Debian maintainership.
 
 ### Development as an open source project
 
