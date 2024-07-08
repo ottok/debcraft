@@ -6,11 +6,11 @@
   built using the target Debian or Ubuntu suite in `debian/changelog` and with
   exact build dependencies from `debian/control`. Users are spared from having
   to manually prepare ahead or maintain [sbuild](https://wiki.debian.org/sbuild)
-  root filesystems or alike. The command output is (relatively) easy to read,
+  root file systems or alike. The command output is (relatively) easy to read,
   and it also teaches users about Debian packaging in context.
 
 * **Fast**: Container layer caching is utilized to make builds and re-builds
-  blazing fast. Debian packages that support [ccache](https://ccache.dev/) build
+  blazingly fast. Debian packages that support [ccache](https://ccache.dev/) build
   even faster.
 
 * **Secure**: Builds happen inside hermetic containers with no network access.
@@ -25,7 +25,7 @@
 > **Feedback welcome!** Debcraft is still in early development and your feedback is greatly appreciated. Bug reports at https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
 >
 > * Documentation: Is it easy to start using Debcraft? How could the documentation be clarified further?
-> * Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Does the features and code architecture make sense?
+> * Structure: Are you able to productively use Debcraft? Is the tool easy to reason about? Do the features and code architecture make sense?
 > * Compatibility: Does Debcraft work on your laptop and with your favorite Linux distro / release / package?
 
 ## Usage
@@ -226,7 +226,7 @@ To compare build artifacts with those of previous similar build you can use for 
 
 ## Installation
 
-For the time being Debcraft is not available in the Debian repositories or even
+For the time being, Debcraft is not available in the Debian repositories or even
 as a package at all. To use it, simply clone the git repository and link the
 script from any directory you have in your `$PATH`, such as `$HOME/bin`
 
@@ -251,7 +251,7 @@ If you do not have Podman nor Docker installed, it will install Podman by defaul
 ### Design tenets
 
 The core design principles are:
-1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the beat practices in software development.
+1. **Be opinionated, make the correct thing automatically** without asking user to make too many decisions, and when full automation is not possible, steer users to follow the best practices in software development.
 2. Use [git](https://tracker.debian.org/pkg/git), [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to standardize on them as shown by the [Debian Trends website](https://trends.debian.net/).
 3. **Use Linux containers** (not chroot like traditional Debian tools do) for improved isolation, security and reproducibility.
 4. **Create build environment containers on the fly** so users don't need to plan ahead what containers or chroots to have.
@@ -267,7 +267,7 @@ The core design principles are:
 
 maintains a promise that the initial review will happen in 48h for all Merge
 Requests received. The [code review will be conducted professionally]() and the
-code base aims to maintain a very high qualiy bar, so please reserve time to
+code base aims to maintain a very high quality bar, so please reserve time to
 polish your code submission in a couple of review rounds.
 
 The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at
@@ -326,7 +326,7 @@ substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html) instead
 of spawning `sed` commands in subshells.
 
 There are no fixed release dates or fixed milestone scopes. Maintaining high
-quality triumps other priorities. This tool is intended to automate Debian
+quality trumps other priorities. This tool is intended to automate Debian
 packaging work that has existed for decades, and the tools should be robust
 enough to stand the test of time and serve for decades to come.
 
