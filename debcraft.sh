@@ -18,9 +18,9 @@ display_help() {
   echo "    with the Debian packaging instructions"
   echo "  * path to a .dsc file and source tarballs that can be built into a .deb"
   echo "  * Debian package name, or source package name, that apt can download"
-  echo "  * git http(s) or ssh url that can be downloaded and built"
+  echo "  * git http(s) or ssh URL that can be downloaded and built"
   echo
-  echo "The commands 'validate' and 'release' are intended to be used to finalilze"
+  echo "The commands 'validate' and 'release' are intended to be used to finalize"
   echo "a package build. The command 'shell' can be used to pay around in the container"
   echo "and 'prune' will clean up temporary files by Debcraft."
   echo
@@ -30,7 +30,7 @@ display_help() {
   echo "DEB_RULES_REQUIRES_ROOT are not supported."
   echo
   echo "optional arguments:"
-  echo "  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)"
+  echo "  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)"
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
   echo "  --pull               ensure container base is updated"
