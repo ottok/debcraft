@@ -12,7 +12,10 @@ all: build install
 
 build-depends:
 	@echo "Check all build dependencies are present"
-	dpkg -l | grep -e codespell -e shellcheck -e help2man
+	@echo -n "Codespell version: "
+	@codespell --version
+	@echo $$(shellcheck --version | head -n 2)
+	@help2man --version | head -n 1
 
 build: manpage build-depends
 
