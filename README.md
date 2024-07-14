@@ -241,7 +241,7 @@ ln -s ${PWD}/debcraft.sh ~/bin/debcraft
 Debcraft is available on Debian unstable since July 2024. Install it with:
 
 ```
-apt install --yes debcraft
+apt install debcraft
 ```
 
 If you do not have Podman nor Docker installed, it will install Podman by default.

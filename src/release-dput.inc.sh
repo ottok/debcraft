@@ -16,7 +16,7 @@ then
   log_info
   log_info "Remember to tag the exact commit that was uploaded about 10 minutes"
   log_info "later after seeing acknowledgement email from ftp-master:"
-  log_info "  gbp tag --verbose && gbp push --verbose"
+  log_info "  gbp tag --verbose --ignore-new && gbp push --verbose"
 else
   log_info "To submit a package to Debian or Ubuntu officially you need to have"
   log_info "your PGP key in the Debian/Ubuntu keyring, and configured in"
