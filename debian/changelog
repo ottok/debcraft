@@ -1,3 +1,9 @@
+debcraft (0.1.1) UNRELEASED; urgency=medium
+
+  * Open new changelog entry. This will be replaced with 'gbp dch -avR'.
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 26 Jul 2024 22:04:35 -0700
+
 debcraft (0.1.0) unstable; urgency=medium
 
   * Initial release to Debian
