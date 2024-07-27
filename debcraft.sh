@@ -56,7 +56,13 @@ display_version() {
 
 # Canonicalize script name if was run via symlink
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
-DEBCRAFT_INSTALL_DIR="$(dirname "$DEBCRAFT_CMD_PATH")"
+DEBCRAFT_LIB_DIR="$(dirname "$DEBCRAFT_CMD_PATH")/src"
+
+# Assume system installation directory if not running from source directory
+if [ ! -r "$DEBCRAFT_LIB_DIR/container/output.inc.sh" ]
+then
+  DEBCRAFT_LIB_DIR="/usr/share/debcraft"
+fi
 
 # Debug flag detection must run before output.inc.sh is loaded
 case "$@" in
@@ -67,10 +73,10 @@ esac
 
 # Output formatting library is reused inside container as well
 # shellcheck source=src/container/output.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/container/output.inc.sh"
+source "$DEBCRAFT_LIB_DIR/container/output.inc.sh"
 
 # shellcheck source=src/distributions.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/distributions.inc.sh"
+source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
 
 if [ -z "$1" ]
 then
@@ -156,7 +162,7 @@ log_debug_var ACTION
 
 # Configure general program behaviour after user options and arguments have been parsed
 # shellcheck source=src/config-general.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/config-general.inc.sh"
+source "$DEBCRAFT_LIB_DIR/config-general.inc.sh"
 
 # @TODO: Nag of dependencies are not available: git, dpkg-parsechangelog, rsync,
 # notify-send, paplay, tee, sed
@@ -188,10 +194,10 @@ then
   # argument to download the package
 
   # shellcheck source=src/downloader-container.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/downloader-container.inc.sh"
+  source "$DEBCRAFT_LIB_DIR/downloader-container.inc.sh"
 
   # shellcheck source=src/downloader.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/downloader.inc.sh"
+  source "$DEBCRAFT_LIB_DIR/downloader.inc.sh"
 
   # shellcheck disable=SC2012
   NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1 || true)"
@@ -271,38 +277,38 @@ fi
 
 # Configure program behaviour after user options and arguments have been parsed
 # shellcheck source=src/config-package.inc.sh
-source "$DEBCRAFT_INSTALL_DIR/src/config-package.inc.sh"
+source "$DEBCRAFT_LIB_DIR/config-package.inc.sh"
 
 # If the action needs to run in a container, automatically create it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ] || [ "$ACTION" == "release" ]
 then
   # shellcheck source=src/container.inc.sh
-  source "$DEBCRAFT_INSTALL_DIR/src/container.inc.sh"
+  source "$DEBCRAFT_LIB_DIR/container.inc.sh"
 fi
 
 case "$ACTION" in
   build)
     # shellcheck source=src/build.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/build.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/build.inc.sh"
     ;;
   validate)
     # shellcheck source=src/validate.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/validate.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/validate.inc.sh"
     ;;
   release)
     # shellcheck source=src/release.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/release.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/release.inc.sh"
     # shellcheck source=src/release-ppa.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/release-ppa.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/release-ppa.inc.sh"
     # shellcheck source=src/release-dput.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/release-dput.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/release-dput.inc.sh"
     ;;
   shell)
     # shellcheck source=src/shell.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/shell.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/shell.inc.sh"
     ;;
   prune)
     # shellcheck source=src/prune.inc.sh
-    source "$DEBCRAFT_INSTALL_DIR/src/prune.inc.sh"
+    source "$DEBCRAFT_LIB_DIR/prune.inc.sh"
     ;;
 esac

@@ -17,7 +17,7 @@ CONTAINER_DIR="$(mktemp -d)/debcraft-container"
 log_info "Building container '$DOWNLOAD_CONTAINER' in '$CONTAINER_DIR' for downloader use"
 
 mkdir --verbose --parents "$CONTAINER_DIR"
-cp --archive "$DEBCRAFT_INSTALL_DIR"/src/container/* "$CONTAINER_DIR"
+cp --archive "$DEBCRAFT_LIB_DIR"/container/* "$CONTAINER_DIR"
 
 # Make it visible what this temporary directory was used for
 echo "[$(date --iso-8601=seconds)] Building container $CONTAINER" >> "$CONTAINER_DIR/status.log"

@@ -12,7 +12,7 @@ CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
 log_info "Building container '$CONTAINER' in '$CONTAINER_DIR' for build ID '$BUILD_ID'"
 
 mkdir --verbose --parents "$CONTAINER_DIR"
-cp --archive "$DEBCRAFT_INSTALL_DIR"/src/container/* "$CONTAINER_DIR"
+cp --archive "$DEBCRAFT_LIB_DIR"/container/* "$CONTAINER_DIR"
 
 # Make it visible what this temporary directory was used for
 echo "[$(date --iso-8601=seconds)] Building container $CONTAINER for build $BUILD_ID" >> "$CONTAINER_DIR/status.log"

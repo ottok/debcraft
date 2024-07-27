@@ -41,8 +41,10 @@ manpage:
 		$(DESTDIR)/usr/share/man/man1/debcraft.1
 
 install: build
-	mkdir -p $(DESTDIR)/usr/bin
-	install -v -p debcraft.sh $(DESTDIR)/usr/bin/debcraft
+	install -v -p -D debcraft.sh $(DESTDIR)/usr/bin/debcraft
+	# install -v -p -D --target-directory=$(DESTDIR)/usr/share/debcraft src/*
+	# GNU 'install' does not support subdirectories, so use regular 'cp' instead
+	cp -a src $(DESTDIR)/usr/share/debcraft
 
 install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"

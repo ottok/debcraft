@@ -1,0 +1,3 @@
+# These shell files are not intended to be executed as-is, but use the .inc.sh
+# suffix to show that they are includes of shell scripts
+debcraft: script-not-executable [usr/share/debcraft/*.inc.sh]
