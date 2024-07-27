@@ -10,10 +10,10 @@ Build-Depends:
  podman | docker.io  <!nocheck>,
  shellcheck <!nocheck>,
 Standards-Version: 4.7.0
-Homepage: https://salsa.debian.org/otto/debcraft
+Homepage: https://salsa.debian.org/debian/debcraft
 Rules-Requires-Root: no
-Vcs-Git: https://salsa.debian.org/otto/debcraft.git
-Vcs-Browser: https://salsa.debian.org/otto/debcraft
+Vcs-Git: https://salsa.debian.org/debian/debcraft.git
+Vcs-Browser: https://salsa.debian.org/debian/debcraft
 
 Package: debcraft
 Architecture: all
