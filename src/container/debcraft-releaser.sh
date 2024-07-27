@@ -27,12 +27,15 @@ BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog -
 # used.
 if [ -n "$(git branch --list pristine-tar)" ]
 then
-  SIGNATURE_FILE=$(git ls-tree --name-only pristine-tar | grep .asc$ | sort -V | tail -n 1)
+  # Get signature file if exists while ignoring any errors from the output parsing
+  SIGNATURE_FILE="$(git ls-tree --name-only pristine-tar | grep .asc$ | sort -V | tail -n 1)" || true
   if [ -n "$SIGNATURE_FILE" ]
   then
     TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
     log_info "Create original source package and signature using pristine-tar"
     pristine-tar checkout "../$TARBALL_FILE" -s "../$SIGNATURE_FILE"
+  else
+    log_info "No signature file found on pristine-tar branch"
   fi
 fi
 
