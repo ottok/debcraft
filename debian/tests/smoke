@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+# dep8 smoke test for Debcraft
+# Author: Otto Kekäläinen <otto@debian.org>
+#
+# This very simple test just checks that the script starts and prints out the
+# usage instructions, detected by keyword "Usage". A more complex test would
+# require a test platform that supports building and running containers.
+
+debcraft --help | grep -F "usage: debcraft [options]"

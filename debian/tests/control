@@ -1,0 +1,3 @@
+Tests: smoke
+Depends: debcraft
+Restrictions: superficial

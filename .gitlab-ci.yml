@@ -37,3 +37,4 @@ Salsa-CI:
   stage: package
   trigger:
     include: debian/salsa-ci.yml
+    strategy: depend
