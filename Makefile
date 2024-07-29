@@ -36,6 +36,9 @@ manpage:
 		--output $(DESTDIR)/usr/share/man/man1/debcraft.1 \
 		--no-info \
 		./debcraft.sh
+	# Filter out inclusion of DEB_BUILD_OPTIONS in static Makefile.
+	sed -i -e 's@ (currently DEB_BUILD_OPTIONS=.*)\.@.@g' \
+		$(DESTDIR)/usr/share/man/man1/debcraft.1
 
 install: build
 	mkdir -p $(DESTDIR)/usr/bin
