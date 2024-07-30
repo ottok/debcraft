@@ -48,7 +48,7 @@ install: build
 
 install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
-	ln --symbolic --verbose ${PWD}/debcraft.sh ~/bin/debcraft
+	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/bin/debcraft
 
 test: test-static test-debcraft
 

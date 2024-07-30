@@ -24,7 +24,7 @@
 
 > **Feedback welcome!** Debcraft is still in early development and your feedback
 > is greatly appreciated. Bug reports at
-> https://salsa.debian.org/otto/debcraft/-/issues are welcome on for example:
+> https://salsa.debian.org/debian/debcraft/-/issues are welcome on for example:
 >
 > * Documentation: Is it easy to start using Debcraft? How could the
 >   documentation be clarified further?
@@ -91,23 +91,24 @@ as a subargument any of:
     with the Debian packaging instructions
   * path to a .dsc file and source tarballs that can be built into a .deb
   * Debian package name, or source package name, that apt can download
-  * git http(s) or ssh url that can be downloaded and built
+  * git http(s) or ssh URL that can be downloaded and built
 
-The commands 'validate' and 'release' are intended to be used to finalilze
+The commands 'validate' and 'release' are intended to be used to finalize
 a package build. The command 'shell' can be used to pay around in the container
 and 'prune' will clean up temporary files by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym').
+be honored (for example DEB_BUILD_OPTIONS='parallel=4 nocheck noautodbgsym').
 Note that Debcraft builds never runs as root, and thus packages with
 DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
-  --build-dirs-path    Path for writing build files and arfitacs (default: parent directory)
+  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)
   --distribution       Linux distribution to build in (default: debian:sid)
   --container-command  container command to use (default: podman)
   --pull               ensure container base is updated
-  --clean              ensure and sources are clean
+  --copy               perform the build on a copy of the package directory
+  --clean              ensure sources are clean
   -h, --help           display this help and exit
   --version            display version and exit
 
@@ -231,19 +232,10 @@ To compare build artifacts with those of previous similar build you can use for 
 
 ## Installation
 
-For the time being, Debcraft is not available in the Debian repositories or even
-as a package at all. To use it, simply clone the git repository and link the
-script from any directory you have in your `$PATH`, such as `$HOME/bin`
-
-```
-git clone
-cd debcraft
-ln -s ${PWD}/debcraft.sh ~/bin/debcraft
-```
-
 ### Debian package
 
-Debcraft is available on Debian unstable since July 2024. Install it with:
+Debcraft in Debian unstable ("sid") and Ubuntu 24.10 "Oracular" since July 2024.
+If running such a new version one can simply install with:
 
 ```
 apt install debcraft
@@ -251,6 +243,17 @@ apt install debcraft
 
 If you do not have Podman nor Docker installed, it will install Podman by
 default.
+
+### Development version
+
+To use the latest development version, simply clone the git repository and link the
+script from any directory you have in your `$PATH`, such as `$HOME/bin`
+
+```
+git clone https://salsa.debian.org/debian/debcraft.git
+cd debcraft
+make install-local
+```
 
 ## Development
 
@@ -286,13 +289,12 @@ The core design principles are:
 ### Development as an open source project
 
 **This project is open source and contributions are welcome!** The project
-
 maintains a promise that the initial review will happen in 48h for all Merge
 Requests received. The [code review will be conducted professionally]() and the
 code base aims to maintain a very high quality bar, so please reserve time to
 polish your code submission in a couple of review rounds.
 
-The project is hosted at https://salsa.debian.org/otto/debcraft with mirrors at
+The project is hosted at https://salsa.debian.org/debian/debcraft with mirrors at
 https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
 
 ### Roadmap
