@@ -32,9 +32,13 @@ sast:
 include:
 - template: Security/SAST.gitlab-ci.yml
 
-# Once all native tests passed, also run Salsa-CI
+# Once all native tests passed, also run Salsa CI, except if a tag push as
+# Salsa CI does not run on tag pushes at all
 Salsa-CI:
   stage: package
   trigger:
     include: debian/salsa-ci.yml
     strategy: depend
+  except:
+    variables:
+      - $CI_COMMIT_TAG != null
