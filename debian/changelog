@@ -1,8 +1,20 @@
-debcraft (0.1.1) UNRELEASED; urgency=medium
+debcraft (0.1.1) unstable; urgency=medium
 
-  * Open new changelog entry. This will be replaced with 'gbp dch -avR'.
+  [ Otto Kekäläinen ]
+  * Update Vcs-* after project moved to general Debian namespace on Salsa
+  * Handle missing signature files on pristine-tar branch properly
+  * Install Debcraft library files in /usr/share/debcraft (Closes: #1077259)
+  * Implement minimal and superficial autopkgtests for Debcraft
+  * Use Debputy to lint and reformat (replacing wrap-and-sort)
+  * See git commit log for full list of changes and explanations
 
- -- Otto Kekäläinen <otto@debian.org>  Fri, 26 Jul 2024 22:04:35 -0700
+  [ Chris Lamb ]
+  * Omit run-time DEB_BUILD_OPTIONS contents from man page (Closes: 1077479)
+
+  [ Bastian Venthur ]
+  * Fix some more user facing spelling and improve README
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 29 Jul 2024 22:05:33 -0700
 
 debcraft (0.1.0) unstable; urgency=medium
 
