@@ -44,16 +44,6 @@ display_help() {
   echo "and https://www.debian.org/doc/debian-policy/"
 }
 
-# If Debcraft itself was run in a git repository, include the git commit id
-display_version() {
-  VERSION=0.1.0
-  if [ -e .git ]
-  then
-    VERSION="$VERSION-$(git log -n 1 --oneline | cut -d ' ' -f 1)"
-  fi
-  echo "Debcraft version $VERSION"
-}
-
 # Canonicalize script name if was run via symlink
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_LIB_DIR="$(dirname "$DEBCRAFT_CMD_PATH")/src"
@@ -63,6 +53,32 @@ if [ ! -r "$DEBCRAFT_LIB_DIR/container/output.inc.sh" ]
 then
   DEBCRAFT_LIB_DIR="/usr/share/debcraft"
 fi
+
+# If Debcraft itself was run in a git repository, include the git commit id
+display_version() {
+  if [ -e "$(dirname "$DEBCRAFT_CMD_PATH")/.git" ]
+  then
+    cd "$(dirname "$DEBCRAFT_CMD_PATH")"
+    if [ -z "$(git tag --list)" ]
+    then
+      echo "ERROR: Debcraft unable to view latest git tag. Please run 'git fetch --tags'."
+      exit 1
+    fi
+    LATEST_TAG="$(git describe --first-parent --abbrev=0)"
+    LATEST_VERSION="$(echo "$LATEST_TAG" | grep --only-matching --basic-regexp '[0-9.]*')"
+    LATEST_COMMIT="$(git rev-parse --short HEAD)"
+    echo "Debcraft git version: $LATEST_VERSION-$LATEST_COMMIT"
+  elif [ -f /usr/share/doc/debcraft/changelog.gz ]
+  then
+    VERSION="$(
+      zgrep --only-matching --max-count=1 --perl-regexp '\(\K[^\)]*' \
+      /usr/share/doc/debcraft/changelog.gz
+      )"
+    echo "Debcraft package version: $VERSION"
+  else
+    echo "Debcraft version unknown: neither git version control nor installed package was found"
+  fi
+}
 
 # Debug flag detection must run before output.inc.sh is loaded
 case "$@" in
