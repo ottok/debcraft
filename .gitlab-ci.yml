@@ -24,9 +24,9 @@ stages:
   - apt-get update -qq
   - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
   - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
+  - apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || export APT_STATUS="failed"
   # Ensure upgrades past 2.38-11 are blocked so tests don't fail on usrmerge issues
   - apt-mark hold libc6 libc-bin
-  - apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || export APT_STATUS="failed"
   # Due to https://bugs.debian.org/993755 and #975077 upgrades from Buster or
   # older to Bookworm or newer always fails on:
   #   /usr/bin/perl: error while loading shared libraries: libcrypt.so.1: cannot
@@ -72,6 +72,9 @@ stages:
 .test-enable-plain-sid-repos: &test-enable-plain-sid-repos
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
   - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
+  - apt-get -q install --no-install-recommends --yes ./base-files_13.2_amd64.deb
+  # Ensure upgrades past 13.2 are blocked to avoid Bullseye and older upgrades to Trixie won't fail on usrmerge issues
+  - apt-mark hold base-files
   # Replace any old repos with just Sid
   - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
   # Upgrade minimal stack first
