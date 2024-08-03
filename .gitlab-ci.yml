@@ -18,9 +18,9 @@ stages:
 
 .test-enable-sid-repos: &test-enable-sid-repos
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
-  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
-  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
-  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
+  - curl -sO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
+  - curl -sO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
+  - curl -sO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
   # Replace any old repos with just Sid
   - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
   # Upgrade minimal stack first
@@ -52,10 +52,14 @@ stages:
     fi
 
 .test-enable-plain-sid-repos: &test-enable-plain-sid-repos
+  - apt-get install -qq --yes --no-install-recommends ca-certificates curl
+  - curl -sO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
   # Replace any old repos with just Sid
   - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
   # Upgrade minimal stack first
   - apt-get update -q
+  - apt-get -q install --no-install-recommends --yes ./*.deb
+
 
 upgrade from bookworm:
   stage: test
@@ -87,11 +91,12 @@ upgrade from buster:
 upgrade from stretch:
   stage: test
   image: debian:stretch
-  script: |
-    cat > /etc/apt/sources.list <<EOF
-    deb http://archive.debian.org/debian stretch main
-    deb http://archive.debian.org/debian-security stretch/updates main
-    EOF
+  script:
+    - |
+      cat > /etc/apt/sources.list <<EOF
+      deb http://archive.debian.org/debian stretch main
+      deb http://archive.debian.org/debian-security stretch/updates main
+      EOF
     - *test-prepare-container
     - apt-get install -y entr
     - *test-enable-sid-repos
@@ -100,11 +105,12 @@ upgrade from stretch:
 upgrade from jessie:
   stage: test
   image: debian:jessie
-  script: |
-    cat > /etc/apt/sources.list <<EOF
-    deb http://archive.debian.org/debian jessie main
-    deb http://archive.debian.org/debian-security jessie/updates main
-    EOF
+  script:
+    - |
+      cat > /etc/apt/sources.list <<EOF
+      deb http://archive.debian.org/debian jessie main
+      deb http://archive.debian.org/debian-security jessie/updates main
+      EOF
     - *test-prepare-container
     - apt-get install -y entr
     - *test-enable-sid-repos
@@ -141,11 +147,12 @@ plain upgrade from buster:
 plain upgrade from stretch:
   stage: test
   image: debian:stretch
-  script: |
-    cat > /etc/apt/sources.list <<EOF
-    deb http://archive.debian.org/debian stretch main
-    deb http://archive.debian.org/debian-security stretch/updates main
-    EOF
+  script:
+    - |
+      cat > /etc/apt/sources.list <<EOF
+      deb http://archive.debian.org/debian stretch main
+      deb http://archive.debian.org/debian-security stretch/updates main
+      EOF
     - *test-prepare-container
     - apt-get install -y entr
     - *test-enable-plain-sid-repos
@@ -154,11 +161,12 @@ plain upgrade from stretch:
 plain upgrade from jessie:
   stage: test
   image: debian:jessie
-  script: |
-    cat > /etc/apt/sources.list <<EOF
-    deb http://archive.debian.org/debian jessie main
-    deb http://archive.debian.org/debian-security jessie/updates main
-    EOF
+  script:
+    - |
+      cat > /etc/apt/sources.list <<EOF
+      deb http://archive.debian.org/debian jessie main
+      deb http://archive.debian.org/debian-security jessie/updates main
+      EOF
     - *test-prepare-container
     - apt-get install -y entr
     - *test-enable-plain-sid-repos
