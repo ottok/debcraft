@@ -41,6 +41,7 @@ stages:
     if [ "$APT_STATUS" = "failed" ]
     then
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
+      # Installing individual .deb files is supported in apt version from Stretch onwards (not in Jessie!)
       apt-get -q --yes --no-install-recommends install ./base-files_13.2_amd64.deb
       # Ensure upgrades past 13.2 are blocked so tests don't fail on usrmerge issues
       apt-mark hold base-files
