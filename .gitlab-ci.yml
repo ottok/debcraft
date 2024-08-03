@@ -18,22 +18,17 @@ stages:
 
 .test-enable-sid-repos: &test-enable-sid-repos
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
-  - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
-  - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
-  - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
   # Replace any old repos with just Sid
   - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
   # Upgrade minimal stack first
   - apt-get update -qq
-  - find . -ls
-  - sync
-  - apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb ./base-files_13.2_amd64.deb || export APT_STATUS="failed"
+  - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
+  - curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
   # Ensure upgrades past 2.38-11 are blocked so tests don't fail on usrmerge issues
-  - apt-mark hold libc6 libc-bin base-files
-  # Complete upgrade of minimal stack
-  - apt-get install -q --yes apt || export APT_STATUS="failed"
+  - apt-mark hold libc6 libc-bin
+  - apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || export APT_STATUS="failed"
   # Due to https://bugs.debian.org/993755 and #975077 upgrades from Buster or
-  # older to Bookworm or newer fails on:
+  # older to Bookworm or newer always fails on:
   #   /usr/bin/perl: error while loading shared libraries: libcrypt.so.1: cannot
   #     open shared object file: No such file or directory
   #   dpkg: error processing package libc6:amd64 (--configure):
@@ -48,8 +43,31 @@ stages:
       cd - # Back to /builds/$USER/mariadb-server/debian/output
       find /lib/*/libcrypt.* -ls # Show that new libcrypt is there
       apt-get -q --yes --fix-broken install
-      apt-get install -q --yes apt
     fi
+  - apt-get -q install apt || export SECOND_APT_STATUS="failed"
+  # Upgrades from Bullseye or older to Trixie or newer always fail on:
+  #   Preparing to unpack .../base-files_13.4_amd64.deb ...
+  #   ******************************************************************************
+  #   *
+  #   * The base-files package cannot be installed because
+  #   * /bin is a directory, but should be a symbolic link.
+  #   *
+  #   * Please install the usrmerge package to convert this system to merged-/usr.
+  #   *
+  #   * For more information please read https://wiki.debian.org/UsrMerge.
+  #   *
+  #   ******************************************************************************
+  # Therefore, run this older base-files must be used:
+  - |
+    if [ "$SECOND_APT_STATUS" = "failed" ]
+    then
+      curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
+      apt-get -q install --no-install-recommends --yes ./base-files_13.2_amd64.deb
+      # Ensure upgrades past 13.2 are blocked so tests don't fail on usrmerge issues
+      apt-mark hold base-files
+    fi
+  # Complete upgrade of minimal stack
+  - apt-get install -q --yes apt
 
 .test-enable-plain-sid-repos: &test-enable-plain-sid-repos
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
@@ -112,7 +130,7 @@ upgrade from jessie:
       deb http://archive.debian.org/debian-security jessie/updates main
       EOF
     - *test-prepare-container
-    - apt-get install -y entr
+    - apt-get install -y --force-yes entr
     - *test-enable-sid-repos
     - apt-get install -y entr
 
@@ -168,6 +186,6 @@ plain upgrade from jessie:
       deb http://archive.debian.org/debian-security jessie/updates main
       EOF
     - *test-prepare-container
-    - apt-get install -y entr
+    - apt-get install -y --force-yes entr
     - *test-enable-plain-sid-repos
     - apt-get install -y entr
