@@ -3,42 +3,163 @@ stages:
   - test
   - package
 
-test:
+.test-prepare-container: &test-prepare-container |
+  cd ${WORKING_DIR} # Don't repeat this step, it's just cd ./debian/output
+  # Enable automatic restarts from maint scripts
+  sed -i "s/101/0/g" -i /usr/sbin/policy-rc.d
+  # Fake /sbin/runlevel to avoid warnings of "invoke-rc.d: could not determine current runlevel"
+  echo -e '#!/bin/sh\necho "N 5"' > /sbin/runlevel; chmod +x /sbin/runlevel
+  # Avoid the warnings of "debconf: unable to initialize frontend: Dialog"
+  echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+  # Emit non-zero exit code also on warnings
+  echo 'APT::Update::Error-Mode "any";' > /etc/apt/apt.conf.d/non-zero-exit-on-warnings
+  # Prime the apt cache so later apt commands can run
+  apt-get update -q
+
+.test-enable-sid-repos: &test-enable-sid-repos
+  - apt-get install -qq --yes --no-install-recommends ca-certificates curl
+  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
+  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
+  - curl -sS -O https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
+  # Replace any old repos with just Sid
+  - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
+  # Upgrade minimal stack first
+  - apt-get update -qq
+  - find . -ls
+  - sync
+  - apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb ./base-files_13.2_amd64.deb || export APT_STATUS="failed"
+  # Ensure upgrades past 2.38-11 are blocked so tests don't fail on usrmerge issues
+  - apt-mark hold libc6 libc-bin base-files
+  # Complete upgrade of minimal stack
+  - apt-get install -q --yes apt || export APT_STATUS="failed"
+  # Due to https://bugs.debian.org/993755 and #975077 upgrades from Buster or
+  # older to Bookworm or newer fails on:
+  #   /usr/bin/perl: error while loading shared libraries: libcrypt.so.1: cannot
+  #     open shared object file: No such file or directory
+  #   dpkg: error processing package libc6:amd64 (--configure):
+  # Therefore, run this extra workaround if first run of apt-get install failed:
+  - |
+    if [ "$APT_STATUS" = "failed" ]
+    then
+      cd $(mktemp -d) # Use temp dir where apt can download and unpack files
+      apt-get -y download libcrypt1
+      dpkg-deb -x libcrypt1_*.deb .
+      cp -ra usr/lib/* /lib/ || true # libcrypt 1:4.4.36-3+
+      cd - # Back to /builds/$USER/mariadb-server/debian/output
+      find /lib/*/libcrypt.* -ls # Show that new libcrypt is there
+      apt-get -q --yes --fix-broken install
+      apt-get install -q --yes apt
+    fi
+
+.test-enable-plain-sid-repos: &test-enable-plain-sid-repos
+  # Replace any old repos with just Sid
+  - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
+  # Upgrade minimal stack first
+  - apt-get update -q
+
+upgrade from bookworm:
   stage: test
-  image: debian:sid-slim
+  image: debian:bookworm
   script:
-    - apt-get update -qq && apt-get -qq install --no-install-recommends --yes git devscripts python3-debian shellcheck make lsb-release codespell
-    - make test-static
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-sid-repos
+    - apt-get install -y entr
 
-## Debian testing
-# Once 'make test' passed, also run the .deb builds and tests
-# @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
-# runners are too small for everything this stage does.
-# build_deb:
-#   stage: Salsa-CI
-#   trigger:
-#     include: debian/salsa-ci.yml
-
-## Security testing
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-sast:
+upgrade from bullseye:
   stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
+  image: debian:bullseye
+  script:
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-sid-repos
+    - apt-get install -y entr
 
-# Once all native tests passed, also run Salsa CI, except if a tag push as
-# Salsa CI does not run on tag pushes at all
-Salsa-CI:
-  stage: package
-  trigger:
-    include: debian/salsa-ci.yml
-    strategy: depend
-  except:
-    variables:
-      - $CI_COMMIT_TAG != null
+upgrade from buster:
+  stage: test
+  image: debian:buster
+  script:
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-sid-repos
+    - apt-get install -y entr
+
+upgrade from stretch:
+  stage: test
+  image: debian:stretch
+  script: |
+    cat > /etc/apt/sources.list <<EOF
+    deb http://archive.debian.org/debian stretch main
+    deb http://archive.debian.org/debian-security stretch/updates main
+    EOF
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-sid-repos
+    - apt-get install -y entr
+
+upgrade from jessie:
+  stage: test
+  image: debian:jessie
+  script: |
+    cat > /etc/apt/sources.list <<EOF
+    deb http://archive.debian.org/debian jessie main
+    deb http://archive.debian.org/debian-security jessie/updates main
+    EOF
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-sid-repos
+    - apt-get install -y entr
+
+
+plain upgrade from bookworm:
+  stage: test
+  image: debian:bookworm
+  script:
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-plain-sid-repos
+    - apt-get install -y entr
+
+plain upgrade from bullseye:
+  stage: test
+  image: debian:bullseye
+  script:
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-plain-sid-repos
+    - apt-get install -y entr
+
+plain upgrade from buster:
+  stage: test
+  image: debian:buster
+  script:
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-plain-sid-repos
+    - apt-get install -y entr
+
+plain upgrade from stretch:
+  stage: test
+  image: debian:stretch
+  script: |
+    cat > /etc/apt/sources.list <<EOF
+    deb http://archive.debian.org/debian stretch main
+    deb http://archive.debian.org/debian-security stretch/updates main
+    EOF
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-plain-sid-repos
+    - apt-get install -y entr
+
+plain upgrade from jessie:
+  stage: test
+  image: debian:jessie
+  script: |
+    cat > /etc/apt/sources.list <<EOF
+    deb http://archive.debian.org/debian jessie main
+    deb http://archive.debian.org/debian-security jessie/updates main
+    EOF
+    - *test-prepare-container
+    - apt-get install -y entr
+    - *test-enable-plain-sid-repos
+    - apt-get install -y entr
