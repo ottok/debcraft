@@ -1,30 +1,29 @@
 ---
 stages:
   - test
-  - package
 
 .test-prepare-container: &test-prepare-container |
-  cd ${WORKING_DIR} # Don't repeat this step, it's just cd ./debian/output
   # Enable automatic restarts from maint scripts
   sed -i "s/101/0/g" -i /usr/sbin/policy-rc.d
   # Fake /sbin/runlevel to avoid warnings of "invoke-rc.d: could not determine current runlevel"
   echo -e '#!/bin/sh\necho "N 5"' > /sbin/runlevel; chmod +x /sbin/runlevel
   # Avoid the warnings of "debconf: unable to initialize frontend: Dialog"
   echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-  # Emit non-zero exit code also on warnings
+  # Emit non-zero exit code also on warnings to ensure CI stops on any issue
   echo 'APT::Update::Error-Mode "any";' > /etc/apt/apt.conf.d/non-zero-exit-on-warnings
   # Prime the apt cache so later apt commands can run
   apt-get update -q
 
 .test-enable-sid-repos: &test-enable-sid-repos
+  # Install tools that may be needed to circumvent issues in the upgrade
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
-  # Replace any old repos with just Sid
-  - echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list
+  # Replace any old repos with just Sid, and trust blindly as old Debian releases won't have latest Sid in their keyring
+  - echo 'deb [trusted=yes] http://deb.debian.org/debian sid main' > /etc/apt/sources.list
   # Upgrade minimal stack first
-  - apt-get update -qq
+  - apt-get update -q
   - apt-get install -q --yes apt || export APT_STATUS="failed"
   # Upgrades from Bullseye (or older) to Trixie (or newer) will pull in
-  # base-files 13.4+, which will fail on:
+  # base-files 13.4+, which fails on:
   #   Preparing to unpack .../base-files_13.4_amd64.deb ...
   #   *************************************************************************
   #   *
@@ -41,13 +40,13 @@ stages:
     if [ "$APT_STATUS" = "failed" ]
     then
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
-      # Installing individual .deb files is supported in apt version from Stretch onwards ('dpkg -i' needed for Jessie)
-      apt-get -q --yes --no-install-recommends install ./base-files_13.2_amd64.deb || dpkg -i ./*.deb
+      # Apt version in Jessie does not support 'apt install ./package.deb', use this only for Stretch or newer
+      apt-get -q --yes --no-install-recommends install ./base-files_13.2_amd64.deb
       # Ensure upgrades past 13.2 are blocked to avoid failure on usrmerge issue
       apt-mark hold base-files
       apt-get -q --yes --fix-broken install apt
     fi || export BASE_FILES_STATUS="failed"
-  # Latest apt attempts to pull in latest libc6, which will fail on:
+  # Latest apt attempts to pull in latest libc6, which fails on:
   #   libc6 : Breaks: base-files (< 13.3~) but 13.2 is to be installed
   # Therefore, older libc6 and it's dependency libc6-bin must be used:
   - |
@@ -55,14 +54,14 @@ stages:
     then
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
-      # Installing individual .deb files is supported in apt version from Stretch onwards ('dpkg -i' needed for Jessie)
-      apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || dpkg -i ./*.deb
+      # Apt version in Jessie does not support 'apt install ./package.deb', use this only for Stretch or newer
+      apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb
       # Ensure upgrades past 2.38-11 are blocked to avoid failure on usrmerge issue
       apt-mark hold libc6 libc-bin
       apt-get -q --yes --fix-broken install apt
     fi || export LIBC_STATUS="failed"
   # Due to https://bugs.debian.org/993755 and #975077 upgrades from Buster
-  # (or older) to Bookworm (or newer) will fail on:
+  # (or older) to Bookworm (or newer) fails on:
   #   /usr/bin/perl: error while loading shared libraries: libcrypt.so.1: cannot
   #     open shared object file: No such file or directory
   #   dpkg: error processing package libc6:amd64 (--configure):
@@ -74,7 +73,7 @@ stages:
       apt-get -y download libcrypt1
       dpkg-deb -x libcrypt1_*.deb .
       cp -ra usr/lib/* /lib/ || true # libcrypt 1:4.4.36-3+
-      cd - # Back to /builds/$USER/mariadb-server/debian/output
+      cd - # Back to CI run directory
       find /lib/*/libcrypt.* -ls # Show that new libcrypt is there
       apt-mark unhold libc6 libc-bin
       apt-get -q --yes --fix-broken --no-install-recommends install ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb
@@ -82,32 +81,29 @@ stages:
       apt-get install -q --yes apt
     fi
 
+.test-upgrade: &test-upgrade
+  - *test-prepare-container
+  - apt-get install -y entr
+  - *test-enable-sid-repos
+  - apt-get install -y entr
+
 upgrade from bookworm:
   stage: test
   image: debian:bookworm
   script:
-    - *test-prepare-container
-    - apt-get install -y entr
-    - *test-enable-sid-repos
-    - apt-get install -y entr
+    - *test-upgrade
 
 upgrade from bullseye:
   stage: test
   image: debian:bullseye
   script:
-    - *test-prepare-container
-    - apt-get install -y entr
-    - *test-enable-sid-repos
-    - apt-get install -y entr
+    - *test-upgrade
 
 upgrade from buster:
   stage: test
   image: debian:buster
   script:
-    - *test-prepare-container
-    - apt-get install -y entr
-    - *test-enable-sid-repos
-    - apt-get install -y entr
+    - *test-upgrade
 
 upgrade from stretch:
   stage: test
@@ -118,22 +114,4 @@ upgrade from stretch:
       deb http://archive.debian.org/debian stretch main
       deb http://archive.debian.org/debian-security stretch/updates main
       EOF
-    - *test-prepare-container
-    - apt-get install -y entr
-    - *test-enable-sid-repos
-    - apt-get install -y entr
-
-upgrade from jessie:
-  stage: test
-  image: debian:jessie
-  script:
-    - |
-      cat > /etc/apt/sources.list <<EOF
-      # Trust blindly as Jessie key expired and will not be renewed
-      deb [trusted=yes] http://archive.debian.org/debian jessie main
-      deb [trusted=yes] http://archive.debian.org/debian-security jessie/updates main
-      EOF
-    - *test-prepare-container
-    - apt-get install -y entr
-    - *test-enable-sid-repos
-    - apt-get install -y entr
+    - *test-upgrade
