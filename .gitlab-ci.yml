@@ -108,7 +108,7 @@ stages:
     until apt-get install -q --yes bash dash util-linux coreutils lsb-base
     do
       test -f /bin/cp || /usr/bin/cp -av /usr/bin/cp /bin
-      usrmerge-temp-fix
+      usrmerge-temp-fix || true
     done
 
 .test-upgrade: &test-upgrade
