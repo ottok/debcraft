@@ -15,7 +15,7 @@ stages:
   apt-get update -q
 
 .test-enable-sid-repos: &test-enable-sid-repos
-  # Install tools that may be needed to circumvent issues in the upgrade
+# Install tools that may be needed to circumvent issues in the upgrade
   - apt-get install -qq --yes --no-install-recommends ca-certificates curl
   # Replace any old repos with just Sid, and trust blindly as old Debian releases won't have latest Sid in their keyring
   - echo 'deb [trusted=yes] http://deb.debian.org/debian sid main' > /etc/apt/sources.list
@@ -41,10 +41,10 @@ stages:
     then
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/b/base-files/base-files_13.2_amd64.deb
       # Apt version in Jessie does not support 'apt install ./package.deb', use this only for Stretch or newer
-      apt-get -q --yes --no-install-recommends install ./base-files_13.2_amd64.deb
+      apt-get install -q --yes --no-install-recommends ./base-files_13.2_amd64.deb || true
       # Ensure upgrades past 13.2 are blocked to avoid failure on usrmerge issue
       apt-mark hold base-files
-      apt-get -q --yes --fix-broken install apt
+      apt-get install -q --yes --fix-broken apt
     fi || export BASE_FILES_STATUS="failed"
   # Latest apt attempts to pull in latest libc6, which fails on:
   #   libc6 : Breaks: base-files (< 13.3~) but 13.2 is to be installed
@@ -55,31 +55,61 @@ stages:
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc6_2.38-11_amd64.deb
       curl -sLO https://snapshot.debian.org/archive/debian/20240531T083821Z/pool/main/g/glibc/libc-bin_2.38-11_amd64.deb
       # Apt version in Jessie does not support 'apt install ./package.deb', use this only for Stretch or newer
-      apt-get -q install --no-install-recommends --yes ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb
+      apt-get install -q --yes --no-install-recommends ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || true
       # Ensure upgrades past 2.38-11 are blocked to avoid failure on usrmerge issue
       apt-mark hold libc6 libc-bin
-      apt-get -q --yes --fix-broken install apt
+      apt-get install -q --yes --fix-broken apt
     fi || export LIBC_STATUS="failed"
   # Due to https://bugs.debian.org/993755 and #975077 upgrades from Buster
   # (or older) to Bookworm (or newer) fails on:
   #   /usr/bin/perl: error while loading shared libraries: libcrypt.so.1: cannot
   #     open shared object file: No such file or directory
   #   dpkg: error processing package libc6:amd64 (--configure):
-  # Therefore, this workaround needs to be applied:
+  # Therefore, the workaround in
+  # https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html#libcrypt-upgrade-from-buster
+  # needs to be applied:
   - |
     if [ "$LIBC_STATUS" = "failed" ]
     then
       cd $(mktemp -d) # Use temp dir where apt can download and unpack files
-      apt-get -y download libcrypt1
+      apt-get -q --yes download libcrypt1
       dpkg-deb -x libcrypt1_*.deb .
       cp -ra usr/lib/* /lib/ || true # libcrypt 1:4.4.36-3+
       cd - # Back to CI run directory
       find /lib/*/libcrypt.* -ls # Show that new libcrypt is there
       apt-mark unhold libc6 libc-bin
-      apt-get -q --yes --fix-broken --no-install-recommends install ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb
+      apt-get install -q --yes --fix-broken --no-install-recommends ./libc6_2.38-11_amd64.deb ./libc-bin_2.38-11_amd64.deb || true
+      # Ensure upgrades past 2.38-11 are blocked to avoid failure on usrmerge issue
       apt-mark hold libc6 libc-bin
       apt-get install -q --yes apt
     fi
+  # If system has not undergone usrmerge upgrade, don't attempt it in CI containers
+  - test -L /usr || apt-mark hold usrmerge usr-is-merged
+  # For debugging purposes show what packages are now on hold
+  - apt-mark showhold
+  # Update base system
+  - |
+    function usrmerge-temp-fix {
+      for x in bash dash sh more cp ln sleep
+      do
+        if [ -x /usr/bin/$x ]
+        then
+          cp -av /usr/bin/$x /bin/
+        fi
+      done
+    }
+    # First run fails on:
+    #   dpkg (subprocess): unable to execute installed bash package post-installation script (/var/lib/dpkg/info/bash.postinst): No such file or directory
+    # Second run fails on:
+    #   dpkg (subprocess): unable to execute installed dash package post-installation script (/var/lib/dpkg/info/dash.postinst): No such file or directory
+    # Third run fails on:
+    #   update-alternatives: error: alternative path /bin/more doesn't exist
+    # Repeat upgrade attempts until passes
+    until apt-get install -q --yes bash dash util-linux coreutils lsb-base
+    do
+      test -f /bin/cp || /usr/bin/cp -av /usr/bin/cp /bin
+      usrmerge-temp-fix
+    done
 
 .test-upgrade: &test-upgrade
   - *test-prepare-container
