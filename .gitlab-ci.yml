@@ -89,6 +89,22 @@ stages:
   - apt-mark showhold
   # Update base system
   - |
+    # Upgrading from Stretch will fail on conflicts with util-linux:
+    #   dpkg: error processing archive /var/cache/apt/archives/util-linux_2.40.2-1_amd64.deb (--unpack):
+    #     trying to overwrite '/etc/pam.d/su', which is also in package login 1:4.4-4.1+deb9u1
+    #   dpkg: error processing archive /var/cache/apt/archives/util-linux_2.40.2-1_amd64.deb (--unpack):
+    #     trying to overwrite '/usr/share/bash-completion/completions/findmnt', which is also in package mount 2.29.2-1+deb9u1
+    # Circumvent this by removing the conflicting packages first, as they are
+    # not essential for the upgrade to run.
+    apt-get remove login mount --yes --allow-remove-essential
+  - |
+    # First 'apt-get upgrade' run fails on:
+    #   dpkg (subprocess): unable to execute installed bash package post-installation script (/var/lib/dpkg/info/bash.postinst): No such file or directory
+    # Second run fails on:
+    #   dpkg (subprocess): unable to execute installed dash package post-installation script (/var/lib/dpkg/info/dash.postinst): No such file or directory
+    # Third run fails on:
+    #   update-alternatives: error: alternative path /bin/more doesn't exist
+    # Repeat upgrade attempts until passes
     function usrmerge-temp-fix {
       for x in bash dash sh more cp ln sleep
       do
@@ -98,29 +114,18 @@ stages:
         fi
       done
     }
-    # First run fails on:
-    #   dpkg (subprocess): unable to execute installed bash package post-installation script (/var/lib/dpkg/info/bash.postinst): No such file or directory
-    # Second run fails on:
-    #   dpkg (subprocess): unable to execute installed dash package post-installation script (/var/lib/dpkg/info/dash.postinst): No such file or directory
-    # Third run fails on:
-    #   update-alternatives: error: alternative path /bin/more doesn't exist
-    # Repeat upgrade attempts until passes
-    until apt-get install -q --yes bash dash util-linux coreutils lsb-base
+    until apt-get install -q --yes bash dash util-linux coreutils lsb-base login mount
     do
       test -f /bin/cp || /usr/bin/cp -av /usr/bin/cp /bin
       usrmerge-temp-fix || true
     done
-
-# Stretch will fail on:
-# Unpacking util-linux (2.40.2-1) over (2.29.2-1+deb9u1) ...
-# dpkg: error processing archive /var/cache/apt/archives/util-linux_2.40.2-1_amd64.deb (--unpack):
-#  trying to overwrite '/etc/pam.d/su', which is also in package login 1:4.4-4.1+deb9u1
 
 .test-upgrade: &test-upgrade
   - *test-prepare-container
   - apt-get install -q --yes entr
   - *test-enable-sid-repos
   - apt-get upgrade -q --yes
+  - apt-get full-upgrade -q --yes
 
 upgrade from bookworm:
   stage: test
@@ -140,13 +145,13 @@ upgrade from buster:
   script:
     - *test-upgrade
 
-# upgrade from stretch:
-#   stage: test
-#   image: debian:stretch
-#   script:
-#     - |
-#       cat > /etc/apt/sources.list <<EOF
-#       deb http://archive.debian.org/debian stretch main
-#       deb http://archive.debian.org/debian-security stretch/updates main
-#       EOF
-#     - *test-upgrade
+upgrade from stretch:
+  stage: test
+  image: debian:stretch
+  script:
+    - |
+      cat > /etc/apt/sources.list <<EOF
+      deb http://archive.debian.org/debian stretch main
+      deb http://archive.debian.org/debian-security stretch/updates main
+      EOF
+    - *test-upgrade
