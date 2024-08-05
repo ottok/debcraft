@@ -96,7 +96,7 @@ stages:
     #     trying to overwrite '/usr/share/bash-completion/completions/findmnt', which is also in package mount 2.29.2-1+deb9u1
     # Circumvent this by removing the conflicting packages first, as they are
     # not essential for the upgrade to run.
-    apt-get remove login mount --yes --allow-remove-essential
+    apt-get remove login mount --yes --allow-remove-essential || true
   - |
     # First 'apt-get upgrade' run fails on:
     #   dpkg (subprocess): unable to execute installed bash package post-installation script (/var/lib/dpkg/info/bash.postinst): No such file or directory
