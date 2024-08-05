@@ -111,11 +111,16 @@ stages:
       usrmerge-temp-fix || true
     done
 
+# Stretch will fail on:
+# Unpacking util-linux (2.40.2-1) over (2.29.2-1+deb9u1) ...
+# dpkg: error processing archive /var/cache/apt/archives/util-linux_2.40.2-1_amd64.deb (--unpack):
+#  trying to overwrite '/etc/pam.d/su', which is also in package login 1:4.4-4.1+deb9u1
+
 .test-upgrade: &test-upgrade
   - *test-prepare-container
-  - apt-get install -y entr
+  - apt-get install -q --yes entr
   - *test-enable-sid-repos
-  - apt-get install -y entr
+  - apt-get upgrade -q --yes
 
 upgrade from bookworm:
   stage: test
@@ -135,13 +140,13 @@ upgrade from buster:
   script:
     - *test-upgrade
 
-upgrade from stretch:
-  stage: test
-  image: debian:stretch
-  script:
-    - |
-      cat > /etc/apt/sources.list <<EOF
-      deb http://archive.debian.org/debian stretch main
-      deb http://archive.debian.org/debian-security stretch/updates main
-      EOF
-    - *test-upgrade
+# upgrade from stretch:
+#   stage: test
+#   image: debian:stretch
+#   script:
+#     - |
+#       cat > /etc/apt/sources.list <<EOF
+#       deb http://archive.debian.org/debian stretch main
+#       deb http://archive.debian.org/debian-security stretch/updates main
+#       EOF
+#     - *test-upgrade
