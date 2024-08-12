@@ -7,7 +7,7 @@ set -e
 set -o pipefail
 
 # show commands (debug)
-set -x
+#set -x
 
 # Documentation section hack to avoid too many comment line prefixes
 cat /dev/null <<EOF

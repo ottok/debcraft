@@ -1,7 +1,6 @@
 #!/bin/bash
 
 log_info "Starting interactive root shell in container for source package at $PWD"
-log_info "Type 'exit' or press Ctrl+D to exit"
 
 SHELL_DIR="$(mktemp -d)"
 
@@ -46,7 +45,8 @@ $CONTAINER_CMD run \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
-    "$CONTAINER"
+    "$CONTAINER" \
+    /debcraft-shell.sh
 
 # NOTE! Intentionally omit $CONTAINER_RUN_ARGS as this container should run as
 # root so user can install/upgrade tools.

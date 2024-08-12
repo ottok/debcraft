@@ -306,7 +306,7 @@ fi
 source "$DEBCRAFT_LIB_DIR/config-package.inc.sh"
 
 # If the action needs to run in a container, automatically create it
-if [ "$ACTION" == "build" ] || [ "$ACTION" == "validate" ] || [ "$ACTION" == "release" ]
+if [ "$ACTION" != "prune" ]
 then
   # shellcheck source=src/container.inc.sh
   source "$DEBCRAFT_LIB_DIR/container.inc.sh"
