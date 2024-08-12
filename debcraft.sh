@@ -96,7 +96,7 @@ source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
 
 if [ -z "$1" ]
 then
-  log_error "Missing argument <build|validate|release|prune>"
+  log_error "Missing argument <build|validate|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -204,7 +204,7 @@ if [ -z "$TARGET" ]
 then
   # If no argument defined, default to current directory
   TARGET="$(pwd)"
-elif [ ! -d "$TARGET" ]
+elif [ ! -d "$TARGET" ] && [[ "build validate" =~ $ACTION ]]
 then
   # If the argument exists, but didn't point to a valid path, try to use the
   # argument to download the package
@@ -233,6 +233,10 @@ then
 
   # Newest directory contains the downloaded source package now, use it as TARGET
   export TARGET="$NEWEST_DIRECTORY"
+else
+  log_error "Debcraft command '$ACTION' can only used after a build has run" \
+            "and a directory with the Debian package source exist."
+  exit 1
 fi
 
 log_debug_var TARGET
