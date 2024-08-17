@@ -167,7 +167,7 @@ done
 
 if [ -z "$ACTION" ]
 then
-  # IF ACTION isempty the TARGET might have been populated
+  # If ACTION is empty the TARGET might have been populated
   log_error "Argument '$TARGET' not one of <build|validate|release|shell|prune>"
   echo
   display_help
@@ -215,8 +215,13 @@ then
   # shellcheck source=src/downloader.inc.sh
   source "$DEBCRAFT_LIB_DIR/downloader.inc.sh"
 
+  # After a download, a subdirectory <TARGET>-<VERSION> might be present, and
+  # if a container build already ran, also a debcraft-container-<TARGET> will
+  # be present and that should be excluded from the listing below that aims to
+  # find the downloaded sources.
+
   # shellcheck disable=SC2012
-  NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first | head --lines=1 || true)"
+  NEWEST_DIRECTORY="$(ls --sort=time --time=ctime --format=single-column --group-directories-first --hide="debcraft-container-*" | head --lines=1 || true)"
   # Note! Use ctime above as dpkg-source will keep original mtime for packages
   # and ensure it never emits exit codes, only text output
 
@@ -248,7 +253,8 @@ then
   # principle of having Debcraft as an universal tool
   PACKAGE="$(dpkg-parsechangelog --show-field=source)"
 else
-  log_error "No $TARGET/debian/changelog found, not a valid source package directory"
+  log_error "Directory '$TARGET' is not a valid source package directory as" \
+            "debian/changelog was not found"
   exit 1
 fi
 
