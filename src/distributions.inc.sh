@@ -39,7 +39,7 @@ function get_ubuntu_equivalent_from_debian_release() {
   then
     # NOTE! This line needs to be updated 2x year
     # @TODO: Ideally read last line from /usr/share/distro-info/ubuntu.csv directly
-    echo "noble"
+    echo "oracular"
   else
     # Historical equivalents for each Ubuntu release based on what Debian
     # release happened around the same time and thus have most of the package
