@@ -88,6 +88,17 @@ blhc --all --color /tmp/build_nocolor.log | tee -a "../blhc.log" || true
 
 cd /tmp/build || exit 1
 
+# Symlink *.changes and *.buildinfo to an unversioned filename so that the diff
+# steps that run later can compare them, and also meld can compare them
+for x in *.buildinfo
+do
+  ln -sf "$x" buildinfo.log
+done
+for x in *.changes
+do
+  ln -sf "$x" changes.log
+done
+
 # Log package contents
 echo
 log_info "Create filelist.log"
