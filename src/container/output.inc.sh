@@ -1,11 +1,11 @@
 #!/bin/bash
 
 function log_error() {
-  echo -e "\e[38;5;1mERROR: $*\e[0m" >&2
+  echo -e "\e[38;5;1mDEBCRAFT ERROR: $*\e[0m" >&2
 }
 
 function log_warn() {
-  echo -e "\e[38;5;3mWARNING: $*\e[0m" >&2
+  echo -e "\e[38;5;3mDEBCRAFT WARNING: $*\e[0m" >&2
 }
 
 function log_info() {
@@ -24,13 +24,13 @@ then
 else
   # Print debug information not normally visible
   function log_debug() {
-    echo -e "\e[38;5;5mDEBUG: $1 (at line $(caller))\e[0m"
+    echo -e "\e[38;5;5mDEBCRAFT DEBUG: $1 (at line $(caller))\e[0m"
   }
 
   # Print the variable name and value in one "log_debug_var example" call
   function log_debug_var() {
     # Outputs variable type and contents, e.g 'declare -x ACTION="release"'
-    echo -e "\e[38;5;5mDEBUG: $(declare -p "$1") (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
+    echo -e "\e[38;5;5mDEBCRAFT DEBUG: $(declare -p "$1") (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
   }
 
   log_debug "Running Debcraft in debug mode"

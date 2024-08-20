@@ -66,7 +66,7 @@ display_version() {
     cd "$(dirname "$DEBCRAFT_CMD_PATH")"
     if [ -z "$(git tag --list)" ]
     then
-      echo "ERROR: Debcraft unable to view latest git tag. Please run 'git fetch --tags'."
+      echo "DEBCRAFT ERROR: Unable to view latest git tag. Please run 'git fetch --tags'."
       exit 1
     fi
     LATEST_TAG="$(git describe --first-parent --abbrev=0)"
