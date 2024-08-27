@@ -29,8 +29,7 @@ manpage:
 	@echo "Generate man page for Debcraft"
 	mkdir --verbose --parents $(DESTDIR)/usr/share/man/man1
 	help2man \
-		--name "Debcraft" \
-		--source "Debcraft" \
+		--name "Easy, fast and secure way to build Debian packages" \
 		--section 1 \
 		--manual "Debcraft usage" \
 		--output $(DESTDIR)/usr/share/man/man1/debcraft.1 \

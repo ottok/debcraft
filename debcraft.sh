@@ -14,20 +14,21 @@ display_help() {
   echo
   echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
   echo "as a subargument any of:"
-  echo "  * path to directory with program sources including a debian/ subdirectory"
-  echo "    with the Debian packaging instructions"
+  echo
+  echo "  * path to directory with program sources including a debian/ subdirectory with the Debian packaging instructions"
+  echo
   echo "  * path to a .dsc file and source tarballs that can be built into a .deb"
+  echo
   echo "  * Debian package name, or source package name, that apt can download"
+  echo
   echo "  * git http(s) or ssh URL that can be downloaded and built"
   echo
-
   echo "The commands 'validate' and 'release' are intended to be used to finalize"
   echo "a package build. The command 'test' will run the Debian-specific regression"
   echo "test suite if the package has autopkgtest support, and drop to a shell for"
   echo "investigation if tests failed to pass. The command 'shell' can be used to"
   echo "play around in the container and 'prune' will clean up temporary files by"
   echo "Debcraft."
-
   echo
   echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
   echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
@@ -43,6 +44,9 @@ display_help() {
   echo "  --clean              ensure sources are clean"
   echo "  -h, --help           display this help and exit"
   echo "  --version            display version and exit"
+  echo
+  echo "To learn more, or to contribute to Debcraft, see project page at"
+  echo "https://salsa.debian.org/debian/debcraft"
   echo
   echo "To gain more Debian Developer knowledge, please read"
   echo "https://www.debian.org/doc/manuals/developers-reference/"
@@ -72,14 +76,14 @@ display_version() {
     LATEST_TAG="$(git describe --first-parent --abbrev=0)"
     LATEST_VERSION="$(echo "$LATEST_TAG" | grep --only-matching --basic-regexp '[0-9.]*')"
     LATEST_COMMIT="$(git rev-parse --short HEAD)"
-    echo "Debcraft git version: $LATEST_VERSION-$LATEST_COMMIT"
+    echo "Debcraft $LATEST_VERSION-$LATEST_COMMIT"
   elif [ -f /usr/share/doc/debcraft/changelog.gz ]
   then
     VERSION="$(
       zgrep --only-matching --max-count=1 --perl-regexp '\(\K[^\)]*' \
       /usr/share/doc/debcraft/changelog.gz
       )"
-    echo "Debcraft package version: $VERSION"
+    echo "Debcraft $VERSION"
   else
     echo "Debcraft version unknown: neither git version control nor installed package was found"
   fi
