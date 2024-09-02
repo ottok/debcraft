@@ -21,22 +21,25 @@ RUN apt-get update -q && \
     pristine-tar
 
 # Validator dependencies
-# @TODO: The dh-debputy and python3-pygls are available only in latest Debian
-# Sid 2024, and thus building containers of older Debian and Ubuntu releases
-# will fail until dh-debputy with dependencies is available via backports:
-# https://salsa.debian.org/debian/debputy/-/issues/76#note_512583
 RUN apt-get install -q --yes --no-install-recommends \
   autopkgtest \
   apt-utils \
-  dh-debputy \
   diffoscope-minimal \
   hunspell-en-us \
   python3-debian \
   python3-hunspell \
   python3-levenshtein \
-  python3-lsprotocol \
   shellcheck \
   xxd
+
+# @TODO: The dh-debputy and python3-lsprotocol are available only in latest
+# Debian Sid 2024, and thus building containers of older Debian and Ubuntu
+# releases will fail and thus an override to return a successful exit code is
+# needed. This can be removed once dh-debputy with dependencies is available via
+# backports: https://salsa.debian.org/debian/debputy/-/issues/76#note_512583
+RUN apt-get install -q --yes --no-install-recommends \
+  dh-debputy \
+  python3-lsprotocol || true
 
 COPY control /
 RUN apt-get update -q && \
