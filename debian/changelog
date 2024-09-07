@@ -1,3 +1,11 @@
+debcraft (0.2.1) unstable; urgency=medium
+
+  * Improve man page
+  * Refactor Containerfile to be compatible with older Debian releases
+  * Bugfix: Use colon instead of 'pass', there is no such command in Bash
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 06 Sep 2024 18:40:31 -0700
+
 debcraft (0.2.0) unstable; urgency=medium
 
   * Resolve Debcraft version at run-time (Closes: #1077627)
