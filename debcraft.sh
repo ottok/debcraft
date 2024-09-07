@@ -218,7 +218,7 @@ then
 elif [ -d "$TARGET" ]
 then
   # If an argument was given, and it is a directory, use TARGET as-is
-  pass
+  :
 elif [ ! -d "$TARGET" ] && [[ "build validate" =~ $ACTION ]]
 then
   # If the argument exists, but didn't point to a valid path, try to use the
