@@ -8,38 +8,40 @@ ENV DEBIAN_FRONTEND=noninteractive
 # to caching all rebuilds and all later containers will build much faster.
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
-    blhc \
-    ccache \
-    curl \
-    devscripts \
-    eatmydata \
-    equivs \
-    fakeroot \
-    git \
-    git-buildpackage \
-    lintian \
-    pristine-tar
+      blhc \
+      ccache \
+      curl \
+      devscripts \
+      eatmydata \
+      equivs \
+      fakeroot \
+      git \
+      git-buildpackage \
+      lintian \
+      pristine-tar
 
 # Validator dependencies
-RUN apt-get install -q --yes --no-install-recommends \
-  autopkgtest \
-  apt-utils \
-  diffoscope-minimal \
-  hunspell-en-us \
-  python3-debian \
-  python3-hunspell \
-  python3-levenshtein \
-  shellcheck \
-  xxd
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      autopkgtest \
+      apt-utils \
+      diffoscope-minimal \
+      hunspell-en-us \
+      python3-debian \
+      python3-hunspell \
+      python3-levenshtein \
+      shellcheck \
+      xxd
 
 # @TODO: The dh-debputy and python3-lsprotocol are available only in latest
 # Debian Sid 2024, and thus building containers of older Debian and Ubuntu
 # releases will fail and thus an override to return a successful exit code is
 # needed. This can be removed once dh-debputy with dependencies is available via
 # backports: https://salsa.debian.org/debian/debputy/-/issues/76#note_512583
-RUN apt-get install -q --yes --no-install-recommends \
-  dh-debputy \
-  python3-lsprotocol || true
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      dh-debputy \
+      python3-lsprotocol || true
 
 COPY control /
 RUN apt-get update -q && \
