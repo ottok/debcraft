@@ -43,6 +43,10 @@ RUN apt-get update -q && \
       dh-debputy \
       python3-lsprotocol || true
 
+# @TODO: Insert custom repositories right before build starts
+COPY enable-extra-repositories.sh /enable-extra-repositories
+RUN /enable-extra-repositories
+
 COPY control /
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
