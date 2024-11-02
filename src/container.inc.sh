@@ -20,8 +20,21 @@ echo "[$(date --iso-8601=seconds)] Building container $CONTAINER for build $BUIL
 # Customize baseimage distribution release/seris to match package to be built
 sed "s/FROM debian:sid/FROM $BASEIMAGE/" -i "$CONTAINER_DIR/Containerfile"
 
+# Make package CI scripts available in container
+if [ -d debian/ci ]
+then
+  log_info "Include the 'ci' subdirectory from the package in the build"
+  cp --archive --verbose debian/ci/ "$CONTAINER_DIR/ci/"
+else
+  # If "ci" subdirectory does not exist, for example after being removed from
+  # the package, ensure it does not exist in container either
+  rm --recursive --force "$CONTAINER_DIR/ci"
+  # Ensure the COPY in the Containerfile will not fail on missing directory
+  mkdir --parents "$CONTAINER_DIR/ci"
+fi
+
 # Customize preinstalled build dependencies to match the package to be built
-cp debian/control "$CONTAINER_DIR/control"
+cp --archive debian/control "$CONTAINER_DIR/"
 
 # Force pulling new base image
 # @TODO: Automatically use --pull when making sure dependencies are updated

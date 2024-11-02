@@ -49,5 +49,3 @@ then
   grep '^deb ' /etc/apt/sources.list | \
     sed 's/^deb /deb-src /g' > /etc/apt/sources.list.d/sources-list-with-deb-src.list
 fi
-
-apt-get update
