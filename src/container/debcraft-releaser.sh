@@ -22,13 +22,22 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # Mimic debuild log file naming
 BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
 
+DEBIAN_VERSION="$(dpkg-parsechangelog --show-field=version)"
+log_debug_var DEBIAN_VERSION
+# Remove epoch (if any) and Debian revision to get upstream version
+UPSTREAM_VERSION="${DEBIAN_VERSION#*:}"
+log_debug_var UPSTREAM_VERSION
+UPSTREAM_VERSION="${UPSTREAM_VERSION%%-*}"
+log_debug_var UPSTREAM_VERSION
+
 # If pristine-tar branch exists, attempt to export so when package builds it
 # would already have access to upstream source tarball and signature so they are
 # used.
 if [ -n "$(git branch --list pristine-tar)" ]
 then
   # Get signature file if exists while ignoring any errors from the output parsing
-  SIGNATURE_FILE="$(git ls-tree --name-only pristine-tar | grep .asc$ | sort -V | tail -n 1)" || true
+  SIGNATURE_FILE="$(git ls-tree --name-only pristine-tar | grep "_$UPSTREAM_VERSION.*asc$")" || true
+  log_debug_var SIGNATURE_FILE
   if [ -n "$SIGNATURE_FILE" ]
   then
     TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
