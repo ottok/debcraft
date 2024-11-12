@@ -39,6 +39,9 @@ display_help() {
   echo "  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)"
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
+  echo "  --new-package        assume a new package is being built, and relax"
+  echo "                       requirements such as comparing build artifacts"
+  echo "                       to previous tagged release"
   echo "  --pull               ensure container base is updated"
   echo "  --copy               perform the build on a copy of the package directory"
   echo "  --clean              ensure sources are clean"
@@ -127,6 +130,10 @@ do
     --container-command)
       export CONTAINER_CMD="$2"
       shift 2
+      ;;
+    --new-package)
+      export NEW_PACKAGE="true"
+      shift
       ;;
     --pull)
       export PULL="true"

@@ -165,12 +165,15 @@ log_debug_var PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS
 export PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 
-# If PWD has a git repository try looking up latest tagged releases
-if [ -d "$PWD/.git" ]
+# If PWD has a git repository and --new-package is not used, try looking up
+# latest tagged releases
+if [ -d "$PWD/.git" ] && [ -z "$NEW_PACKAGE" ]
 then
   if [ -z "$(git tag --list)" ]
   then
-    echo "ERROR: Debcraft unable to view latest git tag. Please run 'git fetch --tags'."
+    log_error "Debcraft unable to find latest git tag. Run 'git fetch --tags'," \
+              "or if this is new package and no tags exist, invoke Debcraft" \
+              "with '--new-package'."
     exit 1
   fi
 

@@ -34,7 +34,14 @@ then
   CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
 fi
 
-log_info "Building source package for release at $RELEASE_DIR"
+
+if [ -n "$NEW_PACKAGE" ] || [ -n "$DEBCRAFT_NEW" ]
+then
+  log_info "Building full package with source and binaries for release into NEW at $RELEASE_DIR"
+  export DEBCRAFT_NEW="true"
+else
+  log_info "Building source package for release at $RELEASE_DIR"
+fi
 
 if [ -n "$DEBUG" ]
 then
