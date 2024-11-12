@@ -80,11 +80,12 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 
 # Run blhc, ignore errors caused by findings.
 # Strip all ANSI terminal escape sequences, since otherwise blhc will not
-# recognize the format.
+# recognize the format. Sort file so comparing changes with diff is consistent
+# and not polluted by parallel builds outputting build commands at random.
 echo
 log_info "Create blhc.log"
 sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > /tmp/build_nocolor.log
-blhc --all --color /tmp/build_nocolor.log | tee -a "../blhc.log" || true
+blhc --all --color /tmp/build_nocolor.log | sort | tee -a "../blhc.log" || true
 
 cd /tmp/build || exit 1
 
