@@ -39,6 +39,9 @@ display_help() {
   echo "  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)"
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
+  echo "  --with-binaries      create a release with both source and binaries,"
+  echo "                       for example with intent to upload to NEW"
+  echo "                       ('debcraft release' only)"
   echo "  --pull               ensure container base is updated"
   echo "  --copy               perform the build on a copy of the package directory"
   echo "  --clean              ensure sources are clean"
@@ -128,6 +131,10 @@ do
       export CONTAINER_CMD="$2"
       shift 2
       ;;
+    --with-binaries)
+      export FULL_BUILD="true"
+      shift
+      ;;
     --pull)
       export PULL="true"
       shift
@@ -178,6 +185,14 @@ if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
   log_error "Argument '$TARGET' not one of <build|validate|test|release|shell|prune>"
+  echo
+  display_help
+  exit 1
+fi
+
+if [ -n "$FULL_BUILD" ] && [ "$ACTION" != "release" ]
+then
+  log_error "Parameter --with-binaries can only be used with action 'release'"
   echo
   display_help
   exit 1

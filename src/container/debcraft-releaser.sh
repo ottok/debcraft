@@ -59,15 +59,25 @@ then
   fi
 fi
 
+# Normal releases in Debian are source-only. However, full binary releases are
+# still needed for any uploads that need to pass the NEW queue, e.g. any
+# completely new package or old package with new binary package name.
+if [ -n "$DEBCRAFT_FULL_BUILD" ]
+then
+  # Empty means full build, both source and binaries
+  GBP_ARGS=""
+else
+  # Use -S so all tools (dpkg-build, dpkg-source) see it as using --build=source
+  # alone would not be enough
+  GBP_ARGS="-S"
+fi
+
 # Passed to dpkg-source:
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)
 #   --tar-ignore (-I, passing ignores to tar)
-#
-# Use -S so all tools (dpkg-build, dpkg-source) see it as using --build=source
-# would not bee enough
 gbp buildpackage \
   --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
-  -S | tee -a "../$BUILD_LOG"
+  $GBP_ARGS | tee -a "../$BUILD_LOG"
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current
 # branch (adhering to gbp.conf) this script could additionally draft a
