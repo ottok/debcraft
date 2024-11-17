@@ -25,13 +25,19 @@ RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       autopkgtest \
       apt-utils \
-      diffoscope-minimal \
       hunspell-en-us \
       python3-debian \
       python3-hunspell \
       python3-levenshtein \
       shellcheck \
       xxd
+
+# The diffoscope-minimal package is available only since Debian 11 "Bullseye",
+# and thus building containers of older Debian or Ubuntu releases will fail
+# but can be ignored, as only diffoscope-features are affected
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      diffoscope-minimal || true
 
 # @TODO: The dh-debputy and python3-lsprotocol are available only in latest
 # Debian Sid 2024, and thus building containers of older Debian and Ubuntu
