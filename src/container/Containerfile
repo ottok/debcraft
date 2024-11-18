@@ -3,6 +3,13 @@ FROM debian:sid
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Stretch is no longer available at deb.debian.org, use archive.debian.org instead
+RUN if grep -q 'PRETTY_NAME="Debian GNU/Linux 9 (stretch)"' /etc/os-release; \
+    then \
+      echo "deb http://archive.debian.org/debian stretch main\ndeb http://archive.debian.org/debian-security stretch/updates main" \
+        > /etc/apt/sources.list; \
+    fi
+
 # Debian build essentials and Debcraft essentials
 # Unfortunately this is almost 500 MB but here is no way around it. Luckily due
 # to caching all rebuilds and all later containers will build much faster.

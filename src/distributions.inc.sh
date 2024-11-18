@@ -12,7 +12,7 @@ function get_baseimage_from_distribution_name() {
     unstable)
       echo "debian:sid"
       ;;
-    experimental | sid | trixie | bookworm | bullseye | buster)
+    experimental | sid | trixie | bookworm | bullseye | buster | stretch )
       echo "debian:$NAME"
       ;;
     plucky | oracular | noble | mantic | jammy | focal)

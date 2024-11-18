@@ -41,8 +41,15 @@ then
   if [ -n "$SIGNATURE_FILE" ]
   then
     TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
-    log_info "Create original source package and signature using pristine-tar"
-    pristine-tar checkout "../$TARBALL_FILE" -s "../$SIGNATURE_FILE"
+    # The option --signature-file exists only starting from version 1.45 in Debian Buster
+    if dpkg --compare-versions "$(dpkg-query -W -f='${Version}' pristine-tar)" gt "1.45"
+    then
+      log_info "Create original source package and signature using pristine-tar"
+      pristine-tar checkout "../$TARBALL_FILE" --signature-file "../$SIGNATURE_FILE"
+    else
+      log_info "Create original source package using pristine-tar"
+      pristine-tar checkout "../$TARBALL_FILE"
+    fi
   else
     log_info "No signature file found on pristine-tar branch"
   fi
