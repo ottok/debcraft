@@ -32,6 +32,7 @@ RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       autopkgtest \
       apt-utils \
+      command-not-found \
       hunspell-en-us \
       python3-debian \
       python3-hunspell \
@@ -56,6 +57,11 @@ RUN apt-get update -q && \
       dh-debputy \
       python3-lsprotocol || true
 
+# Activate source repositories in the Containerfile so that the large download
+# is cached in the container and the validator can run quickly
+COPY enable-source-repositories.sh /
+RUN /enable-source-repositories.sh
+
 COPY control /
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
@@ -68,12 +74,5 @@ RUN update-ccache-symlinks
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 RUN ccache --show-stats  --verbose || true
-
-# Enable source repositories so debcraft-downloader can work
-COPY enable-source-repositories.sh /enable-source-repositories
-RUN /enable-source-repositories
-
-RUN apt-get install -q --yes command-not-found && \
-    apt-get update -q
 
 COPY *.sh /
