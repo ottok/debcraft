@@ -33,6 +33,20 @@ else
   mkdir --parents "$CONTAINER_DIR/ci"
 fi
 
+# Make contents of extra repository available inside container when built
+if [ -n "${DEBCRAFT_EXTRA_REPOSITORY}" ]
+then
+  log_info "Include extra repository in build container: ${DEBCRAFT_EXTRA_REPOSITORY[0]}"
+  mkdir --parents "$CONTAINER_DIR/extra_repository_dir"
+  cp --archive --verbose "${DEBCRAFT_EXTRA_REPOSITORY[0]}/"*.deb "$CONTAINER_DIR/extra_repository_dir/"
+else
+  # If DEBCRAFT_EXTRA_REPOSITORY is no longer set, ensure no extra local
+  # repository exists in container either
+  rm --recursive --force "$CONTAINER_DIR/extra_repository_dir"
+  # Ensure the COPY in the Containerfile will not fail on missing directory
+  mkdir --parents "$CONTAINER_DIR/extra_repository_dir"
+fi
+
 # Customize preinstalled build dependencies to match the package to be built
 cp --archive debian/control "$CONTAINER_DIR/"
 

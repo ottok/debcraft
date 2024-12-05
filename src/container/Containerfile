@@ -62,16 +62,15 @@ RUN apt-get update -q && \
 
 # Activate source repositories in the Containerfile so that the large download
 # is cached in the container and the validator can run quickly
-COPY enable-source-repositories.sh /
+COPY enable-source-repositories.sh enable-extra-repositories.sh output.inc.sh /
 RUN /enable-source-repositories.sh
 
 # Insert extra repositories and keys right before build dependencies are to be
 # installed following convention set in Salsa CI
 # (https://salsa.debian.org/salsa-ci-team/pipeline#add-private-repositories-to-the-builds)
 COPY ci /
-RUN if [ -f ci/extra_repository.list ]; then cp --archive --verbose ci/extra_repository.list /etc/apt/sources.list.d/; fi
-RUN if [ -f ci/extra_repository.sources ]; then cp --archive --verbose ci/extra_repository.sources /etc/apt/sources.list.d/; fi
-RUN if [ -f ci/extra_repository.asc ]; then cp --archive --verbose ci/extra_repository.asc /etc/apt/trusted.gpg.d/; fi
+COPY extra_repository_dir /extra_repository_dir
+RUN /enable-extra-repositories.sh
 
 # Install dependencies
 #@TODO: Use 'apt-get build-dep .' as all modern Debian/Ubuntu versions support it
