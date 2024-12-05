@@ -73,6 +73,11 @@ RUN if [ -f ci/extra_repository.asc ]; then cp --archive --verbose ci/extra_repo
 # Install dependencies
 #@TODO: Use 'apt-get build-dep .' as all modern Debian/Ubuntu versions support it
 COPY control /
+# @TODO: How do we conditionally run this line and potentially an extra script
+# if and only if certain DEBCRAFT_* variables are present in order to not bust
+# the cache on every run, but also to have it updated if a local repository,
+# backports or experimental needs to be available at the time of installing
+# dependencies?
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'

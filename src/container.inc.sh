@@ -45,6 +45,12 @@ then
   log_debug_var CONTAINER_BUILD_ARGS
 fi
 
+if [ -n "${DEBCRAFT_EXTRA_REPOSITORY}" ]
+then
+  log_info "Enable extra repository: ${DEBCRAFT_EXTRA_REPOSITORY[0]}"
+  CONTAINER_RUN_ARGS=" --volume=${DEBCRAFT_EXTRA_REPOSITORY}:/tmp/build/extra-repository $CONTAINER_RUN_ARGS"
+fi
+
 # Podman does not need '--file=Containerfile', but needed for Docker compatibility
 # shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
 $CONTAINER_CMD build  \
