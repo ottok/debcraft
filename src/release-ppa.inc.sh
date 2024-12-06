@@ -34,7 +34,7 @@ then
 fi
 
 # Run backportpackage in the RELEASE_DIR
-cd "$RELEASE_DIR" || exit 1
+cd "$RELEASE_DIR" > /dev/null || (log_error "Unable to change directory to $RELEASE_DIR"; exit 1)
 
 DSC="$(ls ./*.dsc)"
 CMD="backportpackage --yes --upload='$DEBCRAFT_PPA' --destination='$SERIES' --suffix='~$BUILD_ID' '$DSC'"
@@ -62,5 +62,5 @@ do
   esac
 done
 
-# Return to original directory where sources reside
-cd - || exit 1
+# Return to original directory where sources reside, and don't output anything
+cd - > /dev/null || exit 1
