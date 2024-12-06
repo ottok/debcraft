@@ -165,33 +165,33 @@ log_debug_var PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 export PREVIOUS_SUCCESSFUL_BUILD_DIRS
 export PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 
-# If PWD has a git repository and --new-package is not used, try looking up
+# If PWD has a git repository and --with-binaries is not used, try looking up
 # latest tagged releases
-if [ -d "$PWD/.git" ] && [ -z "$NEW_PACKAGE" ]
+if [ -d "$PWD/.git" ]
 then
-  if [ -z "$(git tag --list)" ]
+  if [ -n "$(git tag --list)" ]
   then
-    log_error "Debcraft unable to find latest git tag. Run 'git fetch --tags'," \
-              "or if this is new package and no tags exist, invoke Debcraft" \
-              "with '--new-package'."
-    exit 1
+    # Get the first tag encountered when traversing branch history
+    NAME_OF_LAST_TAG="$(git describe --first-parent --abbrev=0)"
+    log_debug_var NAME_OF_LAST_TAG
+    # The '^{}' will dereference the tag to the commit id
+    COMMIT_ID_OF_LAST_TAG="$(git rev-parse --short "$NAME_OF_LAST_TAG"^{})"
+    log_debug_var COMMIT_ID_OF_LAST_TAG
+
+    # Previous successful builds that produced a .buildinfo with a commit matching
+    # the latest tagged release, ignoring branch name
+    # shellcheck disable=SC2086 # intentionally pass wildcards to ls
+    mapfile -t LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES < <(
+      ls --sort=time --time=ctime --format=single-column --group-directories-first --directory \
+        ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*.${COMMIT_ID_OF_LAST_TAG}+*/*.buildinfo \
+        2> /dev/null
+    )
+  else
+    log_warn "Unable to find any git tags, which are needed to identify" \
+             "previous release and compare build artifacts with it. " \
+             "Run 'git fetch --tags' to ensure any remote tag is available locally."
+    LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES=()
   fi
-
-  # Get the first tag encountered when traversing branch history
-  NAME_OF_LAST_TAG="$(git describe --first-parent --abbrev=0)"
-  log_debug_var NAME_OF_LAST_TAG
-  # The '^{}' will dereference the tag to the commit id
-  COMMIT_ID_OF_LAST_TAG="$(git rev-parse --short "$NAME_OF_LAST_TAG"^{})"
-  log_debug_var COMMIT_ID_OF_LAST_TAG
-
-  # Previous successful builds that produced a .buildinfo with a commit matching
-  # the latest tagged release, ignoring branch name
-  # shellcheck disable=SC2086 # intentionally pass wildcards to ls
-  mapfile -t LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES < <(
-    ls --sort=time --time=ctime --format=single-column --group-directories-first --directory \
-      ${BUILD_DIRS_PATH}/debcraft-{build,release}-${PACKAGE}-*.${COMMIT_ID_OF_LAST_TAG}+*/*.buildinfo \
-      2> /dev/null
-  )
 
   log_debug_var LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES
 
