@@ -20,7 +20,7 @@ export DPKG_COLORS="always"
 BUILD_START_TIME="$EPOCHSECONDS"
 
 # Mimic debuild log file naming
-BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
+BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
 
 DEBIAN_VERSION="$(dpkg-parsechangelog --show-field=version)"
 log_debug_var DEBIAN_VERSION
@@ -63,17 +63,7 @@ fi
 # would not bee enough
 gbp buildpackage \
   --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
-  -S | tee -a "$BUILD_LOG"
-
-# Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
-# will likely always emit errors if package complex enough
-echo
-log_info "Create lintian.log"
-# Seems that --color=auto isn't enough inside a container, so use 'always'.
-# Using --profle=debian is not needed as build container always matches target
-# Debian/Ubuntu release and Lintian in them should automatically default to
-# correct profile. Show info and overrides to be as verbose as possible.
-lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental ../*.changes | tee -a "../lintian.log" || true
+  -S | tee -a "../$BUILD_LOG"
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current
 # branch (adhering to gbp.conf) this script could additionally draft a
@@ -85,6 +75,16 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 #   git diff --stat TAG..HEAD >> report-bug.txt
 
 cd /tmp/build || exit 1
+
+# Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
+# will likely always emit errors if package complex enough
+echo
+log_info "Create lintian.log"
+# Seems that --color=auto isn't enough inside a container, so use 'always'.
+# Using --profle=debian is not needed as build container always matches target
+# Debian/Ubuntu release and Lintian in them should automatically default to
+# correct profile. Show info and overrides to be as verbose as possible.
+lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental *.changes | tee -a "lintian.log" || true
 
 # Crude but fast and simple way to clean away ANSI color codes from logs
 # @TODO: As 'less -K' and other tools support reading colored logs, we could

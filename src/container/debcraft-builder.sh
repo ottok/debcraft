@@ -28,7 +28,7 @@ export PATH="/usr/lib/ccache:${PATH}"
 # Mimic debuild log filename '../<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
-BUILD_LOG="../$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
+BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
 
 # Teach user what is done and why
 log_info "Running 'dpkg-buildpackage --build=any,all' to create .deb packages"
@@ -46,10 +46,10 @@ then
   gbp buildpackage \
     --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
     --git-ignore-branch \
-    --git-no-create-orig | tee -a "$BUILD_LOG"
+    --git-no-create-orig | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  dpkg-buildpackage --no-sign --build=any,all | tee -a "$BUILD_LOG"
+  dpkg-buildpackage --no-sign --build=any,all | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'
@@ -65,6 +65,10 @@ fi
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 ccache --show-stats --verbose || true
 
+# The .deb builders output all artifacts in the parent directory of the source
+# directory, so ensure this scripts runs there
+cd /tmp/build || exit 1
+
 # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
 # will likely always emit errors if package complex enough
 echo
@@ -73,7 +77,7 @@ log_info "Create lintian.log"
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
 # correct profile.
-lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental ../*.changes | tee -a "../lintian.log" || true
+lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental *.changes | tee -a "lintian.log" || true
 
 # @TODO: Run Lintian in background (with & and later run 'wait') so that the
 # filelist log can be created in parallel? Will it make overall progress faster?
@@ -85,9 +89,7 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 echo
 log_info "Create blhc.log"
 sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > /tmp/build_nocolor.log
-blhc --all --color /tmp/build_nocolor.log | sort | tee -a "../blhc.log" || true
-
-cd /tmp/build || exit 1
+blhc --all --color /tmp/build_nocolor.log | sort | tee -a "blhc.log" || true
 
 # Symlink *.changes and *.buildinfo to an unversioned filename so that the diff
 # steps that run later can compare them, and also meld can compare them
