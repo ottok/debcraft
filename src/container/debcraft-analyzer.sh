@@ -54,6 +54,13 @@ echo
 log_info "Create filelist.log"
 for package in *.deb
 do
+  # Skip this if build was source-only and no *.deb files were found and
+  # variable is just literal "*.deb"
+  if [ "$package" == "*.deb" ]
+  then
+    break
+  fi
+
   # shellcheck disable=SC2129
   echo "$package" | cut -d '_' -f 1 >> "filelist.log"
   dpkg-deb --contents "$package" | awk '{print $1 " " $2 " " $6 " " $7 " " $8}' | sort -k 3 >> "filelist.log"
@@ -71,6 +78,13 @@ echo
 log_info "Create control.log and maintainer-scripts.log"
 for package in *.deb
 do
+  # Skip this if build was source-only and no *.deb files were found and
+  # variable is just literal "*.deb"
+  if [ "$package" == "*.deb" ]
+  then
+    break
+  fi
+
   # shellcheck disable=SC2129
   PACKAGE_NAME="$(echo "$package" | cut -d '_' -f 1)"
   # Extract to directory with package name
