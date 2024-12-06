@@ -25,7 +25,7 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # Set PATH for ccache
 export PATH="/usr/lib/ccache:${PATH}"
 
-# Mimic debuild log filename '../<package>_<version>_<arch>.build'
+# Mimic debuild log filename '<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
 BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"

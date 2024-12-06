@@ -23,8 +23,8 @@ log_info "Create lintian.log"
 # Seems that --color=auto isn't enough inside a container, so use 'always'.
 # Using --profle=debian is not needed as build container always matches target
 # Debian/Ubuntu release and Lintian in them should automatically default to
-# correct profile.
-lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental *.changes | tee -a "lintian.log" || true
+# correct profile. Show info and overrides to be as verbose as possible.
+lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental ./*.changes | tee -a "lintian.log" || true
 
 # @TODO: Run Lintian in background (with & and later run 'wait') so that the
 # filelist log can be created in parallel? Will it make overall progress faster?

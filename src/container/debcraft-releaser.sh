@@ -16,12 +16,16 @@ source "/output.inc.sh"
 # are supposed to use it
 export DPKG_COLORS="always"
 
+# Use environment if set, otherwise use nice defaults
+log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
+
 # Prepare stats
 BUILD_START_TIME="$EPOCHSECONDS"
 
-# Mimic debuild log file naming
+# Mimic debuild log filename '<package>_<version>_source.build'
 BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
 
+# Parse upstream version to extract pristine-tar
 DEBIAN_VERSION="$(dpkg-parsechangelog --show-field=version)"
 log_debug_var DEBIAN_VERSION
 # Remove epoch (if any) and Debian revision to get upstream version
@@ -74,78 +78,6 @@ gbp buildpackage \
 #   dpkg-parsechangelog --show-field=changes >> report-bug.txt
 #   git diff --stat TAG..HEAD >> report-bug.txt
 
-cd /tmp/build || exit 1
-
-# Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
-# will likely always emit errors if package complex enough
-echo
-log_info "Create lintian.log"
-# Seems that --color=auto isn't enough inside a container, so use 'always'.
-# Using --profle=debian is not needed as build container always matches target
-# Debian/Ubuntu release and Lintian in them should automatically default to
-# correct profile. Show info and overrides to be as verbose as possible.
-lintian --verbose --info --color=always --display-level=">=pedantic" --display-experimental *.changes | tee -a "lintian.log" || true
-
-# Crude but fast and simple way to clean away ANSI color codes from logs
-# @TODO: As 'less -K' and other tools support reading colored logs, we could
-# consider keeping around colored logs in addition to plain logs for some files
-sed -e 's/\x1b\[[0-9;]*[mK]//g' -i ./*.log
-
-# Automatically do comparisons to previous build if exists
-if [ -d "previous" ]
-then
-  for LOGFILE in *.log
-  do
-    # For each log, create the diff but if there are no difference, remove the
-    # empty file
-    ! diff -u "previous/$LOGFILE" "$LOGFILE" > "$LOGFILE.diff" || rm "$LOGFILE.diff" &
-  done
-
-  echo
-  log_info "Create diffoscope report comparing to previous build"
-  # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
-  # than that, the output is probably massive and unreadable. Diffoscope is more
-  # useful for hunting small changes which might be hard to find with other
-  # tools.
-  timeout --verbose --kill-after=8m 5m \
-    diffoscope --html=diffoscope.html \
-    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
-    --exclude=previous --exclude=last-tagged --exclude=source \
-    previous/ . || true
-    # Exit status is zero only if inputs are identical, so ignore exit code
-fi
-
-# @TODO: This is a duplicate of above as boilerplate before refactoring into
-# functions
-# Automatically do comparisons to previous build if exists
-if [ -d "last-tagged" ]
-then
-  for LOGFILE in *.log
-  do
-    # For each log, create the diff but if there are no difference, remove the
-    # empty file
-    ! diff -u "last-tagged/$LOGFILE" "$LOGFILE" > "$LOGFILE.last-tagged.diff" || rm "$LOGFILE.last-tagged.diff" &
-  done
-
-  echo
-  log_info "Create diffoscope report comparing to last tagged build"
-  # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
-  # than that, the output is probably massive and unreadable. Diffoscope is more
-  # useful for hunting small changes which might be hard to find with other
-  # tools.
-  timeout --verbose --kill-after=8m 5m \
-    diffoscope --html=diffoscope.last-tagged.html \
-    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
-    --exclude=previous --exclude=last-tagged --exclude=source \
-    last-tagged/ . || true
-    # Exit status is zero only if inputs are identical, so ignore exit code
-fi
-
-
-# Wait to ensure all processes that were backgrounded earlier have completed too
-wait
-
-echo
-log_info "Source build for release completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
-# Don't show the mountpoint dir 'source'
-ls --width=5 --size --human-readable --color=always --ignore={source,previous,last-tagged}
+# After the build, run the analyzer
+# shellcheck source=src/container/debcraft-analyzer.sh
+source "/debcraft-analyzer.sh"
