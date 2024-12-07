@@ -41,13 +41,15 @@ manpage:
 
 install: build
 	install -v -p -D debcraft.sh $(DESTDIR)/usr/bin/debcraft
+	install -v -p -D --mode=0644 bash-completion/debcraft-completion.sh $(DESTDIR)/usr/share/bash-completion/completions/debcraft
 	# install -v -p -D --target-directory=$(DESTDIR)/usr/share/debcraft src/*
 	# GNU 'install' does not support subdirectories, so use regular 'cp' instead
 	cp -a src $(DESTDIR)/usr/share/debcraft
 
 install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
-	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/bin/debcraft
+	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/.local/bin/debcraft
+	ln --force --symbolic --verbose ${PWD}/bash-completion/debcraft-completion.sh ~/.local/share/bash-completion/completions/debcraft
 
 test: test-static test-debcraft
 

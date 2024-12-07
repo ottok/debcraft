@@ -8,4 +8,4 @@ set -e
 # usage instructions, detected by keyword "Usage". A more complex test would
 # require a test platform that supports building and running containers.
 
-debcraft --help | grep -F "usage: debcraft [options]"
+debcraft --help | grep -F "usage: debcraft <build"

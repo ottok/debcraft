@@ -10,7 +10,7 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft [options] <build|validate|test|release|shell|prune> [<path|pkg|srcpkg|dsc|git-url>]"
+  echo "usage: debcraft <build|validate|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]"
   echo
   echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
   echo "as a subargument any of:"
@@ -45,6 +45,7 @@ display_help() {
   echo "  --pull               ensure container base is updated"
   echo "  --copy               perform the build on a copy of the package directory"
   echo "  --clean              ensure sources are clean"
+  echo "  --debug              emit debug information"
   echo "  -h, --help           display this help and exit"
   echo "  --version            display version and exit"
   echo
