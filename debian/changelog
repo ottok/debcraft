@@ -1,3 +1,18 @@
+debcraft (0.3.0) unstable; urgency=medium
+
+  * Always run `apt-get update` before installing packages in containers
+  * Add 'plucky' as the new default Ubuntu development release
+  * Export pristine-tar based on upstream version, not newness
+  * Sort blhc.log to make comparisons between build practical
+  * Refactor Containerfile to be available for even older Debian releases
+  * Add support for building on Debian Stretch
+  * Install command-not-found along with other validator dependencies
+  * Skip log creation and analysis for .deb files when they don't exists
+  * Activate extra repositories if `debian/ci/` exits
+  * Add new option '--with-binaries' so releaser can be used to upload NEW packages
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 06 Dec 2024 18:36:59 -0800
+
 debcraft (0.2.1) unstable; urgency=medium
 
   * Improve man page
