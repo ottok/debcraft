@@ -1,3 +1,9 @@
 # Default build output directory (DESTDIR)
 tmp/
 
+# Debian package build artifacts
+debian/.debhelper/
+debian/*.substvars
+debian/debcraft/
+debian/*-stamp
+debian/files
