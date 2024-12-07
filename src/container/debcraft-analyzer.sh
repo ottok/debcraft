@@ -153,9 +153,12 @@ if [ -d "last-tagged" ]
 then
   for LOGFILE in *.log
   do
-    # For each log, create the diff but if there are no difference, remove the
-    # empty file
-    ! diff -u "last-tagged/$LOGFILE" "$LOGFILE" > "$LOGFILE.last-tagged.diff" || rm "$LOGFILE.last-tagged.diff" &
+    # For each log file can also be found from previous build, compare to
+    # current using diff, but if there are no difference, remove the empty file
+    if [ -f "last-tagged/$LOGFILE" ]
+    then
+      ! diff -u "last-tagged/$LOGFILE" "$LOGFILE" > "$LOGFILE.last-tagged.diff" || rm "$LOGFILE.last-tagged.diff" &
+    fi
   done
 
   echo
