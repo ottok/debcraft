@@ -19,10 +19,9 @@ export DPKG_COLORS="always"
 # Use environment if set, otherwise use nice defaults
 log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 
-# Prepare stats
-ccache --zero-stats > /dev/null
+# Prepare stats and cache
 BUILD_START_TIME="$EPOCHSECONDS"
-# Set PATH for ccache
+ccache --zero-stats > /dev/null
 export PATH="/usr/lib/ccache:${PATH}"
 
 # Mimic debuild log filename '<package>_<version>_<arch>.build'

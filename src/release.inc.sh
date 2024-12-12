@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# Parameters sanity check
-if [ -n "$COPY" ]
-then
-  log_error "Cannot proceed with 'release' if --copy is used"
-  exit 1
-fi
+# Create directories, including 'source' subdirectory as the container mount
+# would create it anyway
+mkdir --parents "$RELEASE_DIR/source"
 
 # Version control sanity check
 if [ ! -d "$PWD/.git" ]
@@ -15,9 +12,12 @@ then
   exit 1
 fi
 
-# Create directories, including 'source' subdirectory as the container mount
-# would create it anyway
-mkdir --parents "$RELEASE_DIR/source"
+# Parameters sanity check
+if [ -n "$COPY" ]
+then
+  log_error "Cannot proceed with 'release' if --copy is used"
+  exit 1
+fi
 
 # Note use of RELEASE directory, *not* BUILD
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
@@ -34,7 +34,6 @@ then
   CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
 fi
 
-
 if [ -n "$FULL_BUILD" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
   log_info "Building full package with source and binaries (e.g. for release into NEW) at $RELEASE_DIR"
@@ -42,6 +41,15 @@ then
 else
   log_info "Building source package for release at $RELEASE_DIR"
 fi
+
+# Define variable only used in build
+CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
+mkdir --parents "$CCACHE_DIR" "$RELEASE_DIR/source"
+# Instead of plain 'chown -R' use find and only apply chmod on files that need
+# it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as
+# safer option to 'exec' and use the variant ending with plus so any non-zero
+# exit code will be surfaced and calling script aborted.
+find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
 
 if [ -n "$DEBUG" ]
 then
@@ -55,9 +63,11 @@ $CONTAINER_CMD run \
     --interactive --tty --rm \
     --shm-size=1G \
     --network=none \
+    --volume="$CCACHE_DIR":/.ccache \
     --volume="$RELEASE_DIR":/tmp/build \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
+    --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \

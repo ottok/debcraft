@@ -19,8 +19,14 @@ export DPKG_COLORS="always"
 # Use environment if set, otherwise use nice defaults
 log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 
-# Prepare stats
+# Prepare stats and cache
 BUILD_START_TIME="$EPOCHSECONDS"
+
+if [ -n "$DEBCRAFT_FULL_BUILD" ]
+then
+  ccache --zero-stats > /dev/null
+  export PATH="/usr/lib/ccache:${PATH}"
+fi
 
 # Mimic debuild log filename '<package>_<version>_source.build'
 BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
@@ -78,6 +84,14 @@ fi
 gbp buildpackage \
   --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
   $GBP_ARGS | tee -a "../$BUILD_LOG"
+
+if [ -n "$DEBCRAFT_FULL_BUILD" ]
+then
+  # Older ccache does not support '--verbose' but will print stats anyway, just
+  # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
+  # "Bullseye") however require '--verbose' to show any cache hit stats at all.
+  ccache --show-stats --verbose || true
+fi
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current
 # branch (adhering to gbp.conf) this script could additionally draft a

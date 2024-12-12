@@ -1,17 +1,8 @@
 #!/bin/bash
 
-# Define variable only used in build
-CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
-
 # Create directories, including 'source' subdirectory as the container mount
 # would create it anyway
-mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
-
-# Instead of plain 'chown -R' use find and only apply chmod on files that need
-# it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as
-# safer option to 'exec' and use the variant ending with plus so any non-zero
-# exit code will be surfaced and calling script aborted.
-find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+mkdir --parents "$BUILD_DIR/source"
 
 # Copy sources if requested
 if [ -n "$COPY" ]
@@ -39,6 +30,15 @@ then
 fi
 
 log_info "Building package at $BUILD_DIR"
+
+# Define variable only used in build
+CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
+mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
+# Instead of plain 'chown -R' use find and only apply chmod on files that need
+# it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as
+# safer option to 'exec' and use the variant ending with plus so any non-zero
+# exit code will be surfaced and calling script aborted.
+find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
 
 if [ -n "$DEBUG" ]
 then
