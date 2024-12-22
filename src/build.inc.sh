@@ -29,7 +29,13 @@ then
   CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
 fi
 
-log_info "Building package at $BUILD_DIR"
+if [ -z "$SKIP_SOURCES" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
+then
+  log_info "Building package at $BUILD_DIR"
+  export DEBCRAFT_FULL_BUILD="true"
+else
+  log_info "Building package without creating source tarball at $BUILD_DIR"
+fi
 
 # Define variable only used in build
 CCACHE_DIR="$BUILD_DIRS_PATH/ccache"

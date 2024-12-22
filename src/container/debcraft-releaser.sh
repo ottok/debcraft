@@ -70,9 +70,11 @@ fi
 # completely new package or old package with new binary package name.
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
+  DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
   # Empty means full build, both source and binaries
   GBP_ARGS=""
 else
+  DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
   # Use -S so all tools (dpkg-build, dpkg-source) see it as using --build=source
   # alone would not be enough
   GBP_ARGS="-S"
@@ -81,8 +83,8 @@ fi
 # Passed to dpkg-source:
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)
 #   --tar-ignore (-I, passing ignores to tar)
-gbp buildpackage \
-  --git-builder='dpkg-buildpackage --no-sign --diff-ignore --tar-ignore' \
+gbp buildpackage --git-ignore-branch \
+  --git-builder="dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS" \
   $GBP_ARGS | tee -a "../$BUILD_LOG"
 
 if [ -n "$DEBCRAFT_FULL_BUILD" ]

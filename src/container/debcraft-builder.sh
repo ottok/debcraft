@@ -29,6 +29,18 @@ export PATH="/usr/lib/ccache:${PATH}"
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
 BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
 
+# Normal builds in Debian are full binary releases with sources
+if [ -n "$DEBCRAFT_FULL_BUILD" ]
+then
+  # Empty means full build, both source and binaries
+  DPKG_BUILDPACKAGE_ARGS=""
+  GBP_ARGS=""
+else
+  # Skip generating source package to make (binary) build faster by default
+  DPKG_BUILDPACKAGE_ARGS="--build=any,all"
+  GBP_ARGS="--git-no-create-orig"
+fi
+
 # Teach user what is done and why
 log_info "Running 'dpkg-buildpackage --build=any,all' to create .deb packages"
 
@@ -42,10 +54,9 @@ then
   # Instead use dpkg-buildpackage directly (debuild would use it anyway) and also
   # instruct it to only build binary packages, skipping source package generation
   # and skipping related cleanup steps.
-  gbp buildpackage \
-    --git-builder='dpkg-buildpackage --no-sign --build=any,all' \
-    --git-ignore-branch \
-    --git-no-create-orig | tee -a "../$BUILD_LOG"
+  gbp buildpackage --git-ignore-branch \
+    --git-builder="dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS" \
+    $GBP_ARGS | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
   dpkg-buildpackage --no-sign --build=any,all | tee -a "../$BUILD_LOG"

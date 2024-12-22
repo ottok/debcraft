@@ -39,6 +39,9 @@ display_help() {
   echo "  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)"
   echo "  --distribution       Linux distribution to build in (default: debian:sid)"
   echo "  --container-command  container command to use (default: podman)"
+  echo "  --skip-sources       build only binaries and skip creating a source"
+  echo "                       tarball to make the build slightly faster"
+  echo "                       ('debcraft build' only)"
   echo "  --with-binaries      create a release with both source and binaries,"
   echo "                       for example with intent to upload to NEW"
   echo "                       ('debcraft release' only)"
@@ -132,8 +135,12 @@ do
       export CONTAINER_CMD="$2"
       shift 2
       ;;
+    --skip-sources)
+      export SKIP_SOURCES="true"
+      shift
+      ;;
     --with-binaries)
-      export FULL_BUILD="true"
+      export WITH_BINARIES="true"
       shift
       ;;
     --pull)
@@ -191,7 +198,15 @@ then
   exit 1
 fi
 
-if [ -n "$FULL_BUILD" ] && [ "$ACTION" != "release" ]
+if [ -n "$SKIP_SOURCES" ] && [ "$ACTION" != "build" ]
+then
+  log_error "Parameter --skip-sources can only be used with action 'build'"
+  echo
+  display_help
+  exit 1
+fi
+
+if [ -n "$WITH_BINARIES" ] && [ "$ACTION" != "release" ]
 then
   log_error "Parameter --with-binaries can only be used with action 'release'"
   echo
