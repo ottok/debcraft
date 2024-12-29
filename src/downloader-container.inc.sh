@@ -25,8 +25,12 @@ echo "[$(date --iso-8601=seconds)] Building container $CONTAINER" >> "$CONTAINER
 # Customize baseimage to match --distribution parameter
 sed "s/FROM debian:sid/FROM $DOWNLOAD_BASENAME/" -i "$CONTAINER_DIR/Containerfile"
 
-# Skip control file from DOWNLOAD_CONTAINER
+# Skip extra files not needed in DOWNLOAD_CONTAINER
+sed '/COPY ci/,/^$/d' -i "$CONTAINER_DIR/Containerfile"
 sed '/COPY control/,/^$/d' -i "$CONTAINER_DIR/Containerfile"
+
+# Ensure the last line updates the apt archive cache
+echo "RUN apt-get update -q" >> "$CONTAINER_DIR/Containerfile"
 
 # Force pulling new base image if requested
 if [ -n "$PULL" ]
