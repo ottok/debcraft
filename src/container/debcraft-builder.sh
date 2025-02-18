@@ -65,7 +65,7 @@ fi
 log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 
 # Teach user what is done and why
-log_info "Running 'dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS' to create .deb packages"
+log_info "Running 'dpkg-buildpackage --build=any,all' to create .deb packages"
 
 if [ -d ".git" ]
 then
@@ -77,16 +77,16 @@ then
   # Instead use dpkg-buildpackage directly (debuild would use it anyway) and also
   # instruct it to only build binary packages, skipping source package generation
   # and skipping related cleanup steps.
+  log_info "Running 'gbp buildpackage $GBP_ARGS' to create .deb packages from git repository"
+  # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
   gbp buildpackage --git-ignore-branch \
     --git-builder="dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS" \
     $GBP_ARGS | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  # Because the origtargz is not created nor included if not using git-buildpackage, the source
-  # package cannot be built.  The parameter `--build=any,all` is specified explicitly.  The
-  # dpkg-buildpackage command allows the command to be specified multiple times, allowing it
-  # to be explicitly defined, even if already defined in DPKG_BUILDPACKAGE_ARGS.
-  dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS --build=any,all | tee -a "../$BUILD_LOG"
+  log_info "Running 'dpkg-buildpackage $DPKG_BUILDPACKAGE_ARGS' to create .deb packages from plain sources directory"
+  # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
+  dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'

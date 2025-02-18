@@ -87,7 +87,8 @@ echo "$SEPARATOR" # Extra separator for test bed modifications
 git reset --hard
 git clean -fdx
 rm --recursive --force --verbose .git
-debcraft_test "build" "  meld /tmp"
+# Once git is deleted, there are no sources available for the build
+debcraft_test "build --skip-sources" "  meld /tmp"
 
 cd .. # exit 'entr' subdirectory
 
