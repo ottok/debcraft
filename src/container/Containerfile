@@ -27,7 +27,8 @@ RUN apt-get update -q && \
       git \
       git-buildpackage \
       lintian \
-      pristine-tar
+      pristine-tar \
+      quilt
 
 # Validator dependencies
 RUN apt-get update -q && \
