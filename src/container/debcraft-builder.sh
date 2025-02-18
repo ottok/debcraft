@@ -39,6 +39,15 @@ else
   # Skip generating source package to make (binary) build faster by default
   DPKG_BUILDPACKAGE_ARGS="--build=any,all"
   GBP_ARGS="--git-no-create-orig"
+
+  # Normally dpkg-source applies the patches, but when running a binary-only
+  # build directly in the Debian packaging git repository dpkg-source will be
+  # skipped and sources will remain unpatched
+  if [ -f debian/patches/series ]
+  then
+    log_warn "Debian patches are *not* applied as this is a binary-only build that omits invoking 'dpkg-source'."
+    log_warn "Run 'gbp pq import --force' or equivalent to apply patches before building."
+  fi
 fi
 
 # Teach user what is done and why
