@@ -10,54 +10,56 @@ set -o pipefail
 #set -x
 
 display_help() {
-  echo "usage: debcraft <build|validate|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]"
-  echo
-  echo "Debcraft is a tool to easily build .deb packages. The 'build' argument accepts"
-  echo "as a subargument any of:"
-  echo
-  echo "  * path to directory with program sources including a debian/ subdirectory with the Debian packaging instructions"
-  echo
-  echo "  * path to a .dsc file and source tarballs that can be built into a .deb"
-  echo
-  echo "  * Debian package name, or source package name, that apt can download"
-  echo
-  echo "  * git http(s) or ssh URL that can be downloaded and built"
-  echo
-  echo "The commands 'validate' and 'release' are intended to be used to finalize"
-  echo "a package build. The command 'test' will run the Debian-specific regression"
-  echo "test suite if the package has autopkgtest support, and drop to a shell for"
-  echo "investigation if tests failed to pass. The command 'shell' can be used to"
-  echo "play around in the container and 'prune' will clean up temporary files by"
-  echo "Debcraft."
-  echo
-  echo "In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also"
-  echo "be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS')."
-  echo "Note that Debcraft builds never runs as root, and thus packages with"
-  echo "DEB_RULES_REQUIRES_ROOT are not supported."
-  echo
-  echo "optional arguments:"
-  echo "  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)"
-  echo "  --distribution       Linux distribution to build in (default: debian:sid)"
-  echo "  --container-command  container command to use (default: podman)"
-  echo "  --skip-sources       build only binaries and skip creating a source"
-  echo "                       tarball to make the build slightly faster"
-  echo "                       ('debcraft build' only)"
-  echo "  --with-binaries      create a release with both source and binaries,"
-  echo "                       for example with intent to upload to NEW"
-  echo "                       ('debcraft release' only)"
-  echo "  --pull               ensure container base is updated"
-  echo "  --copy               perform the build on a copy of the package directory"
-  echo "  --clean              ensure sources are clean"
-  echo "  --debug              emit debug information"
-  echo "  -h, --help           display this help and exit"
-  echo "  --version            display version and exit"
-  echo
-  echo "To learn more, or to contribute to Debcraft, see project page at"
-  echo "https://salsa.debian.org/debian/debcraft"
-  echo
-  echo "To gain more Debian Developer knowledge, please read"
-  echo "https://www.debian.org/doc/manuals/developers-reference/"
-  echo "and https://www.debian.org/doc/debian-policy/"
+  cat << EOF
+usage: debcraft <build|validate|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+
+Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
+as a subargument any of:
+
+  * path to directory with program sources including a debian/ subdirectory with
+  * the Debian packaging instructions
+
+  * path to a .dsc file and source tarballs that can be built into a .deb
+
+  * Debian package name, or source package name, that apt can download
+
+  * git http(s) or ssh URL that can be downloaded and built
+
+The commands 'validate' and 'release' are intended to be used to finalize a
+package build. The command 'test' will run the Debian-specific regression test
+suite if the package has autopkgtest support, and drop to a shell for
+investigation if tests failed to pass. The command 'shell' can be used to play
+around in the container and 'prune' will clean up temporary files by Debcraft.
+
+In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
+be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Note that
+Debcraft builds never runs as root, and thus packages with
+DEB_RULES_REQUIRES_ROOT are not supported.
+
+optional arguments:
+  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)
+  --distribution       Linux distribution to build in (default: debian:sid)
+  --container-command  container command to use (default: podman)
+  --skip-sources       build only binaries and skip creating a source
+                       tarball to make the build slightly faster
+                       ('debcraft build' only)
+  --with-binaries      create a release with both source and binaries,
+                       for example with intent to upload to NEW
+                       ('debcraft release' only)
+  --pull               ensure container base is updated
+  --copy               perform the build on a copy of the package directory
+  --clean              ensure sources are clean
+  --debug              emit debug information
+  -h, --help           display this help and exit
+  --version            display version and exit
+
+To learn more, or to contribute to Debcraft, see project page at
+https://salsa.debian.org/debian/debcraft
+
+To gain more Debian Developer knowledge, please read
+https://www.debian.org/doc/manuals/developers-reference/
+and https://www.debian.org/doc/debian-policy/
+EOF
 }
 
 # Canonicalize script name if was run via symlink
