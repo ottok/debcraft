@@ -49,7 +49,7 @@ optional arguments:
                        ('debcraft release' only)
   --pull               ensure container base is updated
   --copy               perform the build on a copy of the package directory
-  --clean              ensure sources are clean
+  --clean              ensure sources are clean before and after build
   --debug              emit debug information
   -h, --help           display this help and exit
   --version            display version and exit
@@ -112,6 +112,9 @@ source "$DEBCRAFT_LIB_DIR/container/output.inc.sh"
 
 # shellcheck source=src/distributions.inc.sh
 source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
+
+# shellcheck source=src/generic.inc.sh
+source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 
 if [ -z "$1" ]
 then
@@ -343,16 +346,8 @@ fi
 # @TODO: If repository is a git clone, but not a `gbp clone`, it can be converted
 # to gbp with `gbp pull --verbose --ignore-branch --pristine-tar --track-missing`
 
-# Make sure sources are clean
-if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
-then
-  log_info "Ensure git repository is clean and reset (including submodules)"
-  git clean -fdx
-  git submodule foreach --recursive git clean -fdx
-  git reset --hard
-  git submodule foreach --recursive git reset --hard
-  git submodule update --init --recursive
-fi
+# Clean up before the build if applicable
+reset_if_source_repository_and_option_clean
 
 # Configure program behaviour after user options and arguments have been parsed
 # shellcheck source=src/config-package.inc.sh
@@ -395,3 +390,6 @@ case "$ACTION" in
     source "$DEBCRAFT_LIB_DIR/prune.inc.sh"
     ;;
 esac
+
+# Clean up after a successful build if applicable
+reset_if_source_repository_and_option_clean
