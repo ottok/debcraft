@@ -1,3 +1,14 @@
+debcraft (0.4.0) unstable; urgency=medium
+
+  * Implement proper Bash completion
+  * Check that logs exist before trying to compare them
+  * Ensure downloader has fresh apt archive cache available
+  * Include ccache in 'debcraft release --with-binaries'
+  * Introduce `debcraft build --skip-sources` and build full packages by default
+  * Warn about potential unapplied patches on binary-only 'build' and 'test'
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 21 Feb 2025 21:10:40 -0800
+
 debcraft (0.3.0) unstable; urgency=medium
 
   * Always run `apt-get update` before installing packages in containers
