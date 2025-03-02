@@ -6,18 +6,28 @@ stages:
 test:
   stage: test
   image: debian:sid-slim
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    # Avoid the warnings of "debconf: unable to initialize frontend: Dialog"
+    - echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+    - apt-get update -q
+    - apt-get -qq install --no-install-recommends --yes \
+        codespell \
+        git \
+        git-buildpackage \
+        help2man \
+        make \
+        podman \
+        python3-pytest \
+        shellcheck
   script:
-    - apt-get update -qq && apt-get -qq install --no-install-recommends --yes git devscripts python3-debian shellcheck make lsb-release codespell
-    - make test-static
-
-## Debian testing
-# Once 'make test' passed, also run the .deb builds and tests
-# @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
-# runners are too small for everything this stage does.
-# build_deb:
-#   stage: Salsa-CI
-#   trigger:
-#     include: debian/salsa-ci.yml
+    - make test
+  tags:
+    - docker
 
 ## Security testing
 # You can override the included template(s) by including variable overrides
@@ -32,6 +42,7 @@ sast:
 include:
 - template: Security/SAST.gitlab-ci.yml
 
+## Debian testing
 # Once all native tests passed, also run Salsa CI, except if a tag push as
 # Salsa CI does not run on tag pushes at all
 Salsa-CI:
