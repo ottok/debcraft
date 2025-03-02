@@ -51,7 +51,7 @@ install-local:
 	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/.local/bin/debcraft
 	ln --force --symbolic --verbose ${PWD}/bash-completion/debcraft-completion.sh ~/.local/share/bash-completion/completions/debcraft
 
-test: test-static test-debcraft
+test: test-static test-debcraft test-shunit
 
 # All generic static tests that don't need Debcraft to actually run
 # @TODO: Evaluate using '-o all' to run extra validation (https://github.com/koalaman/shellcheck/wiki/Optional)
@@ -65,3 +65,8 @@ test-static:
 test-debcraft:
 	@echo "Running Debcraft tests"
 	tests/debcraft-tests.sh
+
+# Run shunit2 test suite
+test-shunit:
+	@echo "Running shunit2 test suite"
+	tests/test_build.sh

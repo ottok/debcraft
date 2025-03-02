@@ -9,6 +9,7 @@ Build-Depends:
  help2man,
  podman | docker.io  <!nocheck>,
  shellcheck <!nocheck>,
+ shunit2 <!nocheck>,
 Standards-Version: 4.7.0
 Homepage: https://salsa.debian.org/debian/debcraft
 Rules-Requires-Root: no
