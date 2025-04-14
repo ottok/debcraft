@@ -3,19 +3,21 @@
 # Given a debian/changelog distribution pocket name, return container tag
 function get_baseimage_from_distribution_name() {
 
-  # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+  # Keep '-backports' suffix as e.g. 'bookworm-backports' is a valid container
+  # image name at https://hub.docker.com/_/debian/tags
+  # Remove '-security' suffix, e.g. 'bookworm-security' would be 'bookworm'
   # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
-  NAME="${1%%-*}"
+  NAME="${1%%-security}"
 
   # @TODO: Ideally read /usr/share/distro-info/debian.csv and ubuntu.csv directly
   case "$NAME" in
     unstable)
       echo "debian:sid"
       ;;
-    experimental | sid | trixie | bookworm | bullseye | buster | stretch )
+    experimental | sid | trixie* | bookworm* | bullseye* | buster* | stretch* )
       echo "debian:$NAME"
       ;;
-    plucky | oracular | noble | mantic | jammy | focal)
+    plucky* | oracular* | noble* | mantic* | jammy* | focal*)
       echo "ubuntu:$NAME"
       ;;
     *)
@@ -27,7 +29,8 @@ function get_baseimage_from_distribution_name() {
 
 function get_ubuntu_equivalent_from_debian_release() {
 
-  # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
+  # Remove any suffix, e.g. 'bookworm-security' or 'bookworm-backports' would be
+  # just 'bookworm' for the sake of Ubuntu equivalent lookup
   # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
   SERIES="${1%%-*}"
 
