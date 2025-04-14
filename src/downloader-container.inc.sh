@@ -8,6 +8,8 @@ else
   DOWNLOAD_BASENAME="debian:sid"
 fi
 
+log_debug "Building container using base image '$DOWNLOAD_BASENAME'"
+
 DOWNLOAD_CONTAINER="debcraft-${DOWNLOAD_BASENAME//:/-}"
 
 # @TODO: Skip building container in vain repeatedly
