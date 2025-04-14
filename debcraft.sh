@@ -127,15 +127,18 @@ do
   case "$1" in
     --build-dirs-path)
       export BUILD_DIRS_PATH="$2"
+      log_debug "Using BUILD_DIRS_PATH=$2"
       shift 2
       ;;
     --distribution)
       # The value is the next argument, e.g. '--distribution bookworm'
       export DISTRIBUTION="$2"
+      log_debug "Using DISTRIBUTION=$2"
       shift 2
       ;;
     --container-command)
       export CONTAINER_CMD="$2"
+      log_debug "Using CONTAINER_CMD=$2"
       shift 2
       ;;
     --host-architecture)
