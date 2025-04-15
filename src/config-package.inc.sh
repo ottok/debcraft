@@ -60,7 +60,7 @@ BUILD_ID="$(date '+%s')"
 if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
-  COMMIT_ID="$(git -C "$PWD/.git" log -n 1 --oneline | cut -d ' ' -f 1)"
+  COMMIT_ID="$(git -C "$PWD/.git" rev-parse --short HEAD)"
   # Strip branch paths and any slashes so version string is clean
   BRANCH_NAME="$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||')"
 
