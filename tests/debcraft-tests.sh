@@ -73,8 +73,9 @@ echo "$SEPARATOR" # Extra separator for test bed modifications
 gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
 debcraft_test "build entr" "Artifacts at"
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
 cd entr
+
+echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
 debcraft_test "build" "  meld /tmp"
 
@@ -88,6 +89,14 @@ git clean -fdx
 rm --recursive --force --verbose .git
 debcraft_test "build" "  meld /tmp"
 
+cd .. # exit 'entr' subdirectory
+
+echo "$SEPARATOR" # Extra separator for test bed modifications
+gbp clone https://salsa.debian.org/mariadb-team/galera-4.git
+cd galera-4
+export DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym"
+debcraft_test "build --skip-sources --clean" "Artifacts at"
+export DEB_BUILD_OPTIONS=""
 cd ..
 
 mkdir hello-debhelper
