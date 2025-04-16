@@ -34,6 +34,7 @@ RUN apt-get update -q && \
       apt-utils \
       command-not-found \
       hunspell-en-us \
+      licenserecon \
       python3-debian \
       python3-hunspell \
       python3-levenshtein \

@@ -90,6 +90,13 @@ then
   fi
 fi
 
+log_info "Validate debian/copyright has no obvious issues..."
+if ! lrc > /dev/null
+then
+  log_error "Licenserecon reported issues, please run 'lrc' or add overrides in debian/lrc.config"
+  VALIDATION_ERRORS+=('licenserecon')
+fi
+
 # Emit non-zero exit code if there was errors
 if [ -n "${VALIDATION_ERRORS[*]}" ]
 then
