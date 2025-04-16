@@ -83,7 +83,7 @@ DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build <package>
 
 ```
 $ debcraft --help
-usage: debcraft <build|validate|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+usage: debcraft <build|improve|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
 as a subargument any of:

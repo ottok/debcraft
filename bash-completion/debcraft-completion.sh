@@ -44,9 +44,9 @@ _debcraft_complete() {
       ;;
     debcraft*)
       # First argument should be one these
-      options="build validate test release shell prune --help --version"
+      options="build improve test release shell prune --help --version"
       ;;
-    validate*)
+    improve*)
       # Suggest directories, .dsc files, or URLs for 'build'
       targets="$(find_targets "$cur")"
       options="$generic_options $targets https://"
