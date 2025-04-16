@@ -1,6 +1,6 @@
 #!/bin/bash
 
-log_info "Validating source package at $PWD"
+log_info "Improving source package at $PWD"
 
 if [ -n "$DEBUG" ]
 then
@@ -19,7 +19,7 @@ $CONTAINER_CMD run \
     --env="DEB*" \
     "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
-    /debcraft-validator.sh \
+    /debcraft-improve.sh \
     || FAILURE="true"
 
 if [ -n "$DEBUG" ]
@@ -30,9 +30,9 @@ fi
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Validation found issues - please read the output above carefully"
+  log_error "Unresolvable issues found - please read the output above carefully"
   exit 1
 fi
 
 
-log_info "Validation passed without findings"
+log_info "Improving package complete"

@@ -42,11 +42,14 @@ RUN apt-get update -q && \
       apt-utils \
       autopkgtest \
       autodep8 \
+      codespell \
       command-not-found \
       hunspell-en-us \
+      python3-bs4 \
       python3-debian \
       python3-hunspell \
       python3-levenshtein \
+      python3-setuptools \
       shellcheck \
       xxd
 
@@ -56,6 +59,20 @@ RUN apt-get update -q && \
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       diffoscope-minimal || true
+
+# The lintianb-rush package is (consistently) available only since Debian 12
+# "Bookworm" and thus building containers of older Debian or Ubuntu releases
+# will fail, but that can be ignored
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      lintian-brush || true
+
+# The licenserecon package is available only since Debian 13 "Trixie",
+# and thus building containers of older Debian or Ubuntu releases will fail
+# but can be ignored
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      licenserecon || true
 
 # @TODO: The dh-debputy and python3-lsprotocol are available only in latest
 # Debian Sid 2024, and thus building containers of older Debian and Ubuntu

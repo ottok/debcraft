@@ -11,7 +11,7 @@ set -o pipefail
 
 display_help() {
   cat << EOF
-usage: debcraft <build|validate|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+usage: debcraft <build|improve|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
 as a subargument any of:
@@ -25,8 +25,8 @@ as a subargument any of:
 
   * git http(s) or ssh URL that can be downloaded and built
 
-The commands 'validate' and 'release' are intended to be used to finalize a
-package build. The command 'test' will run the Debian-specific regression test
+The command 'release' is intended to be used to upload a package that is ready
+to be released. The command 'test' will run the Debian-specific regression test
 suite if the package has autopkgtest support, and drop to a shell for
 investigation if tests failed to pass. The command 'shell' can be used to play
 around in the container and 'prune' will clean up temporary files by Debcraft.
@@ -118,7 +118,7 @@ source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 
 if [ -z "$1" ]
 then
-  log_error "Missing argument <build|validate|test|release|shell|prune>"
+  log_error "Missing argument <build|improve|test|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -190,7 +190,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | validate | test | release | shell | prune)
+    build | improve | test | release | shell | prune)
       export ACTION="$1"
       shift
       ;;
@@ -205,7 +205,7 @@ done
 if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|validate|test|release|shell|prune>"
+  log_error "Argument '$TARGET' not one of <build|improve|test|release|shell|prune>"
   echo
   display_help
   exit 1
@@ -263,7 +263,7 @@ elif [ -d "$TARGET" ]
 then
   # If an argument was given, and it is a directory, use TARGET as-is
   :
-elif [ ! -d "$TARGET" ] && [[ "build validate" =~ $ACTION ]]
+elif [ ! -d "$TARGET" ] && [[ "build improve" =~ $ACTION ]]
 then
   # If the argument exists, but didn't point to a valid path, try to use the
   # argument to download the package
@@ -368,9 +368,9 @@ case "$ACTION" in
     # shellcheck source=src/build.inc.sh
     source "$DEBCRAFT_LIB_DIR/build.inc.sh"
     ;;
-  validate)
-    # shellcheck source=src/validate.inc.sh
-    source "$DEBCRAFT_LIB_DIR/validate.inc.sh"
+  improve)
+    # shellcheck source=src/improve.inc.sh
+    source "$DEBCRAFT_LIB_DIR/improve.inc.sh"
     ;;
   test)
     # shellcheck source=src/test.inc.sh
