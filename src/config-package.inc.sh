@@ -120,7 +120,7 @@ else
   exit 1
 fi
 
-# Actions 'build' and 'validate' operate on the BUILD_DIR
+# Actions 'build' and 'improve' operate on the BUILD_DIR
 BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 # Action 'release' places artifacts in a differently named directory
 RELEASE_DIR="$BUILD_DIRS_PATH/debcraft-release-$PACKAGE-$BUILD_ID"
