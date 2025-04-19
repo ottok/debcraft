@@ -82,6 +82,9 @@ then
   if ! shellcheck -x --shell=sh $SH_SCRIPTS > /dev/null || ! shellcheck -x --shell=bash $BASH_SCRIPTS > /dev/null
   then
     log_error "Shellcheck reported issues, please run it manually"
+    # or just apply fixes with 'patch -p0 < shellcheck-fixes.diff'"
+    ## shellcheck -x --enable=all --format=diff --shell=sh $SH_SCRIPTS >> shellcheck-fixes.diff
+    ## shellcheck -x --enable=all --format=diff --shell=bash $BASH_SCRIPTS >> shellcheck-fixes.diff
     VALIDATION_ERRORS+=('shellcheck')
 
     # @TODO: Automatically fix by applying diff from `shellcheck -x --enable=all --format=diff`
