@@ -20,8 +20,6 @@ VALIDATION_ERRORS=()
 
 # @TODO: Nag if local git tags have not been pushed (i.e. forgot to run 'gbp push')
 
-# @TODO: codespell --interactive=0 --check-filenames --check-hidden debian/
-# @TODO: ^ automatically fix with extra parameter --write
 # @TODO: find * -type f | xargs spellintian --picky
 # @TODO: enchant-2 -d en -a debian/changelog # ispell line format, does not work for a human
 # @TODO: aspell -d en -c debian/changelog # interactive mode, checks whole file not just latest entry
@@ -88,6 +86,13 @@ then
 
     # @TODO: Automatically fix by applying diff from `shellcheck -x --enable=all --format=diff`
   fi
+fi
+
+log_info "Validate there are no obvious spelling errors..."
+if ! codespell --write-changes --check-filenames --check-hidden debian/
+then
+  log_error "Codespell reported issues, please run 'codespell --write-changes --check-filenames --check-hidden debian/' or add overrides in debian/.codespellrc"
+  VALIDATION_ERRORS+=('codespell')
 fi
 
 log_info "Validate debian/copyright has no obvious issues..."

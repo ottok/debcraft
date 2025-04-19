@@ -32,6 +32,7 @@ RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       autopkgtest \
       apt-utils \
+      codespell \
       command-not-found \
       hunspell-en-us \
       licenserecon \
