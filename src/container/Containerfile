@@ -68,7 +68,7 @@ RUN /enable-source-repositories.sh
 # Insert extra repositories and keys right before build dependencies are to be
 # installed following convention set in Salsa CI
 # (https://salsa.debian.org/salsa-ci-team/pipeline#add-private-repositories-to-the-builds)
-COPY ci /
+COPY ci /ci
 COPY extra_repository_dir /extra_repository_dir
 RUN /enable-extra-repositories.sh
 

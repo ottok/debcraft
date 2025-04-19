@@ -23,8 +23,8 @@ sed "s/FROM debian:sid/FROM $BASEIMAGE/" -i "$CONTAINER_DIR/Containerfile"
 # Make package CI scripts available in container
 if [ -d debian/ci ]
 then
-  log_info "Include the 'ci' subdirectory from the package in the build"
-  cp --archive --verbose debian/ci/ "$CONTAINER_DIR/ci/"
+  log_info "Include the 'debian/ci/' subdirectory in the build container"
+  cp --archive --verbose debian/ci "$CONTAINER_DIR/"
 else
   # If "ci" subdirectory does not exist, for example after being removed from
   # the package, ensure it does not exist in container either
