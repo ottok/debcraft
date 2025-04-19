@@ -9,6 +9,9 @@ set -o pipefail
 # show commands (debug)
 #set -x
 
+# shellcheck source=src/container/output.inc.sh
+source "/output.inc.sh"
+
 # Documentation section hack to avoid too many comment line prefixes
 cat /dev/null <<EOF
 
@@ -41,11 +44,14 @@ EOF
 
 if [ -f /etc/apt/sources.list.d/debian.sources ] || [ -f /etc/apt/sources.list.d/ubuntu.sources ]
 then
-  echo "Enable deb-src repositories in container (new format)"
+  log_info "Enable deb-src repositories in container (new format)"
   sed 's/Types: deb/Types: deb deb-src/g' -i /etc/apt/sources.list.d/*.sources
 elif  [ -f /etc/apt/sources.list ]
 then
-  echo "Enable deb-src repositories in container (legacy format)"
+  log_info "Enable deb-src repositories in container (legacy format)"
   grep '^deb ' /etc/apt/sources.list | \
     sed 's/^deb /deb-src /g' > /etc/apt/sources.list.d/sources-list-with-deb-src.list
+else
+  log_error "Unable to detect deb-src format - source repositories not enabled!"
+  exit 1
 fi
