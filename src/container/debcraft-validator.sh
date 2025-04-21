@@ -54,9 +54,16 @@ VALIDATION_ERRORS=()
 # or alternatively as Salsa-CI uses: blhc --debian --line-numbers --color ${SALSA_CI_BLHC_ARGS} ${WORKING_DIR}/*.build || [ $? -eq 1 ]
 # However both versions result in blhc outputting 'No compiler commands' so I am not sure if it works at all?
 
-# @TODO: If allowed to modify package, run 'lintian-brush --no-update-changelog --modern --uncertain'?
-
 # @TODO: diffoscope --html report.html old.deb new.deb
+
+# Lintian brush needs to run first as it refuses to run if there are any
+# uncomitted changes, potentially introduced by the other tools
+log_info "Fix everything lintian-brush can fix..."
+if ! lintian-brush --no-update-changelog --modern --uncertain > /dev/null
+then
+  log_error "lintian-brush reported issues, please run 'lintian-brush --no-update-changelog --modern --uncertain'"
+  VALIDATION_ERRORS+=('lintian-brush')
+fi
 
 log_info "Validating files in debian/ in general with Debputy..."
 if ! debputy lint --spellcheck > /dev/null

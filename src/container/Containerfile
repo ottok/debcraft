@@ -30,15 +30,18 @@ RUN apt-get update -q && \
 # Validator dependencies
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
-      autopkgtest \
       apt-utils \
+      autopkgtest \
       codespell \
       command-not-found \
       hunspell-en-us \
       licenserecon \
+      lintian-brush \
+      python3-bs4 \
       python3-debian \
       python3-hunspell \
       python3-levenshtein \
+      python3-setuptools \
       shellcheck \
       xxd
 
