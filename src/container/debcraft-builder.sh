@@ -50,8 +50,14 @@ else
   fi
 fi
 
+# Apply host architecture to build process
+if [ -n "$HOST_ARCH" ]
+then
+  DPKG_BUILDPACKAGE_ARGS="$DPKG_BUILDPACKAGE_ARGS --host-arch $HOST_ARCH"
+fi
+
 # Teach user what is done and why
-log_info "Running 'dpkg-buildpackage --build=any,all' to create .deb packages"
+log_info "Running 'dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS' to create .deb packages"
 
 if [ -d ".git" ]
 then
@@ -68,7 +74,7 @@ then
     $GBP_ARGS | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
-  dpkg-buildpackage --no-sign --build=any,all | tee -a "../$BUILD_LOG"
+  dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS --build=any,all | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'

@@ -59,6 +59,8 @@ fi
 #
 # Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
 #
+# Export HOST_ARCH for cross build
+#
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
@@ -71,6 +73,7 @@ $CONTAINER_CMD run \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
+    --env="HOST_ARCH" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
     /debcraft-builder.sh \
