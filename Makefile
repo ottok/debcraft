@@ -48,6 +48,8 @@ install: build
 
 install-local:
 	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
+	mkdir -p ~/.local/bin
+	mkdir -p ~/.local/share/bash-completion/completions
 	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/.local/bin/debcraft
 	ln --force --symbolic --verbose ${PWD}/bash-completion/debcraft-completion.sh ~/.local/share/bash-completion/completions/debcraft
 
