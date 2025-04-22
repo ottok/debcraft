@@ -40,6 +40,7 @@ optional arguments:
   --build-dirs-path    Path for writing build files and artifacts (default: parent directory)
   --distribution       Linux distribution to build in (default: debian:sid)
   --container-command  container command to use (default: podman)
+  --host-architecture  host architecture to use when performing a cross build
   --skip-sources       build only binaries and skip creating a source
                        tarball to make the build slightly faster
                        ('debcraft build' only)

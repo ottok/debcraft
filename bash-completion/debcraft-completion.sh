@@ -6,10 +6,13 @@ _debcraft_complete() {
   COMPREPLY=()
 
   # Options that can be used with most commands in Debcraft
-  generic_options="--build-dirs-path --distribution --container-command --pull --copy --clean"
+  generic_options="--build-dirs-path --distribution --container-command --host-architecture --pull --copy --clean"
 
   # Examples of distributions
   distributions="debian:sid debian:bookworm ubuntu:devel ubuntu:24.04"
+
+  # Examples of architectures
+  architectures="alpha armel armhf arm64 hppa i386 amd64 m68k mips64el PowerPC PPC64 ppc64el riscv64 s390x SH4 sparc64 x32"
 
   function find_targets() {
     local targets
@@ -69,6 +72,9 @@ _debcraft_complete() {
       # Suggest common distributions
       options="$distributions"
       ;;
+    --host-arch*)
+      # Suggest common architectures
+      options="$architectures"
     *)
       # Fall back on generic options and paths
       options="$generic_options $targets https://"
