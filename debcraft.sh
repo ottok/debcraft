@@ -137,6 +137,10 @@ do
       export CONTAINER_CMD="$2"
       shift 2
       ;;
+    --host-architecture)
+      export HOST_ARCH="$2"
+      shift 2
+      ;;
     --skip-sources)
       export SKIP_SOURCES="true"
       shift

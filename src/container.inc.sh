@@ -50,6 +50,7 @@ fi
 $CONTAINER_CMD build  \
   --tag "$CONTAINER" \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
+  --build-arg HOST_ARCH=$HOST_ARCH \
   $CONTAINER_BUILD_ARGS \
   --file="$CONTAINER_DIR/Containerfile" \
   "$CONTAINER_DIR" \

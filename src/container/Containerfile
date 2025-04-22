@@ -1,6 +1,8 @@
 # Base Containerfile for Debcraft
 FROM debian:sid
 
+ARG HOST_ARCH
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Stretch is no longer available at deb.debian.org, use archive.debian.org instead
@@ -73,8 +75,9 @@ RUN if [ -f ci/extra_repository.asc ]; then cp --archive --verbose ci/extra_repo
 # Install dependencies
 #@TODO: Use 'apt-get build-dep .' as all modern Debian/Ubuntu versions support it
 COPY control /
-RUN apt-get update -q && \
-    DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i /control \
+RUN [ -z $HOST_ARCH ] || dpkg --add-architecture $HOST_ARCH; \
+    apt-get update -q && \
+    DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i ${HOST_ARCH:+--host-arch $HOST_ARCH} /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
 # Should be automatic and not needed at all, but run one more time just to be sure

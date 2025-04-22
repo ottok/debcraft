@@ -51,7 +51,7 @@ esac
 
 # Container name
 # Replace on or more occurrences of colons with dash in container name
-CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}"
+CONTAINER="debcraft-$PACKAGE-${BASEIMAGE//:/-}${HOST_ARCH/#/-}"
 
 # Build id must always be defined
 BUILD_ID="$(date '+%s')"
