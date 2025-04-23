@@ -50,10 +50,18 @@ else
   fi
 fi
 
-# Apply host architecture to build process
-if [ -n "$HOST_ARCH" ]
+if [ -n "$HOST_ARCH" ] && ! dpkg-architecture -e "$HOST_ARCH"
 then
+  # Apply host architecture to build process if not the same as build architecture
   DPKG_BUILDPACKAGE_ARGS="$DPKG_BUILDPACKAGE_ARGS --host-arch $HOST_ARCH"
+  # Set default variables so cross compiling is easier. DEB_BUILD_* properties
+  # are only set here if not already set prior.  This matches what sbuild does
+  # when it performs a cross build.
+  # https://salsa.debian.org/debian/sbuild/-/blob/archive/debian/0.89.0/lib/Sbuild/Build.pm?ref_type=tags#L2886-2895
+  # https://salsa.debian.org/debian/sbuild/-/blob/archive/debian/0.89.0/lib/Sbuild/Conf.pm?ref_type=tags#L167-177
+  export CONFIG_SITE=/etc/dpkg-cross/cross-config.$HOST_ARCH
+  export DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS:-nocheck}
+  export DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-cross nocheck}
 fi
 
 # Teach user what is done and why
