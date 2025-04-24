@@ -16,9 +16,6 @@ source "/output.inc.sh"
 # are supposed to use it
 export DPKG_COLORS="always"
 
-# Use environment if set, otherwise use nice defaults
-log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
-
 # Prepare stats and cache
 BUILD_START_TIME="$EPOCHSECONDS"
 ccache --zero-stats > /dev/null
@@ -63,6 +60,9 @@ then
   export DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS:-nocheck}
   export DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-cross nocheck}
 fi
+
+# Use environment if set, otherwise use nice defaults
+log_info "DEB_BUILD_OPTIONS set as '$DEB_BUILD_OPTIONS'"
 
 # Teach user what is done and why
 log_info "Running 'dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS' to create .deb packages"
