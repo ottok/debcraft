@@ -82,6 +82,10 @@ then
     $GBP_ARGS | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
+  # Because the origtargz is not created nor included if not using git-buildpackage, the source
+  # package cannot be built.  The parameter `--build=any,all` is specified explicitly.  The
+  # dpkg-buildpackage command allows the command to be specified multiple times, allowing it
+  # to be explicitly defined, even if already defined in DPKG_BUILDPACKAGE_ARGS.
   dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS --build=any,all | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
