@@ -75,6 +75,7 @@ _debcraft_complete() {
     --host-arch*)
       # Suggest common architectures
       options="$architectures"
+      ;;
     *)
       # Fall back on generic options and paths
       options="$generic_options $targets https://"
