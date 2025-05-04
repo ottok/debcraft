@@ -1,3 +1,18 @@
+debcraft (0.5.0) unstable; urgency=medium
+
+  [ TheJayMann ]
+  * Use git rev-parse to retrieve commit id
+  * Implement cross-builds with e.g.
+    'debcraft build --host-architecture=arm64'
+
+  [ Otto Kekäläinen ]
+  * Apply patches with Quilt when dpkg-source is skipped
+  * Clean up *after* the build if run with `--clean`
+  * Allow distribution selection to have `-backports` suffix
+  * Add 'questing' as the new default Ubuntu development release
+
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 03 May 2025 18:16:25 -0700
+
 debcraft (0.4.0) unstable; urgency=medium
 
   * Implement proper Bash completion
