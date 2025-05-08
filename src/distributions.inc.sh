@@ -8,6 +8,14 @@ function get_baseimage_from_distribution_name() {
   # Remove '-security' suffix, e.g. 'bookworm-security' would be 'bookworm'
   # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
   NAME="${1%%-security}"
+  # Remove -proposed-updates suffix as it is not a container tag
+  NAME="${NAME%%-proposed-updates}"
+
+  # @TODO: Compary to how sbuild does this based
+  # Debian: -security, -updates, -backports, -backports-sloppy, -proposed-updates, -lts
+  # At https://hub.docker.com/_/debian/tags?name=bookworm- bookworm-backports exist, but not the others
+  # Ubuntu: -security, -updates, -backports, -proposed, -esm
+  # At https://hub.docker.com/_/ubuntu/tags?name=noble- none of above seem to exist
 
   # @TODO: Ideally read /usr/share/distro-info/debian.csv and ubuntu.csv directly
   case "$NAME" in
