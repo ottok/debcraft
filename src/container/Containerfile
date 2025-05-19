@@ -33,8 +33,9 @@ RUN apt-get update -q && \
 # Validator dependencies
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
-      autopkgtest \
       apt-utils \
+      autopkgtest \
+      autodep8 \
       command-not-found \
       hunspell-en-us \
       python3-debian \
