@@ -30,7 +30,7 @@ while kill -0 "$PID" 2> /dev/null
 do
   echo -n "${EPOCHREALTIME}: " >> "$LOG_PROFILE"
   tail --lines=1 "$LOG_OUTPUT"  >> "$LOG_PROFILE"
-  read -srt 1 && break_ # avoids forking 'sleep'
+  read -srt 1 && break # avoids forking 'sleep'
 done
 
 echo

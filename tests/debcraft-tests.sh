@@ -41,7 +41,7 @@ function debcraft_test() {
   echo "expected start: $EXPECTED_OUTPUT_LAST_LINE_START"
 
   # Note wildcard at end - the expected result only needs to match the start
-  if [[ "$TEST_OUTPUT_LAST_LINE" == "$EXPECTED_OUTPUT_LAST_LINE_START_START"* ]] && \
+  if [[ "$TEST_OUTPUT_LAST_LINE" == "$EXPECTED_OUTPUT_LAST_LINE_START"* ]] && \
      [ -z "$RET" ]
   then
     echo "TEST PASSED"
@@ -77,18 +77,18 @@ cd entr
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
-debcraft_test "build" "  meld /tmp"
+debcraft_test "build" "  browse file:///"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
-debcraft_test "build ." "  meld /tmp"
+debcraft_test "build ." "  browse file:///"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git reset --hard
 git clean -fdx
 rm --recursive --force --verbose .git
 # Once git is deleted, there are no sources available for the build
-debcraft_test "build --skip-sources" "  meld /tmp"
+debcraft_test "build --skip-sources" "Artifacts at file:///"
 
 cd .. # exit 'entr' subdirectory
 
@@ -96,7 +96,7 @@ echo "$SEPARATOR" # Extra separator for test bed modifications
 gbp clone https://salsa.debian.org/mariadb-team/galera-4.git
 cd galera-4
 export DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym"
-debcraft_test "build --skip-sources --clean" "Artifacts at"
+debcraft_test "build --skip-sources --clean" "Cleaning and resetting"
 export DEB_BUILD_OPTIONS=""
 cd ..
 
@@ -106,14 +106,14 @@ for FILE in https://archive.debian.org/debian/pool/main/h/hello-debhelper/hello-
 do
   curl -LO "$FILE"
 done
-debcraft_test "build hello-debhelper_2.9.1.dsc"
+debcraft_test "build hello-debhelper_2.9.1.dsc" "Artifacts at file:///"
 
 # Run remaining tests from top-level
 cd ..
 
-debcraft_test "build molly-guard" "Artifacts at"
+debcraft_test "build molly-guard" "Artifacts at file:///"
 
-debcraft_test "build https://salsa.debian.org/patryk/qnapi.git" "Artifacts at"
+debcraft_test "build https://salsa.debian.org/patryk/qnapi.git" "Artifacts at file:///"
 
 echo "$SEPARATOR"
 echo "Success! All $TEST_NUMBER Debcraft tests passed."
