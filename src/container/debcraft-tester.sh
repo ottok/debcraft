@@ -25,7 +25,9 @@ if [ -f debian/patches/series ]
 then
   log_info "Apply patches with Quilt"
   export QUILT_PATCHES=debian/patches
-  quilt push -a
+    # If all patches have already been applied, attempting to push any more results
+    # in an exit status of 2.  As this is not an error, it should be ignored.
+    quilt push -a || [ $? -eq 2 ]
 fi
 
 
