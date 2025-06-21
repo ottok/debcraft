@@ -37,6 +37,32 @@ else
   log_info "Building package without creating source tarball at $BUILD_DIR"
 fi
 
+# Opportunistically copy the upstream tarball if it exists. Command dpkg-source
+# expects it in the parent directory of the source tree for '3.0 (quilt)'
+# format. This needs to happen before the container is run.
+if [ -z "$SKIP_SOURCES" ]
+then
+  # Extract package version from debian/changelog
+  # This assumes PACKAGE is already set by debcraft.sh
+  DEBIAN_VERSION="$(dpkg-parsechangelog --show-field=Version)"
+  # First, remove everything before the colon, including the colon itself
+  EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
+  # Then, remove everything from the first hyphen onwards.
+  PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
+
+  # Attempt to copy the tarball with any compression supported by dpkg-source
+  for ext in xz gz bz2 lzma
+  do
+    TARBALL_PATH="${BUILD_DIRS_PATH}/${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
+    if [ -f "$TARBALL_PATH" ]
+    then
+      cp --verbose --no-clobber "$TARBALL_PATH" "$BUILD_DIR/"
+      # Exit loop after finding and copying the first tarball
+      break
+    fi
+  done
+fi
+
 # Define variable only used in build
 CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
 mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
