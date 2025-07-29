@@ -171,7 +171,8 @@ export PREVIOUS_SUCCESSFUL_RELEASE_DIRS
 # latest tagged releases
 if [ -d "$PWD/.git" ]
 then
-  if [ -n "$(git tag --list)" ]
+  # We don't want to have import tags such as "upstream/*" but only release tags
+  if [ -n "$(git tag --list "debian/*" "ubuntu/*")" ]
   then
     # Get the first tag encountered when traversing branch history
     NAME_OF_LAST_TAG="$(git describe --first-parent --abbrev=0)"
