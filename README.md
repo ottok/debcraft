@@ -404,6 +404,25 @@ be as perfect as possible.
 * [Deb-o-matic](https://debomatic.github.io/)
 * [UMT](https://wiki.ubuntu.com/SecurityTeam/BuildEnvironment#Setting_up_and_using_UMT)
 
+## Advanced usage examples
+
+### GitHub Actions
+
+If you would like to build Debian packages out of GitHub Actions, debcraft can
+come in handy. GitHub Actions only offer Ubuntu-based runners, but debcraft
+allows to build packages for different releases of both Debian and Ubuntu.
+
+Unfortunately you cannot put a file in the directory `.github/workflows` directly
+in a project which hosts a Debian package as it would fail to build due to 
+changes to the source.
+
+A possible solution is to host the building logic in a separate repository
+and fetch the proper sources for the package via parameters to the workflow.
+
+See https://github.com/centic9/debian-packages/blob/main/.github/workflows/debian-package-debcraft.yml 
+for a resulting Github Action which can build any package as long as sources 
+are available in a repository on GitHub.
+
 ## Licence
 
 Debcraft is free and open source software as published under GPL version 3.
