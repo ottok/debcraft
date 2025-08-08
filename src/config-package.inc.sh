@@ -61,8 +61,10 @@ if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
   COMMIT_ID="$(git -C "$PWD/.git" rev-parse --short HEAD)"
-  # Strip branch paths and any slashes so version string is clean
-  BRANCH_NAME="$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||')"
+  # Strip branch paths and any slashes so version string is clean, and if there
+  # is no symbolic-ref at all ("fatal: ref HEAD is not a symbolic ref") when
+  # for example building a detached head, fall-back to using just commit id
+  BRANCH_NAME="$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||' || echo "$COMMIT_ID")"
 
   # The BUILD_ID will appended to the Debian/Ubuntu version string, and thus
   # cannot have slahses, dashes or underscores.
