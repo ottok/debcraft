@@ -1,0 +1,5 @@
+# Disable false positive that Shellcheck 0.11.0 started to fail on:
+#   In src/container/debcraft-builder.sh line 46:
+#      log_info "Apply patches with Quilt"
+#      ^-- SC2218 (error): This function is only defined later. Move the definition up.
+disable=SC2218
