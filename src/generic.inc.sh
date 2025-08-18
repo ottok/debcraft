@@ -4,7 +4,8 @@
 function reset_if_source_repository_and_option_clean() {
   if [ -n "$CLEAN" ] && [ -d "$PWD/.git" ]
   then
-    log_info "Ensure git repository is clean and reset (including submodules)"
+    echo
+    log_info "Cleaning and resetting the git repository (including submodules)"
     git clean -fdx --quiet
     git submodule --quiet foreach --recursive git clean -fdx
     git reset --hard --quiet
