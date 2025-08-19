@@ -69,8 +69,10 @@ debputy lint --spellcheck --auto-fix
 
 debputy reformat --style black
 
-codespell --write-changes --check-filenames --check-hidden debian/
-# add overrides in debian/.codespellrc"
+codespell --write-changes --check-filenames --check-hidden \
+  --skip="debian/changelog,debian/patches,debian/vendor,debian/source/lintian-overrides,*.lintian-overrides,*.po,*.pot" \
+  debian/
+# add overrides in debian/.codespellrc
 
 lrc
 # add overrides in debian/lrc.config
