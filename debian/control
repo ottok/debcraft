@@ -3,8 +3,8 @@ Section: misc
 Priority: optional
 Maintainer: Otto Kekäläinen <otto@debian.org>
 Build-Depends:
- codespell <!nocheck>,
  debhelper-compat (= 13),
+ codespell <!nocheck>,
  git-buildpackage <!nocheck>,
  help2man,
  podman | docker.io  <!nocheck>,
