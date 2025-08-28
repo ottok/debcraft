@@ -54,6 +54,10 @@ function get_ubuntu_equivalent_from_debian_release() {
         # For every Ubuntu name always return it as-is
         echo "$SERIES"
         ;;
+      trixie)
+        # August 2025
+        echo "plucky"
+        ;;
       bookworm)
         # June 2023
         echo "lunar"
