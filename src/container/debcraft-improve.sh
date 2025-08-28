@@ -87,5 +87,12 @@ then
   rm -f shellcheck-fixes.diff
   shellcheck -x --enable=all --format=diff --shell=sh $SH_SCRIPTS >> shellcheck-fixes.diff
   shellcheck -x --enable=all --format=diff --shell=bash $BASH_SCRIPTS >> shellcheck-fixes.diff
-  patch --strip=1 < shellcheck-fixes.diff
+
+  # Apply patch if not empty, otherwise just remove it
+  if [[ -s shellcheck-fixes.diff ]]
+  then
+    patch --strip=1 < shellcheck-fixes.diff
+  else
+    rm -f shellcheck-fixes.diff
+  fi
 fi
