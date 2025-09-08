@@ -96,6 +96,14 @@ COPY ci /ci
 COPY extra_repository_dir /extra_repository_dir
 RUN /enable-extra-repositories.sh
 
+RUN echo "Package: *" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "Pin: release a=experimental" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "Pin-Priority: 900" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "Package: libcrack2 libcrack2-dev cracklib-runtime" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "Pin: release a=unstable" >> /etc/apt/preferences.d/99experimental-force && \
+    echo "Pin-Priority: 999" >> /etc/apt/preferences.d/99experimental-force
+
 # Install dependencies
 #@TODO: Use 'apt-get build-dep .' as all modern Debian/Ubuntu versions support it
 COPY control /
