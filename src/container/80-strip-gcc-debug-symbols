@@ -1,0 +1,7 @@
+# Automatically strip gcc binaries
+DPkg::Post-Invoke {
+    "/usr/bin/find /usr/lib/gcc/*/ /usr/libexec/gcc/*/ -maxdepth 2 -type f -size +10M -print0 2>/dev/null | /usr/bin/xargs -r0 /usr/bin/strip --strip-unneeded --remove-section=.comment --remove-section=.note";
+};
+
+# Verify binaries in tens of MB, not hundreds:
+#   find /usr/lib/gcc/*/ /usr/libexec/gcc/*/ -maxdepth 2 -type f -size +10M -print0 | xargs -r0 ls -lth

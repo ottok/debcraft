@@ -5,6 +5,12 @@ ARG HOST_ARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+
+# Automatically remove 500MB+ of debug symbols that GCC maintainers have
+# intentionally in unstable for bootstrapping new stack tracing, but which is
+# unnecessary for Debcraft containers
+COPY 80-strip-gcc-debug-symbols /etc/apt/apt.conf.d/
+
 # Stretch is no longer available at deb.debian.org, use archive.debian.org instead
 RUN if grep -q 'PRETTY_NAME="Debian GNU/Linux 9 (stretch)"' /etc/os-release; \
     then \
@@ -79,7 +85,7 @@ COPY control /
 RUN [ -z $HOST_ARCH ] || dpkg --add-architecture $HOST_ARCH; \
     apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i ${HOST_ARCH:+--host-arch $HOST_ARCH} /control \
-    -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
+      -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
 # Should be automatic and not needed at all, but run one more time just to be sure
 RUN update-ccache-symlinks
