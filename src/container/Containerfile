@@ -111,6 +111,15 @@ RUN [ -z $HOST_ARCH ] || dpkg --add-architecture $HOST_ARCH; \
     DEBIAN_FRONTEND=noninteractive mk-build-deps -r -i ${HOST_ARCH:+--host-arch $HOST_ARCH} /control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends'
 
+# Remove debug 500MB+ of debug symbols that GCC maintainers have intentionally
+# in unstable for bootstrapping new stack tracing, but which is unnecessary for
+# Debcraft containers
+RUN find /usr/lib/gcc/*/ /usr/libexec/gcc/*/ \
+      -maxdepth 2 -type f -size +10M -print0 \
+      | xargs -r0 \
+          strip --strip-unneeded \
+                --remove-section=.comment --remove-section=.note || true
+
 # Should be automatic and not needed at all, but run one more time just to be sure
 RUN update-ccache-symlinks
 
