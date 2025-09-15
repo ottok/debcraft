@@ -19,10 +19,18 @@ case "$DISTRIBUTION" in
     else
       # Parse the latest debian/changelog entry
       DISTRIBUTION="$(head -n 1 debian/changelog | cut -d ' ' -f 3 | cut -d ';' -f 1)"
+      log_debug_var DISTRIBUTION
       # ..or if that is UNRELEASED, the second last entry
       if [ "$DISTRIBUTION" == "UNRELEASED" ]
       then
         DISTRIBUTION="$(grep --max-count=2 '^[^ ]\+ ([^)]\+) [^ ]\+;' debian/changelog | tail -n 1 | cut -d ' ' -f 3 | cut -d ';' -f 1)"
+        # If there is no second last entry, or if it too is UNRELEASED
+        # (unlikely), clear the variable from any value to let it fall-back to
+        # default values in a later step
+        if [ "$DISTRIBUTION" == "UNRELEASED" ]
+        then
+          DISTRIBUTION=""
+        fi
       fi
 
       # If really on UNRELEASED was only option, default to debian:sid, which
