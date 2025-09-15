@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# SPDX-FileCopyrightText: 2024 Otto Kekäläinen <otto@debian.org>
+# SPDX-FileCopyrightText: 2023-2025 Otto Kekäläinen <otto@debian.org>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
