@@ -24,8 +24,10 @@ BUILD_START_TIME="$EPOCHSECONDS"
 
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
-  ccache --zero-stats > /dev/null
+  ccache --zero-stats > /dev/null # Silence the "statistics zeroed" message
   export PATH="/usr/lib/ccache:${PATH}"
+  sccache --zero-stats > /dev/null
+  export RUSTC_WRAPPER=sccache # Silence the "statistics zeroed" message
 fi
 
 # Mimic debuild log filename '<package>_<version>_source.build'
@@ -93,6 +95,7 @@ then
   # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
   # "Bullseye") however require '--verbose' to show any cache hit stats at all.
   ccache --show-stats --verbose || true
+  sccache --show-stats
 fi
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current

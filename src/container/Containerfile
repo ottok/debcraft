@@ -78,6 +78,11 @@ RUN apt-get update -q && \
       dh-debputy \
       python3-lsprotocol || true
 
+# Make sccache available for Rust projects that want to opt-into it
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      sccache
+
 # Activate source repositories in the Containerfile so that the large download
 # is cached in the container and the validator can run quickly
 COPY enable-source-repositories.sh enable-extra-repositories.sh output.inc.sh /
@@ -112,6 +117,6 @@ RUN update-ccache-symlinks
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
-RUN ccache --show-stats  --verbose || true
+RUN ccache --show-stats --verbose || true; sccache --show-stats
 
 COPY *.sh /

@@ -18,8 +18,10 @@ export DPKG_COLORS="always"
 
 # Prepare stats and cache
 BUILD_START_TIME="$EPOCHSECONDS"
-ccache --zero-stats > /dev/null
+ccache --zero-stats > /dev/null # Silence the "statistics zeroed" message
 export PATH="/usr/lib/ccache:${PATH}"
+sccache --zero-stats # Silence the "statistics zeroed" message
+export RUSTC_WRAPPER=sccache
 
 # Mimic debuild log filename '<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
@@ -105,6 +107,7 @@ fi
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 ccache --show-stats --verbose || true
+sccache --show-stats
 
 # After the build, run the analyzer
 # shellcheck source=src/container/debcraft-analyzer.sh
