@@ -18,8 +18,9 @@ export DPKG_COLORS="always"
 
 # Prepare stats and cache
 BUILD_START_TIME="$EPOCHSECONDS"
-ccache --zero-stats > /dev/null
-export PATH="/usr/lib/ccache:${PATH}"
+
+# shellcheck source=src/container/cache.inc.sh
+source "/cache.inc.sh"
 
 # Mimic debuild log filename '<package>_<version>_<arch>.build'
 # https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
@@ -104,7 +105,15 @@ fi
 # Older ccache does not support '--verbose' but will print stats anyway, just
 # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
+log_info "Cache stats: ccache"
 ccache --show-stats --verbose || true
+
+if command -v sccache > /dev/null
+then
+  log_info "Cache stats: sccache"
+  sccache --show-stats
+  # --show-adv-stats available only in Debian 13 "Trixie" and newer
+fi
 
 # After the build, run the analyzer
 # shellcheck source=src/container/debcraft-analyzer.sh

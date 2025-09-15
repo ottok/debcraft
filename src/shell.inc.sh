@@ -4,12 +4,8 @@ log_info "Starting interactive root shell in container for source package at $PW
 
 SHELL_DIR="$(mktemp -d)"
 
-# Define variable only used in build
-CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
-
-# Create directories, including 'source' subdirectory as the container mount
-# would create it anyway
-mkdir --parents "$CCACHE_DIR" "$SHELL_DIR/source"
+# Ensure directories exist before they are mounted
+mkdir --parents "$CACHE_DIR" "$BUILD_DIR/source"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
@@ -39,12 +35,11 @@ $CONTAINER_CMD run \
     --rm \
     --shm-size=1G \
     --cap-add SYS_PTRACE \
-    --volume="$CCACHE_DIR":/.ccache \
+    --volume="$CACHE_DIR":/var/cache \
     --volume="$SHELL_DIR":/tmp/build \
     $EXTRA_CONTAINER_MOUNTS \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
-    --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
     "$CONTAINER" \
     /debcraft-shell.sh

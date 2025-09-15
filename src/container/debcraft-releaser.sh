@@ -24,8 +24,8 @@ BUILD_START_TIME="$EPOCHSECONDS"
 
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
-  ccache --zero-stats > /dev/null
-  export PATH="/usr/lib/ccache:${PATH}"
+  # shellcheck source=src/container/cache.inc.sh
+  source "/cache.inc.sh"
 fi
 
 # Mimic debuild log filename '<package>_<version>_source.build'
@@ -93,6 +93,13 @@ then
   # followed by help section. Newer ccache 4.0+ (Ubuntu 22.04 "Focal", Debian 12
   # "Bullseye") however require '--verbose' to show any cache hit stats at all.
   ccache --show-stats --verbose || true
+
+  if command -v sccache > /dev/null
+  then
+    log_info "Cache stats: sccache"
+    sccache --show-stats
+    # --show-adv-stats available only in Debian 13 "Trixie" and newer
+  fi
 fi
 
 # @TODO: If `gbp tag` had a mode to give the previous release git tag on current

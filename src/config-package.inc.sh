@@ -124,6 +124,8 @@ fi
 BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 # Action 'release' places artifacts in a differently named directory
 RELEASE_DIR="$BUILD_DIRS_PATH/debcraft-release-$PACKAGE-$BUILD_ID"
+# Shared cache directory for all builds of the same package
+CACHE_DIR="$BUILD_DIRS_PATH/debcraft-cache-$PACKAGE"
 
 # Explicit exports
 export PACKAGE
@@ -133,6 +135,7 @@ export BUILD_ID
 export BUILD_DIRS_PATH
 export BUILD_DIR
 export RELEASE_DIR
+export CACHE_DIR
 
 log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
 

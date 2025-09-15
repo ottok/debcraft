@@ -12,6 +12,9 @@ set -o pipefail
 # shellcheck source=src/container/output.inc.sh
 source "/output.inc.sh"
 
+# shellcheck source=src/container/cache.inc.sh
+source "/cache.inc.sh"
+
 # shellcheck source=src/container/debcraft-repository.sh
 source "/debcraft-repository.sh"
 
