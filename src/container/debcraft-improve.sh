@@ -77,16 +77,16 @@ codespell --write-changes --check-filenames --check-hidden \
 lrc
 # add overrides in debian/lrc.config
 
-shellcheck -x --enable=all --shell=sh $SH_SCRIPTS
-shellcheck -x --enable=all --shell=bash $BASH_SCRIPTS
+shellcheck -x --enable=all --shell=sh "$SH_SCRIPTS"
+shellcheck -x --enable=all --shell=bash "$BASH_SCRIPTS"
 
 set +x
 
 if [ -n "$SH_SCRIPTS" ] || [ -n "$BASH_SCRIPTS" ]
 then
   rm -f shellcheck-fixes.diff
-  shellcheck -x --enable=all --format=diff --shell=sh $SH_SCRIPTS >> shellcheck-fixes.diff
-  shellcheck -x --enable=all --format=diff --shell=bash $BASH_SCRIPTS >> shellcheck-fixes.diff
+  shellcheck -x --enable=all --format=diff --shell=sh "$SH_SCRIPTS" >> shellcheck-fixes.diff
+  shellcheck -x --enable=all --format=diff --shell=bash "$BASH_SCRIPTS" >> shellcheck-fixes.diff
 
   # Apply patch if not empty, otherwise just remove it
   if [[ -s shellcheck-fixes.diff ]]
