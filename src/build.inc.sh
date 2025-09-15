@@ -63,14 +63,14 @@ then
   done
 fi
 
-# Define variable only used in build
-CCACHE_DIR="$BUILD_DIRS_PATH/ccache"
-mkdir --parents "$CCACHE_DIR" "$BUILD_DIR/source"
+# Ensure directories exist before they are mounted
+mkdir --parents "$CACHE_DIR" "$BUILD_DIR/source"
+
 # Instead of plain 'chown -R' use find and only apply chmod on files that need
 # it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as
 # safer option to 'exec' and use the variant ending with plus so any non-zero
 # exit code will be surfaced and calling script aborted.
-find "$CCACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
+find "$CACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference --verbose "${UID}":"${GROUPS[0]}" {} +
 
 if [ -n "$DEBUG" ]
 then
@@ -93,12 +93,10 @@ $CONTAINER_CMD run \
     --interactive --tty --rm \
     --shm-size=1G \
     --network=none \
-    --volume="$CCACHE_DIR":/.ccache \
+    --volume="$CACHE_DIR":/var/cache \
     --volume="$BUILD_DIR":/tmp/build \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
-    --env="CCACHE_DIR=/.ccache" \
-    --env="SCCACHE_DIR=/.ccache" \
     --env="DEB*" \
     --env="HOST_ARCH" \
     $CONTAINER_RUN_ARGS \

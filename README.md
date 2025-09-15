@@ -210,8 +210,8 @@ dpkg-source: info: unapplying debug-system-test.patch
 dpkg-source: info: unapplying kfreebsd-support.patch
 dpkg-source: info: unapplying libbsd-overlay.patch
 dpkg-buildpackage: info: binary-only upload (no source included)
-Cache directory:    /.ccache
-Config file:        /.ccache/ccache.conf
+Cache directory:    /var/cache/ccache
+Config file:        /var/cache/ccache/ccache.conf
 System config file: /etc/ccache.conf
 Stats updated:      Fri Jan 12 08:01:04 2024
 Local storage:

@@ -78,7 +78,8 @@ RUN apt-get update -q && \
       dh-debputy \
       python3-lsprotocol || true
 
-# Make sccache available for Rust projects that want to opt-into it
+# Install sccache (available in Debian/Ubuntu since December 2022) so C/C++ and
+# Rust builds can use it
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       sccache

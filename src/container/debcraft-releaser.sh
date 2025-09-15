@@ -24,10 +24,8 @@ BUILD_START_TIME="$EPOCHSECONDS"
 
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
-  ccache --zero-stats > /dev/null # Silence the "statistics zeroed" message
-  export PATH="/usr/lib/ccache:${PATH}"
-  sccache --zero-stats > /dev/null
-  export RUSTC_WRAPPER=sccache # Silence the "statistics zeroed" message
+  # shellcheck source=src/container/cache.inc.sh
+  source "/cache.inc.sh"
 fi
 
 # Mimic debuild log filename '<package>_<version>_source.build'
