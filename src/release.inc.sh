@@ -68,6 +68,7 @@ $CONTAINER_CMD run \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
+    --env="SCCACHE_DIR=/.ccache" \
     --env="DEB*" \
     $CONTAINER_RUN_ARGS \
     "$CONTAINER" \
