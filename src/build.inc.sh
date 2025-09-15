@@ -44,7 +44,7 @@ if [ -z "$SKIP_SOURCES" ]
 then
   # Extract package version from debian/changelog
   # This assumes PACKAGE is already set by debcraft.sh
-  DEBIAN_VERSION="$(dpkg-parsechangelog --show-field=Version)"
+  DEBIAN_VERSION="$(head -n 1 debian/changelog | grep --only-matching --perl-regexp '\(\K[^)]+')"
   # First, remove everything before the colon, including the colon itself
   EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
   # Then, remove everything from the first hyphen onwards.

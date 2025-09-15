@@ -18,11 +18,19 @@ case "$DISTRIBUTION" in
       fi
     else
       # Parse the latest debian/changelog entry
-      DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution)"
+      DISTRIBUTION="$(head -n 1 debian/changelog | cut -d ' ' -f 3 | cut -d ';' -f 1)"
+      log_debug_var DISTRIBUTION
       # ..or if that is UNRELEASED, the second last entry
       if [ "$DISTRIBUTION" == "UNRELEASED" ]
       then
-        DISTRIBUTION="$(dpkg-parsechangelog  --show-field=distribution --offset=1 --count=1)"
+        DISTRIBUTION="$(grep --max-count=2 '^[^ ]\+ ([^)]\+) [^ ]\+;' debian/changelog | tail -n 1 | cut -d ' ' -f 3 | cut -d ';' -f 1)"
+        # If there is no second last entry, or if it too is UNRELEASED
+        # (unlikely), clear the variable from any value to let it fall-back to
+        # default values in a later step
+        if [ "$DISTRIBUTION" == "UNRELEASED" ]
+        then
+          DISTRIBUTION=""
+        fi
       fi
 
       # If really on UNRELEASED was only option, default to debian:sid, which
@@ -31,7 +39,7 @@ case "$DISTRIBUTION" in
       then
         BASEIMAGE="debian:sid"
       else
-        # Let function map dpkg-parsechangelog value to a sensible baseimage
+        # Let function map the extracted distribution name to a sensible baseimage
         BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
       fi
     fi

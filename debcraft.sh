@@ -309,12 +309,8 @@ log_debug_var PWD
 
 if [ -f "debian/changelog" ]
 then
-  # If dpkg-parsechangelog fails and emits exit code, Debcraft will
-  # intentionally halt completely at this point
-  #
-  # @TODO: Having dpkg-parsechangelog as a dependency is against the design
-  # principle of having Debcraft as an universal tool
-  PACKAGE="$(dpkg-parsechangelog --show-field=source)"
+  # If parsing the changelog emits exit code, intentionally stop here
+  PACKAGE="$(head -n 1 debian/changelog | cut -d ' ' -f 1)"
 else
   log_error "Directory '$TARGET' is not a valid source package directory as" \
             "debian/changelog was not found"
