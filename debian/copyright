@@ -3,8 +3,11 @@ Upstream-Name: Debcraft
 Upstream-Contact: Otto Kekäläinen <otto@debian.org>
 Source: https://salsa.debian.org/otto/debcraft
 
-Files:     *
-Copyright: 2023-2024 Otto Kekäläinen <otto@debian.org>
-License:   GPL-v3+
+Files:
+ *
+ debian/*
+Copyright:
+ 2023-2025 Otto Kekäläinen <otto@debian.org>
+License: GPL-v3+
  On Debian based systems the full text of the GNU General Public License version
  3 can be found in the file `/usr/share/common-licenses/GPL-3`.
