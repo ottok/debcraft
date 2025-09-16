@@ -19,7 +19,7 @@ export RUSTC_WRAPPER=sccache
 # PATH' that activates it, and instead turn on some of the options below to
 # activate sccache. Note however, that in testing with Galera, the ccache took
 # on averadge 45 seconds, while with sccache it took over 60 seconds. Thus using
-# sccache is not necessairly faster.
+# sccache is not necessarily faster.
 
 # Override the gcc and g++ binary names as looked up by dpkg-buildpackage.
 #export PATH="/usr/lib/sccache:${PATH}"
