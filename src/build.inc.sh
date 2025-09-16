@@ -53,7 +53,7 @@ then
   # Attempt to copy the tarball with any compression supported by dpkg-source
   for ext in xz gz bz2 lzma
   do
-    TARBALL_PATH="${BUILD_DIRS_PATH}/${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
+    TARBALL_PATH="../${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
     if [ -f "$TARBALL_PATH" ]
     then
       cp --verbose --no-clobber "$TARBALL_PATH" "$BUILD_DIR/"

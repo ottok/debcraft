@@ -59,6 +59,11 @@ DEBCRAFT_CMD="$DEBCRAFT_SRC_DIR/debcraft.sh"
 
 TEST_NUMBER=0
 
+# Don't use any cache or compare to build logs from potential previous test runs
+BUILD_DIRS_PATH="$(mktemp --directory)"
+# Will be used inside debcraft.sh
+export BUILD_DIRS_PATH
+
 TEMPDIR="$(mktemp --directory)"
 
 cd "$TEMPDIR" || exit 1
@@ -78,7 +83,7 @@ then
 fi
 
 gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
-debcraft_test "build entr" "Artifacts at"
+debcraft_test "build entr" "Artifacts at file:///"
 
 cd entr
 

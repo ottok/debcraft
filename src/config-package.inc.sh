@@ -102,8 +102,17 @@ fi
 
 case "$BUILD_DIRS_PATH" in
   "")
-    # If BUILD_DIRS_PATH is not set, use use parent directory of TARGET
-    BUILD_DIRS_PATH="$(cd .. && pwd)"
+    # If BUILD_DIRS_PATH is not set, use $XDG_CACHE_HOME following
+    # https://specifications.freedesktop.org/basedir-spec/latest/
+    # or fall-back to ~/.cache as last resort
+    if [ -n "$XDG_CACHE_HOME" ]
+    then
+      BUILD_DIRS_PATH="$XDG_CACHE_HOME/debcraft"
+    else
+      BUILD_DIRS_PATH="$HOME/.cache/debcraft"
+    fi
+    # Ensure directory exists
+    mkdir -p "$BUILD_DIRS_PATH"
     ;;
   *)
     # If BUILD_DIRS_PATH is defined, use it as-is
