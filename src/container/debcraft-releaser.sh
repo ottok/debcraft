@@ -84,7 +84,7 @@ fi
 #   --diff-ignore (-i, ignore default file types e.g. .git folder)
 #   --tar-ignore (-I, passing ignores to tar)
 gbp buildpackage --git-ignore-branch \
-  --git-builder="dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS" \
+  --git-builder="dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS" \
   $GBP_ARGS | tee -a "../$BUILD_LOG"
 
 if [ -n "$DEBCRAFT_FULL_BUILD" ]

@@ -32,8 +32,11 @@ investigation if tests failed to pass. The command 'shell' can be used to play
 around in the container and 'prune' will clean up temporary files by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Note that
-Debcraft builds never runs as root, and thus packages with
+be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
+include running './debian/rules clean' to clean up artifacts, while failed
+builds will leave them around for inspection.
+
+Note that Debcraft builds never runs as root, and thus packages with
 DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
@@ -50,6 +53,8 @@ optional arguments:
   --pull               ensure container base is updated
   --copy               perform the build on a copy of the package directory
   --clean              ensure sources are clean before and after build
+                       (only needed on packages with incomplete 'debian/clean'
+                       or 'debian/.gitignore' definitions)
   --debug              emit debug information
   -h, --help           display this help and exit
   --version            display version and exit
@@ -325,9 +330,9 @@ then
   # Every deb build potentially generates these temporary files, and it is safe
   # to assume that they should be deleted before restarting the build, so do it
   # automatically to make the overall experience friendlier
-  rm -rf debian/.debhelper debian/debhelper-build-stamp \
-         debian/debhelper.log debian/*.debhelper.log \
-         debian/substvars debian/*.substvars debian/files
+  rm -rfv debian/.debhelper debian/debhelper-build-stamp \
+          debian/debhelper.log debian/*.debhelper.log \
+          debian/substvars debian/*.substvars debian/files
 
   # If there are still more files, the user needs to make a decision
   if [ -z "$CLEAN" ] &&
@@ -337,7 +342,10 @@ then
   then
     log_error "Modified or additional files found"\
               "\n$(git status --porcelain --ignored --untracked-files=all | head)"\
-              "\nCannot proceed building unless --clean or --copy is used."
+              "\nThese may be leftovers of a failed build, or of an incomplete"\
+              "\nrun of './debian/rules clean' after a successful build." \
+              "\nUse --clean to remove all untracked and uncommitted files"\
+              "\nor run with --copy to build in a separate new directory."
     exit 1
   fi
 fi
