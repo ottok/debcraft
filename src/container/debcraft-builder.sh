@@ -83,15 +83,16 @@ then
   # instruct it to only build binary packages, skipping source package generation
   # and skipping related cleanup steps.
   log_info "Running 'gbp buildpackage $GBP_ARGS' to create .deb packages from git repository"
+  log_info "followed by './debian/rules clean' to ensure source directory is clean"
   # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
   gbp buildpackage --git-ignore-branch \
-    --git-builder="dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS" \
+    --git-builder="dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS" \
     $GBP_ARGS | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
   log_info "Running 'dpkg-buildpackage $DPKG_BUILDPACKAGE_ARGS' to create .deb packages from plain sources directory"
   # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
-  dpkg-buildpackage --no-sign $DPKG_BUILDPACKAGE_ARGS | tee -a "../$BUILD_LOG"
+  dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'
