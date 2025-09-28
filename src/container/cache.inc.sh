@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CCACHE_DIR=/var/cache/ccache
+export CCACHE_DIR=/debcraft/cache/ccache
 ccache --max-size 3G > /dev/null
 # Reset cache counters without showing the "Statistics zeroed" message
 ccache --zero-stats > /dev/null
@@ -12,7 +12,7 @@ export PATH="/usr/lib/ccache:${PATH}"
 # that it exists in the current container before trying to use it
 if command -v sccache > /dev/null
 then
-  export SCCACHE_DIR=/var/cache/sccache
+  export SCCACHE_DIR=/debcraft/cache/sccache
   export SCCACHE_CACHE_SIZE=3G
   export SCCACHE_NO_DAEMON=1
   # Reset cache counters without showing the "Statistics zeroed." message in stderr

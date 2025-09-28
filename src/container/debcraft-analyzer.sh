@@ -14,7 +14,7 @@ source "/output.inc.sh"
 
 # The .deb builders output all artifacts in the parent directory of the source
 # directory, so ensure this scripts runs there
-cd /tmp/build || (log_error "Unable to change directory to /tmp/build"; exit 1)
+cd /debcraft || (log_error "Unable to change directory to /debcraft"; exit 1)
 
 # Run Lintian, but don't exit on errors since 'unstable' and 'sid' releases
 # will likely always emit errors if package complex enough

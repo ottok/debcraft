@@ -12,13 +12,13 @@ set -o pipefail
 # shellcheck source=src/container/output.inc.sh
 source "/output.inc.sh"
 
-if [ -d /tmp/build/previous-build ]
+if [ -d /debcraft/previous-build ]
 then
   log_info "Create local apt repository for testing newly built packages"
 
   mkdir -p /var/temp
   cd /var/temp || (log_error "Unable to change directory to /var/temp"; exit 1)
-  cp -a /tmp/build/previous-build/*.deb .
+  cp -a /debcraft/previous-build/*.deb .
   apt-ftparchive packages . > Packages
   apt-ftparchive release . > Release
   grep "^Package:" Packages

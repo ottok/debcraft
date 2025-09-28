@@ -11,8 +11,8 @@ $CONTAINER_CMD run \
     --interactive \
     ${CONTAINER_CAN_HAVE_TTY:+--tty} \
     --rm \
-    --volume="$PWD":/tmp/debcraft \
-    --workdir=/tmp/debcraft \
+    --volume="$PWD":/debcraft \
+    --workdir=/debcraft \
     "${CONTAINER_RUN_ARGS[@]}" \
     "$DOWNLOAD_CONTAINER" \
     /debcraft-downloader.sh "$TARGET" \

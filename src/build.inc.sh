@@ -13,20 +13,20 @@ then
 fi
 # @TODO: If we want to avoid sources being polluted but not duplicate files too
 # much or spend time on copying, try using overlays (but requires Podman 4.x series):
-# '--volume=/...:/tmp/build/source:O,upperdir=/tmp/build/upper,workdir=/tmp/build/workdir'
+# '--volume=/...:/debcraft/source:O,upperdir=/debcraft/upper,workdir=/debcraft/workdir'
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
   mkdir --parents "$BUILD_DIR/previous"
-  CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/previous")
+  CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous")
 fi
 
 if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}"
   mkdir --parents "$BUILD_DIR/last-tagged"
-  CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/last-tagged")
+  CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/last-tagged")
 fi
 
 if [ -z "$SKIP_SOURCES" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
@@ -37,6 +37,9 @@ else
   log_info "Building package without creating source tarball at $BUILD_DIR"
 fi
 
+# @TODO: This section should also run for `debcraft shell` so dpkg-source can
+# be run in it too.
+#
 # Opportunistically copy the upstream tarball if it exists. Command dpkg-source
 # expects it in the parent directory of the source tree for '3.0 (quilt)'
 # format. This needs to happen before the container is run.
@@ -94,9 +97,9 @@ CONTAINER_RUN_ARGS+=(
   --rm
   --shm-size=1G
   --network=none
-  --volume="$CACHE_DIR":/var/cache
-  --volume="$BUILD_DIR":/tmp/build
-  --workdir=/tmp/build/source
+  --volume="$CACHE_DIR":/debcraft/cache
+  --volume="$BUILD_DIR":/debcraft
+  --workdir=/debcraft/source
   --env="DEB*"
   --env="HOST_ARCH"
 )
@@ -111,11 +114,11 @@ then
     "$CONTAINER_CMD" run \
       "${CONTAINER_RUN_ARGS[@]}" \
       "$CONTAINER" \
-    bash -lc 'mkdir -p /tmp/build/source && tar -C /tmp/build/source -xf - && /debcraft-builder.sh' \
+    bash -lc 'mkdir -p /debcraft/source && tar -C /debcraft/source -xf - && /debcraft-builder.sh' \
     || FAILURE=true
 else
   # Local/sibling: bind-mount sources and run the builder
-  CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/tmp/build/source")
+  CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source")
   "$CONTAINER_CMD" run \
     --tty \
     "${CONTAINER_RUN_ARGS[@]}" \

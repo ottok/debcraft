@@ -32,16 +32,14 @@ then
   fi
 fi
 
-if ls /extra_repository_dir/*.deb > /dev/null 2>&1
+if ls /debcraft/extra_repository_dir/*.deb > /dev/null 2>&1
 then
   log_info "Enable extra local repository"
-  mkdir -p /tmp/var/extra_repository_dir
-  cd /tmp/var/extra_repository_dir
-  cp --archive --verbose /extra_repository_dir/*.deb .
+  cd /debcraft/extra_repository_dir
   apt-ftparchive packages . > Packages
   apt-ftparchive release . > Release
   grep "^Package:" Packages
   # cd has no silent mode flag, so just suppress output
   cd - > /dev/null
-  echo 'deb [trusted=yes] file:/tmp/var/extra_repository_dir ./' > /etc/apt/sources.list.d/extra_repository_dir.list
+  echo 'deb [trusted=yes] file:/debcraft/extra_repository_dir ./' > /etc/apt/sources.list.d/extra_repository_dir.list
 fi

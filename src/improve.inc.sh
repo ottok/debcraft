@@ -15,8 +15,8 @@ $CONTAINER_CMD run \
     ${CONTAINER_CAN_HAVE_TTY:+--tty} \
     --rm \
     --shm-size=1G \
-    --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
-    --workdir=/tmp/build/source \
+    --volume="${SOURCE_DIR:=$PWD}":/debcraft/source \
+    --workdir=/debcraft/source \
     --env="DEB*" \
     "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \

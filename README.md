@@ -157,8 +157,8 @@ dpkg-buildpackage: info: source changed by Otto Kekäläinen <otto@debian.org>
  dpkg-source --before-build .
 ...
 make -j4 "INSTALL=install --strip-program=true"
-make[1]: Entering directory '/tmp/build/source'
-cc -g -O2 -ffile-prefix-map=/tmp/build/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.5\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
+make[1]: Entering directory '/debcraft/source'
+cc -g -O2 -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.5\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
 entr.c: In function ‘print_child_status’:
 entr.c:289:9: warning: ignoring return value of ‘write’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
   289 |         write(STDOUT_FILENO, buf, len);
@@ -167,20 +167,20 @@ entr.c: In function ‘run_utility’:
 entr.c:433:17: warning: ignoring return value of ‘realpath’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
   433 |                 realpath(leading_edge->fn, arg_buf);
       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-make[1]: Leaving directory '/tmp/build/source'
+make[1]: Leaving directory '/debcraft/source'
 dh: command-omitted: The call to "dh_auto_test -O--buildsystem=makefile" was omitted due to "DEB_BUILD_OPTIONS=nocheck"
    create-stamp debian/debhelper-build-stamp
    dh_testroot -O--buildsystem=makefile
    dh_prep -O--buildsystem=makefile
    debian/rules override_dh_auto_install
-make[1]: Entering directory '/tmp/build/source'
+make[1]: Entering directory '/debcraft/source'
 dh_auto_install -- PREFIX=/usr
-	make -j4 install DESTDIR=/tmp/build/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
-make[2]: Entering directory '/tmp/build/source'
-install entr /tmp/build/source/debian/entr/usr/bin
-install -m 644 entr.1 /tmp/build/source/debian/entr/usr/share/man/man1
-make[2]: Leaving directory '/tmp/build/source'
-make[1]: Leaving directory '/tmp/build/source'
+	make -j4 install DESTDIR=/debcraft/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
+make[2]: Entering directory '/debcraft/source'
+install entr /debcraft/source/debian/entr/usr/bin
+install -m 644 entr.1 /debcraft/source/debian/entr/usr/share/man/man1
+make[2]: Leaving directory '/debcraft/source'
+make[1]: Leaving directory '/debcraft/source'
    dh_installdocs -O--buildsystem=makefile
    dh_installchangelogs -O--buildsystem=makefile
    dh_installman -O--buildsystem=makefile
@@ -210,8 +210,8 @@ dpkg-source: info: unapplying debug-system-test.patch
 dpkg-source: info: unapplying kfreebsd-support.patch
 dpkg-source: info: unapplying libbsd-overlay.patch
 dpkg-buildpackage: info: binary-only upload (no source included)
-Cache directory:    /var/cache/ccache
-Config file:        /var/cache/ccache/ccache.conf
+Cache directory:    /debcraft/cache/ccache
+Config file:        /debcraft/cache/ccache/ccache.conf
 System config file: /etc/ccache.conf
 Stats updated:      Fri Jan 12 08:01:04 2024
 Local storage:

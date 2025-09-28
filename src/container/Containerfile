@@ -5,7 +5,6 @@ ARG HOST_ARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-
 # Automatically remove 500MB+ of debug symbols that GCC maintainers have
 # intentionally in unstable for bootstrapping new stack tracing, but which is
 # unnecessary for Debcraft containers
@@ -99,7 +98,7 @@ RUN /enable-source-repositories.sh
 # installed following convention set in Salsa CI
 # (https://salsa.debian.org/salsa-ci-team/pipeline#add-private-repositories-to-the-builds)
 COPY ci /ci
-COPY extra_repository_dir /extra_repository_dir
+COPY extra_repository_dir /debcraft/extra_repository_dir
 RUN /enable-extra-repositories.sh
 
 RUN echo "Package: *" >> /etc/apt/preferences.d/99experimental-force && \
@@ -126,4 +125,8 @@ RUN update-ccache-symlinks
 # "Bullseye") however require '--verbose' to show any cache hit stats at all.
 RUN ccache --show-stats --verbose || true; sccache --show-stats || true
 
+# All Debcraft commands and libraries are copied to the container root as it is
+# a throw-away environment and strict adherense to LSB does not matter. Do not
+# put any scripts into the /debcraft folder, as it is dedicated for build
+# artifacts that will be stored.
 COPY *.sh /
