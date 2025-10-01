@@ -12,10 +12,13 @@ all: build install
 
 build-depends:
 	@echo "Check all build dependencies are present"
+	@help2man --version | head -n 1
+
+test-depends:
+	@echo "Check all test dependencies are present"
 	@echo -n "Codespell version: "
 	@codespell --version
 	@echo $$(shellcheck --version | head -n 2)
-	@help2man --version | head -n 1
 
 build: manpage build-depends
 
@@ -58,7 +61,7 @@ test: test-static test-debcraft
 # All generic static tests that don't need Debcraft to actually run
 # @TODO: Evaluate using '-o all' to run extra validation (https://github.com/koalaman/shellcheck/wiki/Optional)
 # @TODO: podman build --validate Containerfile?
-test-static:
+test-static: test-depends
 	@echo "Running static tests"
 	codespell --interactive=0 --check-filenames --check-hidden --skip=.git
 	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
