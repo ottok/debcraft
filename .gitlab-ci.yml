@@ -10,6 +10,38 @@ test:
     - apt-get update -qq && apt-get -qq install --no-install-recommends --yes git devscripts python3-debian shellcheck make lsb-release codespell
     - make test-static
 
+make-test:
+  stage: test
+  image: debian:sid-slim
+  services:
+    - name: docker:27-dind
+      command: ["--tls=false"]   # simple, no-TLS setup
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    # Avoid the warnings of "debconf: unable to initialize frontend: Dialog"
+    - echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+    - apt-get update -q
+    - |
+      apt-get -qq install --no-install-recommends --yes \
+        docker.io \
+        docker-cli \
+        docker-buildx \
+        codespell \
+        curl \
+        git \
+        git-buildpackage \
+        help2man \
+        make \
+        python3-pytest \
+        shellcheck
+    - printenv
+  script:
+    - export CONTAINER_CMD=docker
+    - export DEBUG=true
+    - make test
+
 ## Debian testing
 # Once 'make test' passed, also run the .deb builds and tests
 # @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
