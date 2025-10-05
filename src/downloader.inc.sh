@@ -8,7 +8,8 @@
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$DOWNLOAD_CONTAINER" \
-    --interactive --tty --rm \
+    ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE} \
+    --rm \
     --volume="$PWD":/tmp/debcraft \
     --workdir=/tmp/debcraft \
     $CONTAINER_RUN_ARGS \

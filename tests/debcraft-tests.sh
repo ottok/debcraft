@@ -70,6 +70,12 @@ debcraft_test "help" "and https://www.debian.org/doc/debian-policy/" IGNORE_NONZ
 # Prepare test git repository
 # @TODO: Clone remote only if needed, otherwise reuse local clones
 echo "$SEPARATOR" # Extra separator for test bed modifications
+
+# Set TERM for tput in CI environments
+if [ -z "${TERM:-}" ]; then
+  export TERM=dumb
+fi
+
 gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
 debcraft_test "build entr" "Artifacts at"
 

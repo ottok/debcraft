@@ -60,7 +60,8 @@ fi
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
-    --interactive --tty --rm \
+    ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE} \
+    --rm \
     --shm-size=1G \
     --network=none \
     --volume="$CCACHE_DIR":/.ccache \
