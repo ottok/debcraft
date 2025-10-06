@@ -88,23 +88,43 @@ fi
 # Export HOST_ARCH for cross build
 #
 # shellcheck disable=SC2086
-$CONTAINER_CMD run \
-    --name="$CONTAINER" \
-    ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE} \
-    --rm \
-    --shm-size=1G \
-    --network=none \
-    --volume="$CCACHE_DIR":/.ccache \
-    --volume="$BUILD_DIR":/tmp/build \
-    --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
-    --workdir=/tmp/build/source \
-    --env="CCACHE_DIR=/.ccache" \
-    --env="DEB*" \
-    --env="HOST_ARCH" \
-    $CONTAINER_RUN_ARGS \
+
+SOURCE_PATH="${SOURCE_DIR:-$PWD}"
+
+# Common args
+RUN_ARGS=(
+  --name="$CONTAINER"
+  ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE}
+  --rm
+  --shm-size=1G
+  --network=none
+  --volume="$CCACHE_DIR":/.ccache
+  --volume="$BUILD_DIR":/tmp/build
+  --workdir=/tmp/build/source
+  --env="CCACHE_DIR=/.ccache"
+  --env="DEB*"
+  --env="HOST_ARCH"
+)
+
+# append extra args safely
+read -r -a EXTRA_ARGS <<<"$CONTAINER_RUN_ARGS"
+RUN_ARGS+=("${EXTRA_ARGS[@]}")
+
+if [[ "${DOCKER_HOST:-}" == tcp://* ]]; then
+  # DinD: daemon can not see $PWD -> stream sources via tar, then run the builder
+  tar -C "$SOURCE_PATH" -cf - . | \
+  "$CONTAINER_CMD" run -i "${RUN_ARGS[@]}" \
+    "$CONTAINER" \
+    bash -lc 'mkdir -p /tmp/build/source && tar -C /tmp/build/source -xf - && /debcraft-builder.sh' \
+    || FAILURE=true
+else
+  # Local/sibling: bind-mount sources and run the builder
+  RUN_ARGS+=(--volume="${SOURCE_PATH}":/tmp/build/source)
+  "$CONTAINER_CMD" run "${RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-builder.sh \
-    || FAILURE="true"
+    || FAILURE=true
+fi
 
 # Intentionally do not log all output from the container. Those can be accessed
 # if needed via Podman/Docker logs:
