@@ -83,11 +83,21 @@ cd entr
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
-debcraft_test "build" "  browse file:///"
+
+if [ -n "${GITLAB_CI:-}" ]; then
+  debcraft_test "build" "Artifacts at"
+else
+  debcraft_test "build" "  browse file:///"
+fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
-debcraft_test "build ." "  browse file:///"
+
+if [ -n "${GITLAB_CI:-}" ]; then
+  debcraft_test "build" "Artifacts at"
+else
+  debcraft_test "build" "  browse file:///"
+fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git reset --hard
