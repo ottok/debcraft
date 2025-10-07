@@ -15,18 +15,21 @@ fi
 # much or spend time on copying, try using overlays (but requires Podman 4.x series):
 # '--volume=/...:/debcraft/source:O,upperdir=/debcraft/upper,workdir=/debcraft/workdir'
 
-if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+if [[ "${DOCKER_HOST:-}" != tcp://* ]]
 then
-  log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
-  mkdir --parents "$BUILD_DIR/previous"
-  CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous")
-fi
+  if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+  then
+    log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
+    mkdir --parents "$BUILD_DIR/previous"
+    CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous")
+  fi
 
-if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ]
-then
-  log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}"
-  mkdir --parents "$BUILD_DIR/last-tagged"
-  CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/last-tagged")
+  if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ]
+  then
+    log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}"
+    mkdir --parents "$BUILD_DIR/last-tagged"
+    CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/last-tagged")
+  fi
 fi
 
 if [ -z "$SKIP_SOURCES" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
@@ -97,8 +100,6 @@ CONTAINER_RUN_ARGS+=(
   --rm
   --shm-size=1G
   --network=none
-  --volume="$CACHE_DIR":/debcraft/cache
-  --volume="$BUILD_DIR":/debcraft
   --workdir=/debcraft/source
   --env="DEB*"
   --env="HOST_ARCH"
@@ -109,16 +110,27 @@ SOURCE_PATH="${SOURCE_DIR:-$PWD}"
 
 if [[ "${DOCKER_HOST:-}" == tcp://* ]]
 then
-  # DinD: daemon can not see $PWD -> stream sources via tar, then run the builder
+  # DinD: daemon can not see host paths -> stream everything via tar.
+  # Caching is disabled in this mode.
+  # First, tar sources and pipe to container.
+  # Inside container: unpack sources, run build.
+  # After build, tar build artifacts and pipe to host.
+  # Host unpacks build artifacts.
   tar -C "$SOURCE_PATH" -cf - . | \
     "$CONTAINER_CMD" run \
       "${CONTAINER_RUN_ARGS[@]}" \
       "$CONTAINER" \
-    bash -lc 'mkdir -p /debcraft/source && tar -C /debcraft/source -xf - && /debcraft-builder.sh' \
+    bash -lc 'mkdir -p /debcraft/source && tar -C /debcraft/source -xf - && /debcraft-builder.sh >&2 && tar -C /debcraft -cf - .' | \
+    tar -C "$BUILD_DIR" -xf - \
     || FAILURE=true
 else
   # Local/sibling: bind-mount sources and run the builder
-  CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source")
+  # shellcheck disable=SC2191
+  CONTAINER_RUN_ARGS+=(
+    --volume="${SOURCE_PATH}":/debcraft/source
+    --volume="$CCACHE_DIR":/debcraft/cache
+    --volume="$BUILD_DIR":/debcraft
+  )
   "$CONTAINER_CMD" run \
     --tty \
     "${CONTAINER_RUN_ARGS[@]}" \
@@ -144,21 +156,21 @@ then
   set +x
 fi
 
-if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
+if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ] && [[ "${DOCKER_HOST:-}" != tcp://* ]]
 then
   # Clean up temporary mount directory from polluting build artifacts
   # if a "previous" directory was mounted
   rmdir "$BUILD_DIR/previous"
 fi
 
-if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ]
+if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ] && [[ "${DOCKER_HOST:-}" != tcp://* ]]
 then
   # Clean up temporary mount directory from polluting build artifacts
   # if a "previous" directory was mounted
   rmdir "$BUILD_DIR/last-tagged"
 fi
 
-if [ -z "$COPY" ] && [ -d "$BUILD_DIR/source" ]
+if [ -z "$COPY" ] && [[ "${DOCKER_HOST:-}" != tcp://* ]]
 then
   # Clean up temporary mount directory from polluting build artifacts
   # if a "source" directory was mounted (i.e. COPY was *not* used)
