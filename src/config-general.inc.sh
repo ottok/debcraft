@@ -45,7 +45,7 @@ export CONTAINER_RUN_ARGS
 # stdout (file descriptor 1) is attached to a terminal
 if [ -t 1 ] && [ -z "${GITLAB_CI:-}" ]
 then
-  DEBCRAFT_INTERACTIVE="--interactive --tty"
+  DEBCRAFT_INTERACTIVE="--tty"
 else
   DEBCRAFT_INTERACTIVE=""
 fi

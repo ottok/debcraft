@@ -78,9 +78,9 @@ then
 fi
 
 # Run build inside a container image with build dependencies defined in a Podmanfile
-# --tty needed for session to have colors automatically
+# --tty needed for session to have colors automatically (but don't use it in CI!)
 # --interactive needed for Ctrl+C to cancel build and stop container (and not
-#   just exit tty)
+#   just exit tty), and also for CI to be able to pipe tar contents
 # --network=none to ensure build is hermetic and does not download anything
 #
 # Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
@@ -94,7 +94,7 @@ SOURCE_PATH="${SOURCE_DIR:-$PWD}"
 # Common args
 RUN_ARGS=(
   --name="$CONTAINER"
-  ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE}
+  --interactive
   --rm
   --shm-size=1G
   --network=none
@@ -114,14 +114,17 @@ if [[ "${DOCKER_HOST:-}" == tcp://* ]]
 then
   # DinD: daemon can not see $PWD -> stream sources via tar, then run the builder
   tar -C "$SOURCE_PATH" -cf - . | \
-  "$CONTAINER_CMD" run -i "${RUN_ARGS[@]}" \
-    "$CONTAINER" \
+    "$CONTAINER_CMD" run \
+      "${RUN_ARGS[@]}" \
+      "$CONTAINER" \
     bash -lc 'mkdir -p /tmp/build/source && tar -C /tmp/build/source -xf - && /debcraft-builder.sh' \
     || FAILURE=true
 else
   # Local/sibling: bind-mount sources and run the builder
   RUN_ARGS+=(--volume="${SOURCE_PATH}":/tmp/build/source)
-  "$CONTAINER_CMD" run "${RUN_ARGS[@]}" \
+  "$CONTAINER_CMD" run \
+    --tty \
+    "${RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-builder.sh \
     || FAILURE=true
