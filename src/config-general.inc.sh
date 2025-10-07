@@ -26,11 +26,11 @@ version=$(${CONTAINER_CMD} --version)
 if [[ $version =~ 'podman' ]]
 then
   CONTAINER_TYPE='podman'
-  CONTAINER_RUN_ARGS='--userns=keep-id'
+  CONTAINER_RUN_ARGS=("--userns=keep-id")
 elif [[ $version =~ 'Docker' ]]
 then
   CONTAINER_TYPE='docker'
-  CONTAINER_RUN_ARGS="--user=${UID}"
+  CONTAINER_RUN_ARGS=("--user=${UID}")
 else
   log_error "Invalid value in --container-command=$CONTAINER_CMD"
   exit 1

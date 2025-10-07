@@ -87,12 +87,8 @@ fi
 #
 # Export HOST_ARCH for cross build
 #
-# shellcheck disable=SC2086
-
-SOURCE_PATH="${SOURCE_DIR:-$PWD}"
-
-# Common args
-RUN_ARGS=(
+# shellcheck disable=SC2191
+CONTAINER_RUN_ARGS+=(
   --name="$CONTAINER"
   --interactive
   --rm
@@ -106,25 +102,25 @@ RUN_ARGS=(
   --env="HOST_ARCH"
 )
 
-# append extra args safely
-read -r -a EXTRA_ARGS <<<"$CONTAINER_RUN_ARGS"
-RUN_ARGS+=("${EXTRA_ARGS[@]}")
+# Mount current path as sources unless defined otherwise
+SOURCE_PATH="${SOURCE_DIR:-$PWD}"
 
 if [[ "${DOCKER_HOST:-}" == tcp://* ]]
 then
   # DinD: daemon can not see $PWD -> stream sources via tar, then run the builder
   tar -C "$SOURCE_PATH" -cf - . | \
     "$CONTAINER_CMD" run \
-      "${RUN_ARGS[@]}" \
+      "${CONTAINER_RUN_ARGS[@]}" \
       "$CONTAINER" \
     bash -lc 'mkdir -p /tmp/build/source && tar -C /tmp/build/source -xf - && /debcraft-builder.sh' \
     || FAILURE=true
 else
   # Local/sibling: bind-mount sources and run the builder
-  RUN_ARGS+=(--volume="${SOURCE_PATH}":/tmp/build/source)
+  # shellcheck disable=SC2191
+  CONTAINER_RUN_ARGS+=(--volume="${SOURCE_PATH}":/tmp/build/source)
   "$CONTAINER_CMD" run \
     --tty \
-    "${RUN_ARGS[@]}" \
+    "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-builder.sh \
     || FAILURE=true
