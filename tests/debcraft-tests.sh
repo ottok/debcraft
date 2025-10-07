@@ -72,7 +72,8 @@ debcraft_test "help" "and https://www.debian.org/doc/debian-policy/" IGNORE_NONZ
 echo "$SEPARATOR" # Extra separator for test bed modifications
 
 # Set TERM for tput in CI environments
-if [ -z "${TERM:-}" ]; then
+if [ -z "${TERM:-}" ]
+then
   export TERM=dumb
 fi
 
@@ -84,7 +85,8 @@ cd entr
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
 
-if [ -n "${GITLAB_CI:-}" ]; then
+if [ -n "${GITLAB_CI:-}" ]
+then
   debcraft_test "build" "Artifacts at"
 else
   debcraft_test "build" "  browse file:///"
@@ -93,7 +95,8 @@ fi
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
 
-if [ -n "${GITLAB_CI:-}" ]; then
+if [ -n "${GITLAB_CI:-}" ]
+then
   debcraft_test "build" "Artifacts at"
 else
   debcraft_test "build" "  browse file:///"
@@ -120,7 +123,8 @@ cd ..
 # These builds currently fail in the CI environment due to Docker-in-Docker
 # bind mount limitations. They work locally but require follow-up fixes
 # to properly handle source extraction in DinD setups.
-if [ -n "${GITLAB_CI:-}" ]; then
+if [ -n "${GITLAB_CI:-}" ]
+then
   echo "Skipping tests affected by Docker-in-Docker mount issues in GitLab CI"
   exit 0
 fi

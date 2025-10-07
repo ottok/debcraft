@@ -23,10 +23,12 @@ fi
 
 # Determine container type and customizations if needed
 version=$(${CONTAINER_CMD} --version)
-if [[ $version =~ 'podman' ]]; then
+if [[ $version =~ 'podman' ]]
+then
   CONTAINER_TYPE='podman'
   CONTAINER_RUN_ARGS='--userns=keep-id'
-elif [[ $version =~ 'Docker' ]]; then
+elif [[ $version =~ 'Docker' ]]
+then
   CONTAINER_TYPE='docker'
   CONTAINER_RUN_ARGS="--user=${UID}"
 else
@@ -41,7 +43,8 @@ export CONTAINER_RUN_ARGS
 
 # Enable TTY only for interactive shells (not in GitLab CI) [ -t 1 ] checks if
 # stdout (file descriptor 1) is attached to a terminal
-if [ -t 1 ] && [ -z "${GITLAB_CI:-}" ]; then
+if [ -t 1 ] && [ -z "${GITLAB_CI:-}" ]
+then
   DEBCRAFT_INTERACTIVE="--interactive --tty"
 else
   DEBCRAFT_INTERACTIVE=""

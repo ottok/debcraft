@@ -110,7 +110,8 @@ RUN_ARGS=(
 read -r -a EXTRA_ARGS <<<"$CONTAINER_RUN_ARGS"
 RUN_ARGS+=("${EXTRA_ARGS[@]}")
 
-if [[ "${DOCKER_HOST:-}" == tcp://* ]]; then
+if [[ "${DOCKER_HOST:-}" == tcp://* ]]
+then
   # DinD: daemon can not see $PWD -> stream sources via tar, then run the builder
   tar -C "$SOURCE_PATH" -cf - . | \
   "$CONTAINER_CMD" run -i "${RUN_ARGS[@]}" \
