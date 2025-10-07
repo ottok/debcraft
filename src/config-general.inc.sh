@@ -43,7 +43,7 @@ export CONTAINER_RUN_ARGS
 
 # Enable TTY only for interactive shells (not in GitLab CI) [ -t 1 ] checks if
 # stdout (file descriptor 1) is attached to a terminal
-if [ -t 1 ] && [ -z "${GITLAB_CI:-}" ]
+if [ -t 1 ] && [ -z "${CI:-}" ]
 then
   DEBCRAFT_INTERACTIVE="--tty"
 else

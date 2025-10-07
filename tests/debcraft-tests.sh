@@ -85,7 +85,7 @@ cd entr
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
 
-if [ -n "${GITLAB_CI:-}" ]
+if [ -n "${CI:-}" ]
 then
   debcraft_test "build" "Artifacts at"
 else
@@ -95,7 +95,7 @@ fi
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git clean -fdx
 
-if [ -n "${GITLAB_CI:-}" ]
+if [ -n "${CI:-}" ]
 then
   debcraft_test "build ." "Artifacts at"
 else
