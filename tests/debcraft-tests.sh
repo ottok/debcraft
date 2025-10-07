@@ -97,9 +97,9 @@ git clean -fdx
 
 if [ -n "${GITLAB_CI:-}" ]
 then
-  debcraft_test "build" "Artifacts at"
+  debcraft_test "build ." "Artifacts at"
 else
-  debcraft_test "build" "  browse file:///"
+  debcraft_test "build ." "  browse file:///"
 fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
