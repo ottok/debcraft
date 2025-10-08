@@ -11,7 +11,8 @@ fi
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
-    ${DEBCRAFT_INTERACTIVE:+$DEBCRAFT_INTERACTIVE} \
+    --interactive \
+    ${CONTAINER_CAN_HAVE_TTY:+--tty} \
     --rm \
     --shm-size=1G \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \

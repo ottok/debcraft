@@ -36,17 +36,17 @@ else
   exit 1
 fi
 
+# Use [ -t 1 ] to check if stdout (file descriptor 1) is attached to a terminal
+# in order to later decide if `--tty` can be used when launching containers.
+# When running inside a CI system never try to attach a terminal.
+if [ -t 1 ] && [ -z "${CI:-}" ]
+then
+  CONTAINER_CAN_HAVE_TTY=true
+fi
+
+
 # Explicit exports
 export CONTAINER_CMD
 export CONTAINER_TYPE
 export CONTAINER_RUN_ARGS
-
-# Enable TTY only for interactive shells (not in GitLab CI) [ -t 1 ] checks if
-# stdout (file descriptor 1) is attached to a terminal
-if [ -t 1 ] && [ -z "${CI:-}" ]
-then
-  DEBCRAFT_INTERACTIVE="--tty"
-else
-  DEBCRAFT_INTERACTIVE=""
-fi
-export DEBCRAFT_INTERACTIVE
+export CONTAINER_CAN_HAVE_TTY
