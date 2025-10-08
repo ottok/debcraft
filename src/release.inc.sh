@@ -24,14 +24,14 @@ if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "Previous release was in ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}"
   mkdir --parents "$RELEASE_DIR/previous"
-  CONTAINER_RUN_ARGS=" --volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/previous $CONTAINER_RUN_ARGS"
+  CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/previous")
 fi
 
 if [ -n "${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}"
   mkdir --parents "$RELEASE_DIR/last-tagged"
-  CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
+  CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_RELEASE_DIRS[0]}:/tmp/build/last-tagged")
 fi
 
 if [ -n "$WITH_BINARIES" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
@@ -70,7 +70,7 @@ $CONTAINER_CMD run \
     --workdir=/tmp/build/source \
     --env="CCACHE_DIR=/.ccache" \
     --env="DEB*" \
-    $CONTAINER_RUN_ARGS \
+    "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-releaser.sh \
     || FAILURE="true"

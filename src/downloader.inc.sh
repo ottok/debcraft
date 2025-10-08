@@ -12,7 +12,7 @@ $CONTAINER_CMD run \
     --rm \
     --volume="$PWD":/tmp/debcraft \
     --workdir=/tmp/debcraft \
-    $CONTAINER_RUN_ARGS \
+    "${CONTAINER_RUN_ARGS[@]}" \
     "$DOWNLOAD_CONTAINER" \
     /debcraft-downloader.sh "$TARGET" \
     || FAILURE="true"

@@ -17,7 +17,7 @@ $CONTAINER_CMD run \
     --volume="${SOURCE_DIR:=$PWD}":/tmp/build/source \
     --workdir=/tmp/build/source \
     --env="DEB*" \
-    $CONTAINER_RUN_ARGS \
+    "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-validator.sh \
     || FAILURE="true"

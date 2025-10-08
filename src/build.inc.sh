@@ -19,14 +19,14 @@ if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
   mkdir --parents "$BUILD_DIR/previous"
-  CONTAINER_RUN_ARGS=" --volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/previous $CONTAINER_RUN_ARGS"
+  CONTAINER_RUN_ARGS+=("--volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/previous")
 fi
 
 if [ -n "${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous tagged release was in ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}"
   mkdir --parents "$BUILD_DIR/last-tagged"
-  CONTAINER_RUN_ARGS=" --volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/last-tagged $CONTAINER_RUN_ARGS"
+  CONTAINER_RUN_ARGS+=("--volume=${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]}:/tmp/build/last-tagged")
 fi
 
 if [ -z "$SKIP_SOURCES" ] || [ -n "$DEBCRAFT_FULL_BUILD" ]
@@ -116,8 +116,7 @@ then
     || FAILURE=true
 else
   # Local/sibling: bind-mount sources and run the builder
-  # shellcheck disable=SC2191
-  CONTAINER_RUN_ARGS+=(--volume="${SOURCE_PATH}":/tmp/build/source)
+  CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/tmp/build/source")
   "$CONTAINER_CMD" run \
     --tty \
     "${CONTAINER_RUN_ARGS[@]}" \
