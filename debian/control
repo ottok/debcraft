@@ -18,6 +18,7 @@ Package: debcraft
 Architecture: all
 Depends:
  podman | docker.io,
+ sensible-utils,
  ${misc:Depends},
 Description: Easy, fast and secure way to build Debian packages
  Debcraft is a tool to build Debian packages as easily as possible. It uses
