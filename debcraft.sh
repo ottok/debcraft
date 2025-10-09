@@ -11,7 +11,7 @@ set -o pipefail
 
 display_help() {
   cat << EOF
-usage: debcraft <build|improve|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+usage: debcraft <build|improve|test|release|update|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
 as a subargument any of:
@@ -25,11 +25,16 @@ as a subargument any of:
 
   * git http(s) or ssh URL that can be downloaded and built
 
-The command 'release' is intended to be used to upload a package that is ready
-to be released. The command 'test' will run the Debian-specific regression test
-suite if the package has autopkgtest support, and drop to a shell for
-investigation if tests failed to pass. The command 'shell' can be used to play
-around in the container and 'prune' will clean up temporary files by Debcraft.
+The command 'improve' will try to apply various improvements to the package
+based on tools in Debian that automate package maintenance. The command 'test'
+will run the Debian-specific regression test suite if the package has
+autopkgtest support, and drop to a shell for investigation if tests failed to
+pass. The command 'release' is intended to be used to upload a package that is
+ready to be released and command 'update' will try to update the package to
+laters upstream version is package git repository layout is compatible.
+
+The command 'shell' can be used to play around in the container and 'prune' will
+clean up temporary files by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
 be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
@@ -195,7 +200,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | improve | test | release | shell | prune)
+    build | improve | test | release | update | shell | prune)
       export ACTION="$1"
       shift
       ;;
@@ -210,7 +215,7 @@ done
 if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|improve|test|release|shell|prune>"
+  log_error "Argument '$TARGET' not one of <build|improve|test|release|update|shell|prune>"
   echo
   display_help
   exit 1
@@ -227,6 +232,14 @@ fi
 if [ -n "$WITH_BINARIES" ] && [ "$ACTION" != "release" ]
 then
   log_error "Parameter --with-binaries can only be used with action 'release'"
+  echo
+  display_help
+  exit 1
+fi
+
+if [ -n "$DISTRIBUTION" ] && [ "$ACTION" == "update" ]
+then
+  log_error "Parameter --distribution is not supported for action 'update'"
   echo
   display_help
   exit 1
@@ -268,7 +281,7 @@ elif [ -d "$TARGET" ]
 then
   # If an argument was given, and it is a directory, use TARGET as-is
   :
-elif [ ! -d "$TARGET" ] && [[ "build improve" =~ $ACTION ]]
+elif [ ! -d "$TARGET" ] && [[ "build improve update" =~ $ACTION ]]
 then
   # If the argument exists, but didn't point to a valid path, try to use the
   # argument to download the package
@@ -387,6 +400,10 @@ case "$ACTION" in
     source "$DEBCRAFT_LIB_DIR/release-ppa.inc.sh"
     # shellcheck source=src/release-dput.inc.sh
     source "$DEBCRAFT_LIB_DIR/release-dput.inc.sh"
+    ;;
+  update)
+    # shellcheck source=src/update.inc.sh
+    source "$DEBCRAFT_LIB_DIR/update.inc.sh"
     ;;
   shell)
     # shellcheck source=src/shell.inc.sh
