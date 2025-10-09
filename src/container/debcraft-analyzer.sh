@@ -190,4 +190,4 @@ wait
 echo
 log_info "Build completed in $((EPOCHSECONDS - BUILD_START_TIME)) seconds and created:"
 # Don't show the mountpoint dir 'source'
-ls --width=5 --size --human-readable --color=always --ignore={source,previous,last-tagged}
+ls --width=5 --size --human-readable --color=always --ignore={cache,source,previous,last-tagged}

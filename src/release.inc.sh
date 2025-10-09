@@ -94,8 +94,18 @@ then
   rmdir "$RELEASE_DIR/last-tagged"
 fi
 
-# Clean up temporary mount directory from polluting build artifacts
-rmdir "$RELEASE_DIR/source"
+
+# Clean up temporary mount directorie from polluting build artifacts, but
+# only if they exist (they might not exists when running inside DinD in CI)
+if [ -d "$RELEASE_DIR/source" ]
+then
+  rmdir "$RELEASE_DIR/source"
+fi
+
+if [ -d "$RELEASE_DIR/cache" ]
+then
+  rmdir "$RELEASE_DIR/cache"
+fi
 
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]

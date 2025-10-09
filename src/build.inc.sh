@@ -158,11 +158,18 @@ then
   rmdir "$BUILD_DIR/last-tagged"
 fi
 
-if [ -z "$COPY" ]
+if [ -z "$COPY" ] && [ -d "$BUILD_DIR/source" ]
 then
   # Clean up temporary mount directory from polluting build artifacts
   # if a "source" directory was mounted (i.e. COPY was *not* used)
   rmdir "$BUILD_DIR/source"
+fi
+
+# Clean up temporary mount directorie from polluting build artifacts, but
+# only if they exist (they might not exists when running inside DinD in CI)
+if [ -d "$BUILD_DIR/cache" ]
+then
+  rmdir "$BUILD_DIR/cache"
 fi
 
 # If the container returned an error code, stop here after cleanup completed
