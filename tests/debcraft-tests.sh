@@ -87,25 +87,15 @@ debcraft_test "build entr" "Artifacts at file:///"
 
 cd entr
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
+DEBCRAFT_PPA='' debcraft_test "release" "  gbp tag --verbose"
+
+debcraft_test "build" "  browse file:///"
+
 git clean -fdx
 
-if [ -n "${CI:-}" ]
-then
-  debcraft_test "build" "Artifacts at"
-else
-  debcraft_test "build" "  browse file:///"
-fi
+debcraft_test "build ." "  browse file:///"
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
-git clean -fdx
-
-if [ -n "${CI:-}" ]
-then
-  debcraft_test "build ." "Artifacts at"
-else
-  debcraft_test "build ." "  browse file:///"
-fi
+debcraft_test "test" "Testing passed"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 git reset --hard
@@ -125,10 +115,10 @@ export DEB_BUILD_OPTIONS=""
 cd ..
 
 # Skip remaining tests in GitLab CI
-# These builds currently fail in the CI environment due to Docker-in-Docker
-# bind mount limitations. They work locally but require follow-up fixes
-# to properly handle source extraction in DinD setups.
-if [ -n "${GITLAB_CI:-}" ]
+# These builds currently fail in the CI environment due to Docker-in-Docker bind
+# mount limitations and lack of an tar pipe implementation to store build
+# artifacts from builds so that later runs could use them.
+if [ -n "${CI:-}" ]
 then
   echo "Skipping tests affected by Docker-in-Docker mount issues in GitLab CI"
   exit 0
