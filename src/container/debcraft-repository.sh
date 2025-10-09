@@ -27,6 +27,7 @@ then
   cd - > /dev/null
 
   echo 'deb [trusted=yes] file:/var/temp ./' >> /etc/apt/sources.list.d/debcraft.list
+  # Run in the background to not block shell prompt
   apt-get update -qq
 else
   log_info "No previous build found, skip creating local apt repository"
