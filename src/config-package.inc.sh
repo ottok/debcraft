@@ -68,7 +68,13 @@ BUILD_ID="$(date '+%s')"
 if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
-  COMMIT_ID="$(git -C "$PWD/.git" rev-parse --short HEAD)"
+  COMMIT_ID="$(git -C "$PWD/.git" rev-parse --short HEAD || true)"
+  if [ -z "$COMMIT_ID" ]
+  then
+    log_error "No git commit id found, git repository does not seem to be valid"
+    exit 1
+  fi
+
   # Strip branch paths and any slashes so version string is clean, and if there
   # is no symbolic-ref at all ("fatal: ref HEAD is not a symbolic ref") when
   # for example building a detached head, fall-back to using just commit id
