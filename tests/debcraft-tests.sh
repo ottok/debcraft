@@ -93,24 +93,37 @@ debcraft_test "build entr" "Artifacts at /"
 
 cd entr
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
+# Build FIRST to create artifacts needed for release
 git clean -fdx
-
 if [ -n "${CI:-}" ]
 then
-  debcraft_test "build" "Artifacts at"
+  debcraft_test "build" "Artifacts at /"
 else
   debcraft_test "build" "  browse /"
 fi
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
-git clean -fdx
+# NOW release can work with existing build artifacts
+# Don't clean here - release needs the build artifacts and changelog
+# Skip release test in CI - Docker-in-Docker volume mount restrictions prevent
+# dpkg-parsechangelog from accessing debian/changelog inside the container
+if [ -z "${CI:-}" ]
+then
+  DEBCRAFT_PPA='' debcraft_test "release" "  gbp tag --verbose"
+fi
 
+git clean -fdx
 if [ -n "${CI:-}" ]
 then
-  debcraft_test "build ." "Artifacts at"
+  debcraft_test "build ." "Artifacts at /"
 else
   debcraft_test "build ." "  browse /"
+fi
+
+# Skip test in CI - Docker-in-Docker volume mount restrictions prevent
+# access to build artifacts from previous builds
+if [ -z "${CI:-}" ]
+then
+  debcraft_test "test" "Testing passed"
 fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
@@ -131,10 +144,12 @@ export DEB_BUILD_OPTIONS=""
 cd ..
 
 # Skip remaining tests in GitLab CI
-# These builds currently fail in the CI environment due to Docker-in-Docker
-# bind mount limitations. They work locally but require follow-up fixes
-# to properly handle source extraction in DinD setups.
-if [ -n "${GITLAB_CI:-}" ]
+# These builds currently fail in the CI environment due to Docker-in-Docker bind
+# mount limitations and lack of an tar pipe implementation to store build
+# artifacts from builds so that later runs could use them.
+# Additionally, some tests require access to source tarballs or external
+# repositories that are not available in the CI environment.
+if [ -n "${CI:-}" ]
 then
   echo "Skipping tests affected by Docker-in-Docker mount issues in GitLab CI"
   exit 0
