@@ -100,33 +100,17 @@ fi
 # - OSTYPE: linux-gnu
 #ARCH=
 
-case "$BUILD_DIRS_PATH" in
-  "")
-    # If BUILD_DIRS_PATH is not set, use $XDG_CACHE_HOME following
-    # https://specifications.freedesktop.org/basedir-spec/latest/
-    # or fall-back to ~/.cache as last resort
-    if [ -n "$XDG_CACHE_HOME" ]
-    then
-      BUILD_DIRS_PATH="$XDG_CACHE_HOME/debcraft"
-    else
-      BUILD_DIRS_PATH="$HOME/.cache/debcraft"
-    fi
-    # Ensure directory exists
-    mkdir -p "$BUILD_DIRS_PATH"
-    ;;
-  *)
-    # If BUILD_DIRS_PATH is defined, use it as-is
-    if [ ! -d "$BUILD_DIRS_PATH" ]
-    then
-      if [ ! -e "$BUILD_DIRS_PATH" ]
-      then
-        log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: directory does not exist"
-      else
-        log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: not a directory"
-      fi
-      exit 1
-    fi
-esac
+# If BUILD_DIRS_PATH is defined, validate it
+if [ ! -d "$BUILD_DIRS_PATH" ]
+then
+  if [ ! -e "$BUILD_DIRS_PATH" ]
+  then
+    log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: directory does not exist"
+  else
+    log_error "Invalid value in --build-dirs-path=$BUILD_DIRS_PATH: not a directory"
+  fi
+  exit 1
+fi
 
 # Additional sanity check
 if touch "$BUILD_DIRS_PATH/debcraft-test"
@@ -154,7 +138,12 @@ export BUILD_DIR
 export RELEASE_DIR
 export CACHE_DIR
 
-log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
+# Containers are not used to run 'logs' or 'prune', so don't emit info about
+# containers while executing those actions
+if [ "$ACTION" != "prune" ] && [ "$ACTION" != "logs" ]
+then
+  log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
+fi
 
 # Previous successful builds that produced a .buildinfo file
 # shellcheck disable=SC2086 # intentionally pass wildcards to ls

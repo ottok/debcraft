@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Set build directories path to a subdirectory in user's cache
+if [ -z "$BUILD_DIRS_PATH" ]
+then
+  if [ -n "$XDG_CACHE_HOME" ] && [ -d "$XDG_CACHE_HOME" ]
+  then
+    BUILD_DIRS_PATH="$XDG_CACHE_HOME/debcraft"
+  else
+    BUILD_DIRS_PATH="$HOME/.cache/debcraft"
+  fi
+  # The directory may not exist, so create it
+  mkdir -p "$BUILD_DIRS_PATH"
+fi
+
 # If no explicit value, try to autodetect and default to Podman if both installed
 if [ -z "$CONTAINER_CMD" ]
 then
