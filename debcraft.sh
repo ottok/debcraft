@@ -11,7 +11,7 @@ set -o pipefail
 
 display_help() {
   cat << EOF
-usage: debcraft <build|improve|test|release|update|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+usage: debcraft <build|improve|test|release|update|shell|prune|logs> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
 as a subargument any of:
@@ -30,8 +30,9 @@ based on tools in Debian that automate package maintenance. The command 'test'
 will run the Debian-specific regression test suite if the package has
 autopkgtest support, and drop to a shell for investigation if tests failed to
 pass. The command 'release' is intended to be used to upload a package that is
-ready to be released and command 'update' will try to update the package to
-laters upstream version is package git repository layout is compatible.
+ready to be released, command 'update' will try to update the package to
+laters upstream version is package git repository layout is compatible, and
+'logs' will show a history of builds and releases.
 
 The command 'shell' can be used to play around in the container and 'prune' will
 clean up temporary files by Debcraft.
@@ -45,7 +46,7 @@ Note that Debcraft builds never runs as root, and thus packages with
 DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
-  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)
+  --build-dirs-path    Path for writing build files and artifacts (default: ~/.cache/debcraft)
   --distribution       Linux distribution to build in (default: debian:sid)
   --container-command  container command to use (default: podman)
   --host-architecture  host architecture to use when performing a cross build
@@ -128,7 +129,7 @@ source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 
 if [ -z "$1" ]
 then
-  log_error "Missing argument <build|improve|test|release|shell|prune>"
+  log_error "Missing argument <build|improve|test|release|shell|prune|logs>"
   echo
   display_help
   exit 1
@@ -139,8 +140,14 @@ log_debug "Parse option/argument: $1"
 do
   case "$1" in
     --build-dirs-path)
-      export BUILD_DIRS_PATH="$2"
-      log_debug "Using BUILD_DIRS_PATH=$2"
+      if [ -z "$2" ]
+      then
+        log_error "Option --build-dirs-path requires an argument."
+        exit 1
+      fi
+      export BUILD_DIRS_PATH="$(readlink -f "$2")"
+      export BUILD_DIRS_PATH_SET_BY_USER="true"
+      log_debug "Using BUILD_DIRS_PATH=$BUILD_DIRS_PATH"
       shift 2
       ;;
     --distribution)
@@ -200,7 +207,7 @@ do
       ## or call function display_help
       exit 1
       ;;
-    build | improve | test | release | update | shell | prune)
+    build | improve | test | release | update | shell | prune | logs)
       export ACTION="$1"
       shift
       ;;
@@ -215,7 +222,7 @@ done
 if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|improve|test|release|update|shell|prune>"
+  log_error "Argument '$TARGET' not one of <build|improve|test|release|update|shell|prune|logs>"
   echo
   display_help
   exit 1
@@ -237,9 +244,9 @@ then
   exit 1
 fi
 
-if [ -n "$DISTRIBUTION" ] && [ "$ACTION" == "update" ]
+if [ -n "$DISTRIBUTION" ] && ([ "$ACTION" == "update" ] || [ "$ACTION" == "logs" ])
 then
-  log_error "Parameter --distribution is not supported for action 'update'"
+  log_error "Parameter --distribution is not supported for action '$ACTION'"
   echo
   display_help
   exit 1
@@ -374,7 +381,7 @@ reset_if_source_repository_and_option_clean
 source "$DEBCRAFT_LIB_DIR/config-package.inc.sh"
 
 # If the action needs to run in a container, automatically create it
-if [ "$ACTION" != "prune" ]
+if [ "$ACTION" != "prune" ] && [ "$ACTION" != "logs" ]
 then
   # shellcheck source=src/container.inc.sh
   source "$DEBCRAFT_LIB_DIR/container.inc.sh"
@@ -408,6 +415,10 @@ case "$ACTION" in
   shell)
     # shellcheck source=src/shell.inc.sh
     source "$DEBCRAFT_LIB_DIR/shell.inc.sh"
+    ;;
+  logs)
+    # shellcheck source=src/logs.inc.sh
+    source "$DEBCRAFT_LIB_DIR/logs.inc.sh"
     ;;
   prune)
     # shellcheck source=src/prune.inc.sh
