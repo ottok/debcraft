@@ -1,3 +1,42 @@
+debcraft (0.6.0) unstable; urgency=medium
+
+  [ Otto Kekäläinen ]
+  * Rename `debcraft validate` to `debcraft improve` and extend features
+    (Closes: #1111477)
+  * Support enabling local repo with DEBCRAFT_EXTRA_REPOSITORY
+  * If package has no autopkgtests, use autodep8 to run some
+  * Fall back to commit id when building a detached HEAD
+  * Make upstream tarball (if exists) available for builds
+  * Improve notification about cleaning and resetting git repository
+  * Add Debian to Ubuntu release mapping: Trixie is like Plucky
+  * Strip debug symbols from GCC to keep container image size reasonable
+  * Update copyright years and format debian/copyright properly
+  * Separate test depends from build depends (Closes: #1116727)
+  * Pin Debian experimental to enable packages getting installed from there
+  * Add support for sccache and Rust builds caching
+  * Replace `dpkg-parsechangelog` with plain shell commands
+  * Store all build artefacts in ~/.cache/debcraft
+  * When checking for release tags, only consider name space debian|ubuntu/*
+  * Strip `-proposed-updates` from container name, similar to `-security`
+  * On every build run './debian/rules clean' to ensure sources are clean
+  * Run `apt-get update` in background so dropping to `debcraft shell` is faster
+
+  [ TheJayMann ]
+  * Ignore quilt exit code 2
+
+  [ Dominik Stadler ]
+  * Add section about using debcraft in GitHub Actions
+
+  [ Nicola Chiapolini ]
+  * Explicitly use `Containerfile` to fix container builds with Docker
+
+  [ Aquila Macedo ]
+  * Implement proper CI with Docker-in-Docker setup for Debcraft development,
+    but temporarily skip failing tests in GitLab CI until everything has been
+    made fully compatible with DinD CI runs
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 10 Oct 2025 22:23:45 -0700
+
 debcraft (0.5.0) unstable; urgency=medium
 
   [ TheJayMann ]
