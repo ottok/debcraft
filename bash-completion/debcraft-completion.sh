@@ -44,7 +44,7 @@ _debcraft_complete() {
       ;;
     debcraft*)
       # First argument should be one these
-      options="build improve test release shell prune --help --version"
+      options="build improve test release update shell logs prune --help --version"
       ;;
     improve*)
       # Suggest directories, .dsc files, or URLs for 'build'
@@ -58,8 +58,16 @@ _debcraft_complete() {
     release*)
       options="$generic_options --with-binaries"
       ;;
+    update*)
+      targets="$(find_targets "$cur")"
+      options="--build-dirs-path --container-command --host-architecture --pull --copy --clean $targets https://"
+      ;;
     test*|shell*)
       options="$generic_options"
+      ;;
+    logs*)
+      targets="$(find_targets "$cur")"
+      options="--build-dirs-path --copy --clean $targets"
       ;;
     prune*)
       # These commands have no options
@@ -72,7 +80,7 @@ _debcraft_complete() {
       # Suggest common distributions
       options="$distributions"
       ;;
-    --host-arch*)
+    --host-architecture*)
       # Suggest common architectures
       options="$architectures"
       ;;
