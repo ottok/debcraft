@@ -25,7 +25,7 @@ function get_baseimage_from_distribution_name() {
     experimental | sid | forky* | trixie* | bookworm* | bullseye* | buster* | stretch* )
       echo "debian:$NAME"
       ;;
-    questing* | plucky* | oracular* | noble* | mantic* | jammy* | focal*)
+    resolute* | questing* | plucky* | oracular* | noble* | mantic* | jammy* | focal*)
       echo "ubuntu:$NAME"
       ;;
     *)
@@ -50,7 +50,7 @@ function get_ubuntu_equivalent_from_debian_release() {
   then
     # NOTE! This line needs to be updated 2x year
     # @TODO: Ideally read last line from /usr/share/distro-info/ubuntu.csv directly
-    echo "questing"
+    echo "resolute"
   else
     # Historical equivalents for each Ubuntu release based on what Debian
     # release happened around the same time and thus have most of the package
@@ -58,7 +58,7 @@ function get_ubuntu_equivalent_from_debian_release() {
     #
     # @TODO: Ideally read /usr/share/distro-info/ubuntu.csv directly
     case $SERIES in
-      questing | plucky | oracular | noble | mantic | lunar | jammy | hirsute | focal | disco | bionic | zesty)
+      resolute | questing | plucky | oracular | noble | mantic | lunar | jammy | hirsute | focal | disco | bionic | zesty)
         # For every Ubuntu name always return it as-is
         echo "$SERIES"
         ;;
