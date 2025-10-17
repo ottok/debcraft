@@ -10,7 +10,16 @@ if [ -z "$DEBUG" ] && {
   }
 then
   log_info "After thorough review, sign the package and upload with:"
-  log_info "  (cd $RELEASE_DIR && debsign *.changes && dput ftp-master *.changes)"
+
+  if [[ $BASEIMAGE == ubuntu:* ]]
+  then
+    DPUT_CONFIG="ubuntu"
+  else
+    DPUT_CONFIG="ftp-master"
+  fi
+
+  log_info "  (cd $RELEASE_DIR && debsign *.changes && dput $DPUT_CONFIG *.changes)"
+
   # @TODO: Or from dput-ng recommend `dput --full-upload-log *.changes`?
   # @TODO: Or for special cases like stable updates recommend `dput --delayed=7 ftp-master *.changes`?
   log_info
