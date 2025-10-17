@@ -42,8 +42,32 @@ else
   log_info "Building source package for release at $RELEASE_DIR"
 fi
 
+# Extract package version from debian/changelog
+# This assumes PACKAGE is already set by debcraft.sh
+DEBIAN_VERSION="$(head -n 1 debian/changelog | grep --only-matching --perl-regexp '\(\K[^)]+')"
+# First, remove everything before the colon, including the colon itself
+EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
+# Then, remove everything from the first hyphen onwards.
+PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
+
+# Opportunistically copy the upstream tarball if it exists. Command dpkg-source
+# expects it in the parent directory of the source tree for '3.0 (quilt)'
+# format. This needs to happen before the container is run.
+#
+# Attempt to copy the tarball with any compression supported by dpkg-source
+for ext in xz gz bz2 lzma
+do
+  TARBALL_PATH="../${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
+  if [ -f "$TARBALL_PATH" ]
+  then
+    cp --verbose --no-clobber "$TARBALL_PATH" "$RELEASE_DIR/"
+    # Exit loop after finding and copying the first tarball
+    break
+  fi
+done
+
 # Ensure directories exist before they are mounted
-mkdir --parents "$CACHE_DIR" "$BUILD_DIR/source"
+mkdir --parents "$CACHE_DIR" "$RELEASE_DIR/source"
 
 # Instead of plain 'chown -R' use find and only apply chmod on files that need
 # it to avoid excess disk writes and ctime updates in vain. Use 'execdir' as

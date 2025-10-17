@@ -5,12 +5,12 @@ log_info "Starting interactive root shell in container for source package at $PW
 SHELL_DIR="$(mktemp -d)"
 
 # Ensure directories exist before they are mounted
-mkdir --parents "$CACHE_DIR" "$BUILD_DIR/source"
+mkdir --parents "$CACHE_DIR" "$SHELL_DIR/source"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
-  mkdir --parents "$BUILD_DIR/previous-build"
+  mkdir --parents "$SHELL_DIR/previous-build"
   EXTRA_CONTAINER_MOUNTS=" --volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous-build $EXTRA_CONTAINER_MOUNTS"
 fi
 
@@ -18,9 +18,33 @@ fi
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "Previous release was in ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}"
-  mkdir --parents "$RELEASE_DIR/previous-release"
+  mkdir --parents "$SHELL_DIR/previous-release"
   EXTRA_CONTAINER_MOUNTS=" --volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/debcraft/previous-release $EXTRA_CONTAINER_MOUNTS"
 fi
+
+# Extract package version from debian/changelog
+# This assumes PACKAGE is already set by debcraft.sh
+DEBIAN_VERSION="$(head -n 1 debian/changelog | grep --only-matching --perl-regexp '\(\K[^)]+')"
+# First, remove everything before the colon, including the colon itself
+EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
+# Then, remove everything from the first hyphen onwards.
+PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
+
+# Opportunistically copy the upstream tarball if it exists. Command dpkg-source
+# expects it in the parent directory of the source tree for '3.0 (quilt)'
+# format. This needs to happen before the container is run.
+#
+# Attempt to copy the tarball with any compression supported by dpkg-source
+for ext in xz gz bz2 lzma
+do
+  TARBALL_PATH="../${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
+  if [ -f "$TARBALL_PATH" ]
+  then
+    cp --verbose --no-clobber "$TARBALL_PATH" "$SHELL_DIR/"
+    # Exit loop after finding and copying the first tarball
+    break
+  fi
+done
 
 if [ -n "$DEBUG" ]
 then

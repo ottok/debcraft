@@ -37,12 +37,6 @@ else
   log_info "Building package without creating source tarball at $BUILD_DIR"
 fi
 
-# @TODO: This section should also run for `debcraft shell` so dpkg-source can
-# be run in it too.
-#
-# Opportunistically copy the upstream tarball if it exists. Command dpkg-source
-# expects it in the parent directory of the source tree for '3.0 (quilt)'
-# format. This needs to happen before the container is run.
 if [ -z "$SKIP_SOURCES" ]
 then
   # Extract package version from debian/changelog
@@ -53,6 +47,10 @@ then
   # Then, remove everything from the first hyphen onwards.
   PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
 
+  # Opportunistically copy the upstream tarball if it exists. Command dpkg-source
+  # expects it in the parent directory of the source tree for '3.0 (quilt)'
+  # format. This needs to happen before the container is run.
+  #
   # Attempt to copy the tarball with any compression supported by dpkg-source
   for ext in xz gz bz2 lzma
   do
