@@ -21,6 +21,9 @@ then
   function log_debug_var() {
     :
   }
+  function log_debug_env() {
+    :
+  }
 else
   # Print debug information not normally visible
   function log_debug() {
@@ -31,6 +34,12 @@ else
   function log_debug_var() {
     # Outputs variable type and contents, e.g 'declare -x ACTION="release"'
     echo -e "\e[38;5;5mDEBCRAFT DEBUG: $(declare -p "$1") (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
+  }
+
+  function log_debug_env() {
+    echo -e "\e[38;5;5mDEBCRAFT DEBUG:"
+    set | grep '^[A-Za-z_]' | grep -v '^[A-Za-z_].*()' | sort
+    echo -e "\e[0m"
   }
 
   log_debug "Running Debcraft in debug mode"
