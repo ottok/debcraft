@@ -1,3 +1,19 @@
+debcraft (0.7.0) unstable; urgency=medium
+
+  [ Otto Kekäläinen ]
+  * Implement `debcraft logs` to list package builds (and releases)
+  * Implement first version of `debcraft update`
+  * Add Bash completion for update and logs commands
+  * Change dput target in `debcraft release` depending on vendor
+  * Use existing orig tarball if present in all commands
+  * Add debugging function log_debug_env() to list all variables
+  * Add 'resolute' as the new default Ubuntu development release
+
+  [ Dominik Stadler ]
+  * Add initial support for Debian Forky
+
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 22 Nov 2025 10:36:37 -0800
+
 debcraft (0.6.0) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
