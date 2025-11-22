@@ -5,7 +5,6 @@ Source: https://salsa.debian.org/otto/debcraft
 
 Files:
  *
- debian/*
 Copyright:
  2023-2025 Otto Kekäläinen <otto@debian.org>
 License: GPL-v3+
