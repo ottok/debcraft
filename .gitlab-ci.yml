@@ -21,6 +21,10 @@ test-static:
         shellcheck
   script:
     - make test-static
+  # Don't run this job if only a git tag was pushed
+  except:
+    variables:
+      - $CI_COMMIT_TAG != null
 
 test-debcraft:
   stage: test
@@ -50,6 +54,10 @@ test-debcraft:
     - export CONTAINER_CMD=docker
     - export DEBUG=true
     - make test-debcraft
+  # Don't run this job if only a git tag was pushed
+  except:
+    variables:
+      - $CI_COMMIT_TAG != null
 
 ## Security testing
 # You can override the included template(s) by including variable overrides
