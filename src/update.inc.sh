@@ -217,10 +217,11 @@ gbp dch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="U
 
 # Remove Debian revision from `%(version)s` to have pure upstream version in commit message
 git commit --amend --no-edit --message="$(git log -1 --pretty=%s | sed 's/\([0-9]\+\.[0-9.]\+\)-[0-9]\+/\1/g')"
-
+# @TODO: Also strip potential epoch (e.g. 1:) but sed currently does not seem to support non-capturing groups
 log_info "Rebase debian/patches/* on this new upstream version"
 gbp pq import --force --time-machine=10
 git rebase -
+# @TODO: If rebase fails, this script will stop executing here unless we implement some safeguard
 gbp pq export --drop
 git commit --amend --all --no-edit
 
