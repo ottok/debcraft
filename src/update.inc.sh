@@ -216,7 +216,10 @@ log_info "Pre-populate debian/changelog with appropriate update and launch" \
 gbp dch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="Update changelog and refresh patches after %(version)s import" -- debian
 
 # Remove Debian revision from `%(version)s` to have pure upstream version in commit message
-git commit --amend --no-edit --message="$(git log -1 --pretty=%s | sed 's/\([0-9]\+\.[0-9.]\+\)-[0-9]\+/\1/g')"
+message=$(git log -1 --pretty=%s)
+message="${message/ [0-9]*:/ }"  # Remove epoch (e.g., " 1:") while preserving context
+message="${message//-[0-9]* / }"  # Remove Debian revision (e.g., "-0ubuntu1") while keeping following word separated
+git commit --amend --no-edit --message="$message"
 
 log_info "Rebase debian/patches/* on this new upstream version"
 gbp pq import --force --time-machine=10
