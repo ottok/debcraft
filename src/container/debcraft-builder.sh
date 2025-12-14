@@ -27,6 +27,9 @@ source "/cache.inc.sh"
 # https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
 BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
 
+# shellcheck source=src/container/pristine-tar.inc.sh
+source "/pristine-tar.inc.sh"
+
 # Normal builds in Debian are full binary releases with sources
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
