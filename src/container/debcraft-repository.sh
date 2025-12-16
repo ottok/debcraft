@@ -18,7 +18,7 @@ then
 
   mkdir -p /var/temp
   cd /var/temp || (log_error "Unable to change directory to /var/temp"; exit 1)
-  cp -a /debcraft/previous-build/*.deb .
+  cp --archive /debcraft/previous-build/*.deb .
   apt-ftparchive packages . > Packages
   apt-ftparchive release . > Release
   grep "^Package:" Packages

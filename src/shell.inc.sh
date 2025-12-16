@@ -40,7 +40,7 @@ do
   TARBALL_PATH="../${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
   if [ -f "$TARBALL_PATH" ]
   then
-    cp --verbose --no-clobber "$TARBALL_PATH" "$SHELL_DIR/"
+    cp --verbose --update=none "$TARBALL_PATH" "$SHELL_DIR/"
     # Exit loop after finding and copying the first tarball
     break
   fi
