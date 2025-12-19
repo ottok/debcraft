@@ -59,7 +59,9 @@ BASH_SCRIPTS="$(mktemp; grep -Irnw debian/ -e '^#!.*/bash' | sort -u | cut -d ':
 # Echo all commands so it is easy for users to re-run them manually
 set -x
 
-lintian-brush --no-update-changelog --modern --uncertain
+# Disable until lintian-brush re-enters Debian testing (and Ubuntu 26.04), see
+# https://tracker.debian.org/pkg/lintian-brush
+#lintian-brush --no-update-changelog --modern --uncertain
 
 # Don't stop on errors as the tools below are likely to emit exit codes if they
 # have findings but Debcraft should continue to execute and run all of them
