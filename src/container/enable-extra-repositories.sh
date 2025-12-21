@@ -12,6 +12,19 @@ set -o pipefail
 # shellcheck source=src/container/output.inc.sh
 source "/output.inc.sh"
 
+if [ -f /etc/apt/sources.list.d/ubuntu.sources ]
+then
+  log_info "Enable *-proposed for Ubuntu builds to ensure compatibility with other software currently being released"
+  # Idempotent sed that will only change the first 'Suite: <release>' once
+  sed -i 's/^Suites: \([a-z]*\) /Suites: \1-proposed \1 /' /etc/apt/sources.list.d/ubuntu.sources
+  # Example:
+  # Suites: resolute resolute-updates resolute-backports
+  # Suites: resolute-security
+  # ->
+  # Suites: resolute-proposed resolute resolute-updates resolute-backports
+  # Suites: resolute-security
+fi
+
 if ls /ci/extra_repository.* > /dev/null 2>&1
 then
   log_info "Enable extra remote repository"
