@@ -10,6 +10,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 # unnecessary for Debcraft containers
 COPY 80-strip-gcc-debug-symbols /etc/apt/apt.conf.d/
 
+# When building on amd64 prefer variant amd64v3 on new releases that support
+# the dpkg feature 'Architecture-Variants'
+RUN if grep -q 'VERSION="26.04 (Resolute Raccoon)"' /etc/os-release; \
+    then \
+      if [ "$(uname --machine)" = "x86_64" ]; \
+      then \
+        echo 'APT::Architecture-Variants "amd64v3";' >> /etc/apt/apt.conf.d/99enable-amd64v3; \
+        echo 'host-arch-variant = amd64v3' >> /etc/dpkg/buildpackage.conf; \
+      fi; \
+    fi
+
 # Stretch is no longer available at deb.debian.org, use archive.debian.org instead
 RUN if grep -q 'PRETTY_NAME="Debian GNU/Linux 9 (stretch)"' /etc/os-release; \
     then \
