@@ -113,7 +113,7 @@ then
   log_error "Unable to proceed as this package (or branch) lacks a debian/gbp.conf" \
             "and doing operations on packages that don't have explicit git-buildpackage" \
             "is too risky. For an example of a gbp.conf file, see e.g." \
-            "https://salsa.debian.org/debian/dh-make/-/blob/master/lib/debian/gbp.conf.ex"
+            "$(clickable_link "https://salsa.debian.org/debian/dh-make/-/blob/master/lib/debian/gbp.conf.ex")"
   exit 1
 fi
 

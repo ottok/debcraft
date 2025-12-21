@@ -1,15 +1,36 @@
 #!/bin/bash
 
+# Expand backslash sequences once into a variable, then print literally using %s
+# to avoid double-expansion mangling nested escape sequences (like links).
 function log_error() {
-  echo -e "\e[38;5;1mDEBCRAFT ERROR: $*\e[0m" >&2
+  local msg; printf -v msg "%b" "$*"
+  printf "\e[38;5;1mDEBCRAFT ERROR: %s\e[0m\n" "$msg" >&2
 }
 
 function log_warn() {
-  echo -e "\e[38;5;3mDEBCRAFT WARNING: $*\e[0m" >&2
+  local msg; printf -v msg "%b" "$*"
+  printf "\e[38;5;3mDEBCRAFT WARNING: %s\e[0m\n" "$msg" >&2
 }
 
 function log_info() {
-  echo -e "\e[38;5;33m$*\e[0m"
+  local msg; printf -v msg "%b" "$*"
+  printf "\e[38;5;33m%s\e[0m\n" "$msg"
+}
+
+# OSC 8 escape sequences for clickable hyperlinks
+function clickable_link() {
+  local url="$1"
+  local text="${2:-$url}"
+
+  # If the input is an absolute path, prepend file:// to the link target.
+  if [[ "$url" == /* ]]
+  then
+    url="file://${url}"
+  fi
+
+  # Use BEL (\a) instead of ST (\e\\) as the OSC terminator and use %b
+  # to ensure we output literal bytes that won't be re-interpreted.
+  printf "%b]8;;%s%b%s%b]8;;%b" "\e" "$url" "\a" "$text" "\e" "\a"
 }
 
 if [ -z "$DEBUG" ]
@@ -27,19 +48,23 @@ then
 else
   # Print debug information not normally visible
   function log_debug() {
-    echo -e "\e[38;5;5mDEBCRAFT DEBUG: $1 (at line $(caller))\e[0m"
+    # Using local variable + printf %s to avoid double-expansion
+    local msg; printf -v msg "%b" "$1"
+    printf "\e[38;5;5mDEBCRAFT DEBUG: %s (at line %s)\e[0m\n" "$msg" "$(caller)"
   }
 
   # Print the variable name and value in one "log_debug_var example" call
   function log_debug_var() {
     # Outputs variable type and contents, e.g 'declare -x ACTION="release"'
-    echo -e "\e[38;5;5mDEBCRAFT DEBUG: $(declare -p "$1") (at ${BASH_SOURCE[1]}:${BASH_LINENO[0]})\e[0m"
+    # Using local variable + printf %s to avoid double-expansion
+    local msg; printf -v msg "%b" "$(declare -p "$1")"
+    printf "\e[38;5;5mDEBCRAFT DEBUG: %s (at %s:%s)\e[0m\n" "$msg" "${BASH_SOURCE[1]}" "${BASH_LINENO[0]}"
   }
 
   function log_debug_env() {
-    echo -e "\e[38;5;5mDEBCRAFT DEBUG:"
+    printf "\e[38;5;5mDEBCRAFT DEBUG:\n"
     set | grep '^[A-Za-z_]' | grep -v '^[A-Za-z_].*()' | sort
-    echo -e "\e[0m"
+    printf "\e[0m\n"
   }
 
   log_debug "Running Debcraft in debug mode"

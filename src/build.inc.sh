@@ -173,7 +173,7 @@ fi
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Build failed - see logs in file://$BUILD_DIR for details"
+  log_error "Build failed - see logs in $(clickable_link "file://$BUILD_DIR") for details"
   exit 1
 fi
 
@@ -189,7 +189,7 @@ then
 fi
 
 echo
-log_info "Artifacts at file://$BUILD_DIR"
+log_info "Artifacts at $(clickable_link "file://$BUILD_DIR")"
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
@@ -198,7 +198,7 @@ then
   log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
   if [ -f "$BUILD_DIR/diffoscope.html" ]
   then
-    log_info "  browse file://$BUILD_DIR/diffoscope.html"
+    log_info "  browse $(clickable_link "file://$BUILD_DIR/diffoscope.html")"
   fi
 fi
 
@@ -209,7 +209,7 @@ then
   log_info "  meld ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
   if [ -f "$BUILD_DIR/diffoscope.html" ]
   then
-    log_info "  browse file://$BUILD_DIR/diffoscope.last-tagged.html"
+    log_info "  browse $(clickable_link "file://$BUILD_DIR/diffoscope.last-tagged.html")"
   fi
 fi
 
