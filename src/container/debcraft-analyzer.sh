@@ -138,12 +138,9 @@ then
   # than that, the output is probably massive and unreadable. Diffoscope is more
   # useful for hunting small changes which might be hard to find with other
   # tools.
-  timeout --verbose --kill-after=8m 5m \
-    diffoscope --html=diffoscope.html \
-    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
-    --exclude=previous --exclude=last-tagged --exclude=source \
-    previous/ . || true
-    # Exit status is zero only if inputs are identical, so ignore exit code
+  diffoscope --html=diffoscope.html --timeout=$((60*5)) \
+    previous/*.changes ./*.changes || true
+  # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
 # @TODO: This is a duplicate of above as boilerplate before refactoring into
@@ -167,12 +164,9 @@ then
   # than that, the output is probably massive and unreadable. Diffoscope is more
   # useful for hunting small changes which might be hard to find with other
   # tools.
-  timeout --verbose --kill-after=8m 5m \
-    diffoscope --html=diffoscope.last-tagged.html \
-    --exclude='*.log' --exclude='*.diff' --exclude='*.build' --exclude='*.html' \
-    --exclude=previous --exclude=last-tagged --exclude=source \
-    last-tagged/ . || true
-    # Exit status is zero only if inputs are identical, so ignore exit code
+  diffoscope --html=diffoscope.last-tagged.html --timeout=$((60*5)) \
+    previous/*.changes ./*.changes || true
+  # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
 # Note: Command `dpkg-deb --info filename.deb` just lists package size and

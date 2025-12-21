@@ -54,10 +54,13 @@ RUN apt-get update -q && \
 
 # The diffoscope-minimal package is available only since Debian 11 "Bullseye",
 # and thus building containers of older Debian or Ubuntu releases will fail
-# but can be ignored, as only diffoscope-features are affected
+# but can be ignored, as only diffoscope-features are affected. Use same
+# section to also install utilities diffoscope needs to show good reports
+# across two .changes files.
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
-      diffoscope-minimal || true
+      diffoscope-minimal \
+      zstd || true
 
 # The lintianb-rush package is (consistently) available only since Debian 12
 # "Bookworm" and thus building containers of older Debian or Ubuntu releases
