@@ -34,7 +34,7 @@ else
   log_info "variables defined in your shell."
   log_info "Before you can be an uploading Debian Developer, you need to have a"
   log_info "track record of sponsored package maintainership and high quality"
-  log_info "contributions - see $(clickable_link "https://www.debian.org/devel/join/newmaint")"
+  log_info "contributions - see $(clickable_link "www.debian.org/devel/join/newmaint")"
   log_info
   log_info "Becoming a DD is highly recommended if you have what it takes!"
 fi

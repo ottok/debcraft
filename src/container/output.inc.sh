@@ -19,14 +19,25 @@ function log_info() {
 
 # OSC 8 escape sequences for clickable hyperlinks
 function clickable_link() {
+  # One argument mandatory
   local url="$1"
+  # Second argument optional and if missing, just display the url
   local text="${2:-$url}"
 
-  # If the input is an absolute path, prepend file:// to the link target.
-  if [[ "$url" == /* ]]
-  then
-    url="file://${url}"
-  fi
+  # Ensure links are formatted as valid urls
+  case "$url" in
+    *://*)
+      # Already has a scheme:// - leave as-is
+      ;;
+    /*)
+      # Local absolute path - prepend file://
+      url="file://${url}"
+      ;;
+    *)
+      # Everything else - prepend https://
+      url="https://${url}"
+      ;;
+  esac
 
   # Use BEL (\a) instead of ST (\e\\) as the OSC terminator and use %b
   # to ensure we output literal bytes that won't be re-interpreted.

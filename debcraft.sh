@@ -65,11 +65,11 @@ optional arguments:
   --version            display version and exit
 
 To learn more, or to contribute to Debcraft, see project page at
-$(clickable_link "https://salsa.debian.org/debian/debcraft")
+$(clickable_link "salsa.debian.org/debian/debcraft")
 
 To gain more Debian Developer knowledge, please read
-$(clickable_link "https://www.debian.org/doc/manuals/developers-reference/")
-and $(clickable_link "https://www.debian.org/doc/debian-policy/")
+$(clickable_link "www.debian.org/doc/manuals/developers-reference/")
+and $(clickable_link "www.debian.org/doc/debian-policy/")
 EOF
 }
 

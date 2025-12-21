@@ -66,7 +66,7 @@ list_logs() {
     local pretty_date
     pretty_date=$(date -d "@$timestamp" '+%Y-%m-%d %H:%M:%S')
 
-    printf "%-19s  %-8s  %-25s  %s\n" "$pretty_date" "$commit" "$branch" "$(clickable_link "file://$path" "$pretty_path")"
+    printf "%-19s  %-8s  %-25s  %s\n" "$pretty_date" "$commit" "$branch" "$(clickable_link "$path" "$pretty_path")"
   done
 }
 
