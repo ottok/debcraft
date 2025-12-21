@@ -31,8 +31,14 @@ function debcraft_test() {
     RET=''
   fi
 
-  # Get last line and strip colors and other ANSI codes
-  TEST_OUTPUT_LAST_LINE="$(tail --lines=1 "$TEMPDIR/test-$TEST_NUMBER.log" | sed -e 's/\x1b\[[0-9;]*[mK]//g')"
+  # Get last line and strip
+  # 1. ANSI color codes
+  # 2. OSC8 hyperlink start: ESC]8;;URL\7
+  # 3. OSC8 hyperlink end: ESC]8;;\7
+  TEST_OUTPUT_LAST_LINE="$(tail --lines=1 "$TEMPDIR/test-$TEST_NUMBER.log" \
+    | sed -e 's/\x1b\[[0-9;]*[mK]//g' \
+          -e 's/\x1b]8;;[^\x07]*\x07//g' \
+          -e 's/\x1b]8;;\x07//g')"
 
   echo
 
@@ -70,7 +76,7 @@ cd "$TEMPDIR" || exit 1
 
 echo "Using directory $TEMPDIR for logs and artifacts in "
 
-debcraft_test "help" "and https://www.debian.org/doc/debian-policy/" IGNORE_NONZERO_EXIT_CODE
+debcraft_test "help" "and www.debian.org/doc/debian-policy/" IGNORE_NONZERO_EXIT_CODE
 
 # Prepare test git repository
 # @TODO: Clone remote only if needed, otherwise reuse local clones
@@ -83,7 +89,7 @@ then
 fi
 
 gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
-debcraft_test "build entr" "Artifacts at file:///"
+debcraft_test "build entr" "Artifacts at /"
 
 cd entr
 
@@ -94,7 +100,7 @@ if [ -n "${CI:-}" ]
 then
   debcraft_test "build" "Artifacts at"
 else
-  debcraft_test "build" "  browse file:///"
+  debcraft_test "build" "  browse /"
 fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
@@ -104,7 +110,7 @@ if [ -n "${CI:-}" ]
 then
   debcraft_test "build ." "Artifacts at"
 else
-  debcraft_test "build ." "  browse file:///"
+  debcraft_test "build ." "  browse /"
 fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
@@ -112,7 +118,7 @@ git reset --hard
 git clean -fdx
 rm --recursive --force --verbose .git
 # Once git is deleted, there are no sources available for the build
-debcraft_test "build --skip-sources" "Artifacts at file:///"
+debcraft_test "build --skip-sources" "Artifacts at /"
 
 cd .. # exit 'entr' subdirectory
 
@@ -140,14 +146,14 @@ for FILE in https://archive.debian.org/debian/pool/main/h/hello-debhelper/hello-
 do
   curl -LO "$FILE"
 done
-debcraft_test "build hello-debhelper_2.9.1.dsc" "Artifacts at file:///"
+debcraft_test "build hello-debhelper_2.9.1.dsc" "Artifacts at /"
 
 # Run remaining tests from top-level
 cd ..
 
-debcraft_test "build molly-guard" "Artifacts at file:///"
+debcraft_test "build molly-guard" "Artifacts at /"
 
-debcraft_test "build https://salsa.debian.org/patryk/qnapi.git" "Artifacts at file:///"
+debcraft_test "build https://salsa.debian.org/patryk/qnapi.git" "Artifacts at /"
 
 echo "$SEPARATOR"
 echo "Success! All $TEST_NUMBER Debcraft tests passed."
