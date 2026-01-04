@@ -1,3 +1,15 @@
+debcraft (0.8.0) unstable; urgency=medium
+
+  * Replace deprecated `cp` option `no-clobber` with equivalent `update=none`
+  * Switch diffoscope to only compare using the .changes plugin
+  * Use clickable_link() to print OSC 8 hyperlinks in shell
+  * Show links without scheme so output is shorter and cleaner
+  * Fix test suite to handle OSC8 hyperlink sequences in output
+  * Disable lintian-brush as it was removed from Debian testing
+  * Point the stars in the logo up
+
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 04 Jan 2026 08:08:08 +0000
+
 debcraft (0.7.0) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
