@@ -14,27 +14,27 @@ display_help() {
 usage: debcraft <build|improve|test|release|update|shell|logs|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
-as a subargument any of:
+any of the following:
 
   * path to directory with program sources including a debian/ subdirectory with
-  * the Debian packaging instructions
+    the Debian packaging instructions
 
   * path to a .dsc file and source tarballs that can be built into a .deb
 
-  * Debian package name, or source package name, that apt can download
+  * Debian package name or source package name that apt can download
 
   * git http(s) or ssh URL that can be downloaded and built
 
 The command 'improve' will try to apply various improvements to the package
 based on tools in Debian that automate package maintenance. The command 'test'
 will run the Debian-specific regression test suite if the package has
-autopkgtest support, and drop to a shell for investigation if tests failed to
-pass. The command 'release' is intended to be used to upload a package that is
-ready to be released and command 'update' will try to update the package to
-laters upstream version is package git repository layout is compatible.
+autopkgtest support, and drops to a shell for investigation if tests fail to
+pass. The command 'release' uploads a package that is ready to be released and
+the command 'update' tries to update the package to the latest upstream version
+if the package git repository layout is compatible.
 
-The command 'shell' can be used to play around in the container and 'prune' will
-clean up temporary files by Debcraft.
+The command 'shell' can be used to explore the container and 'prune' will
+clean up temporary files created by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
 be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
@@ -47,22 +47,22 @@ DEB_RULES_REQUIRES_ROOT are not supported.
 optional arguments:
   --build-dirs-path    Path for writing build files and artifacts (default: ~/.cache/debcraft)
   --distribution       Linux distribution to build in (default: debian:sid)
-  --container-command  container command to use (default: podman)
-  --host-architecture  host architecture to use when performing a cross build
-  --skip-sources       build only binaries and skip creating a source
+  --container-command  Container command to use (default: podman)
+  --host-architecture  Host architecture to use when performing a cross build
+  --skip-sources       Build only binaries and skip creating a source
                        tarball to make the build slightly faster
                        ('debcraft build' only)
-  --with-binaries      create a release with both source and binaries,
-                       for example with intent to upload to NEW
+  --with-binaries      Create a release with both source and binaries,
+                       for example with the intent to upload to NEW
                        ('debcraft release' only)
-  --pull               ensure container base is updated
-  --copy               perform the build on a copy of the package directory
-  --clean              ensure sources are clean before and after build
-                       (only needed on packages with incomplete 'debian/clean'
+  --pull               Ensure container base is updated
+  --copy               Perform the build on a copy of the package directory
+  --clean              Ensure sources are clean before and after build
+                       (only needed for packages with incomplete 'debian/clean'
                        or 'debian/.gitignore' definitions)
-  --debug              emit debug information
-  -h, --help           display this help and exit
-  --version            display version and exit
+  --debug              Emit debug information
+  -h, --help           Display this help and exit
+  --version            Display version and exit
 
 To learn more, or to contribute to Debcraft, see project page at
 $(clickable_link "salsa.debian.org/debian/debcraft")
@@ -73,7 +73,7 @@ and $(clickable_link "www.debian.org/doc/debian-policy/")
 EOF
 }
 
-# Canonicalize script name if was run via symlink
+# Canonicalize script name if it was run via symlink
 DEBCRAFT_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_LIB_DIR="$(dirname "$DEBCRAFT_CMD_PATH")/src"
 
@@ -83,14 +83,14 @@ then
   DEBCRAFT_LIB_DIR="/usr/share/debcraft"
 fi
 
-# If Debcraft itself was run in a git repository, include the git commit id
+# If Debcraft itself is run from a git repository, include the git commit id
 display_version() {
   if [ -e "$(dirname "$DEBCRAFT_CMD_PATH")/.git" ]
   then
     cd "$(dirname "$DEBCRAFT_CMD_PATH")"
     if [ -z "$(git tag --list)" ]
     then
-      echo "DEBCRAFT ERROR: Unable to view latest git tag. Please run 'git fetch --tags'."
+      echo "DEBCRAFT ERROR: Unable to find latest git tag. Please run 'git fetch --tags'."
       exit 1
     fi
     LATEST_TAG="$(git describe --first-parent --abbrev=0)"
@@ -221,7 +221,7 @@ done
 if [ -z "$ACTION" ]
 then
   # If ACTION is empty the TARGET might have been populated
-  log_error "Argument '$TARGET' not one of <build|improve|test|release|update|shell|logs|prune>"
+  log_error "Argument '$TARGET' is not one of <build|improve|test|release|update|shell|logs|prune>"
   echo
   display_help
   exit 1
@@ -253,11 +253,11 @@ fi
 
 log_debug_var ACTION
 
-# Configure general program behaviour after user options and arguments have been parsed
+# Configure general program behavior after user options and arguments have been parsed
 # shellcheck source=src/config-general.inc.sh
 source "$DEBCRAFT_LIB_DIR/config-general.inc.sh"
 
-# @TODO: Nag of dependencies are not available: git, dpkg-parsechangelog, rsync,
+# @TODO: Check that dependencies are available: git, dpkg-parsechangelog, rsync,
 # notify-send, paplay, tee, sed
 #
 # Bash must be new enough to have 'mapfile'.
@@ -317,15 +317,15 @@ then
   # Newest directory contains the downloaded source package now, use it as TARGET
   export TARGET="$NEWEST_DIRECTORY"
 else
-  log_error "Debcraft command '$ACTION' can only used after a build has run," \
-            "and a directory with the Debian package source exist."
+  log_error "Debcraft command '$ACTION' can only be used after a build has run," \
+            "and a directory with the Debian package source exists."
   exit 1
 fi
 
 log_debug_var TARGET
 
-# The previous step guarantees that the source directory either exits, was
-# downloaded or the script execution stopped. From here onwards the script can
+# The previous step guarantees that the source directory either exists, was
+# downloaded or the script execution stopped. From here onward the script can
 # assume that $PWD is a working directory with sources.
 cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
 
@@ -341,7 +341,7 @@ else
   exit 1
 fi
 
-log_info "Running in path $PWD that has Debian package sources for '$PACKAGE'"
+log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 
 # Make sure sources are clean on actions that depend on it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
@@ -361,7 +361,7 @@ then
   then
     log_error "Modified or additional files found"\
               "\n$(git status --porcelain --ignored --untracked-files=all | head)"\
-              "\nThese may be leftovers of a failed build, or of an incomplete"\
+              "\nThese may be leftovers of a failed build, or an incomplete"\
               "\nrun of './debian/rules clean' after a successful build." \
               "\nUse --clean to remove all untracked and uncommitted files"\
               "\nor run with --copy to build in a separate new directory."
@@ -375,7 +375,7 @@ fi
 # Clean up before the build if applicable
 reset_if_source_repository_and_option_clean
 
-# Configure program behaviour after user options and arguments have been parsed
+# Configure program behavior after user options and arguments have been parsed
 # shellcheck source=src/config-package.inc.sh
 source "$DEBCRAFT_LIB_DIR/config-package.inc.sh"
 

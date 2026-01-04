@@ -6,7 +6,7 @@
   built using the target Debian or Ubuntu suite in `debian/changelog` and with
   exact build dependencies from `debian/control`. Users are spared from having
   to manually prepare ahead or maintain [sbuild](https://wiki.debian.org/sbuild)
-  root file systems or alike. The command output is (relatively) easy to read,
+  root file systems or similar. The command output is (relatively) easy to read,
   and it also teaches users about Debian packaging in context.
 
 * **Fast**: Container layer caching is utilized to make builds and re-builds
@@ -73,7 +73,7 @@ debcraft build --pull <path to sources>
 DEBCRAFT_PPA=ppa:otto/ppa debcraft release <path to sources>
 ```
 
-#### Pass build options to build
+#### Pass build options
 
 ```shell
 DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build <package>
@@ -105,7 +105,7 @@ around in the container and 'prune' will clean up temporary files by Debcraft.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
 be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Note that
-Debcraft builds never runs as root, and thus packages with
+Debcraft builds never run as root, and thus packages with
 DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
@@ -250,7 +250,7 @@ To compare build artifacts with those of previous similar build you can use for 
 
 ### Debian package
 
-Debcraft in Debian unstable ("sid") and Ubuntu 24.10 "Oracular" since July 2024.
+Debcraft is in Debian unstable ("sid") and Ubuntu 24.10 "Oracular" since July 2024.
 If running such a new version one can simply install with:
 
 ```
@@ -315,9 +315,9 @@ https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
 
 ### Roadmap
 
-Debcraft does not intend to replace well working existing tools like
+Debcraft does not intend to replace well-working existing tools like
 [git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/),
-but rather build upon them, making the overall process of as easy as possible.
+but rather build upon them, making the overall process as easy as possible.
 **Current development focus is to make the `debcraft build` as easy and
 efficient as possible** and it is already quite capable. The `release` is also
 already fully usable.
@@ -345,7 +345,7 @@ mainly builds upon invoking other programs via their command-line interface,
 using Bash scripting helps keep the code base small and lean compared to using a
 proper programming language to run tens of subshells. If the limitations of Bash
 (e.g. lack of proper testing framework, limited control of output with merely
-ANSI codes, overly simplistic error handling etc) starts to feel limiting, parts
+ANSI codes, overly simplistic error handling etc) start to feel limiting, parts
 of this tool might be rewritten in a fast to develop language like Python, Mojo,
 Nim, Zig or Rust.
 
@@ -355,13 +355,13 @@ Linux containers anyway.
 
 ### High quality, secure and performant code
 
-Despite being written with Bash, Debcraft still aims to highest possible code
-quality by enforcing that the code base in Shellcheck clean along with other
+Despite being written with Bash, Debcraft still aims for the highest possible code
+quality by enforcing that the code base is Shellcheck-clean along with other
 applicable static testing, such as spellchecking. While running `set -e` is in
 effect to stop execution on any error unless explicitly handled.
 
 The Bash code should avoid spawning subshells if it can be avoided. For example
-us in-line [Bash parameter
+use in-line [Bash parameter
 substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html) instead
 of spawning `sed` commands in subshells.
 
@@ -391,10 +391,10 @@ testing locally while developing.
 ### Name
 
 Why the name _Debcraft_? Because the name _debuild_ was already taken. The
-'craft' also helps setting users in the correct mindset, hinting towards that
-producing high quality Debian packages and maintaining operating system over
+'craft' also helps set users in the correct mindset, hinting towards that
+producing high quality Debian packages and maintaining an operating system over
 many years and decades is not just a pure technical task, but involves following
-industry wisdoms, anticipating unknowns and hand-crafting and tuning things to
+industry wisdom, anticipating unknowns and hand-crafting and tuning things to
 be as perfect as possible.
 
 ### Related software
@@ -413,14 +413,14 @@ come in handy. GitHub Actions only offer Ubuntu-based runners, but debcraft
 allows to build packages for different releases of both Debian and Ubuntu.
 
 Unfortunately you cannot put a file in the directory `.github/workflows` directly
-in a project which hosts a Debian package as it would fail to build due to 
+in a project which hosts a Debian package as it would fail to build due to
 changes to the source.
 
 A possible solution is to host the building logic in a separate repository
 and fetch the proper sources for the package via parameters to the workflow.
 
-See https://github.com/centic9/debian-packages/blob/main/.github/workflows/debian-package-debcraft.yml 
-for a resulting Github Action which can build any package as long as sources 
+See https://github.com/centic9/debian-packages/blob/main/.github/workflows/debian-package-debcraft.yml
+for a resulting GitHub Action which can build any package as long as sources
 are available in a repository on GitHub.
 
 ## Licence

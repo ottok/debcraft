@@ -50,7 +50,7 @@ install: build
 	cp -a src $(DESTDIR)/usr/share/debcraft
 
 install-local:
-	@echo "Installing Debcraft as symlinc at ~/bin/debcraft"
+	@echo "Installing Debcraft as symlink at ~/bin/debcraft"
 	mkdir -p ~/.local/bin
 	mkdir -p ~/.local/share/bash-completion/completions
 	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/.local/bin/debcraft

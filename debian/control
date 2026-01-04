@@ -7,7 +7,7 @@ Build-Depends:
  codespell <!nocheck>,
  git-buildpackage <!nocheck>,
  help2man,
- podman | docker.io  <!nocheck>,
+ podman | docker.io <!nocheck>,
  shellcheck <!nocheck>,
 Standards-Version: 4.7.0
 Homepage: https://salsa.debian.org/debian/debcraft
@@ -25,11 +25,11 @@ Description: Easy, fast and secure way to build Debian packages
  Podman/Docker to automatically create a hermetic network-less build container
  based on the distribution defined in the source package debian/changelog with
  the dependencies defined in debian/control. Users don't need to manually create
- nor update root filesystems. If there is no source package, Debcraft will even
+ nor update root filesystems. If there is no source package, Debcraft will
  automatically download it.
  .
- Thanks to efficient caching rebuilds are blazing fast, and additional logs make
+ Thanks to efficient caching, rebuilds are blazing fast, and additional logs make
  it easy to see what changed in the end result between each build.
  .
  The tool is fully written in Bash, so reasoning about how it works is easy. It
- does not even need to run on Debian as all builds happen inside containers.
+ does not need to run on Debian as all builds happen inside containers.
