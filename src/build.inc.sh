@@ -39,13 +39,8 @@ fi
 
 if [ -z "$SKIP_SOURCES" ]
 then
-  # Extract package version from debian/changelog
-  # This assumes PACKAGE is already set by debcraft.sh
-  DEBIAN_VERSION="$(head -n 1 debian/changelog | grep --only-matching --perl-regexp '\(\K[^)]+')"
-  # First, remove everything before the colon, including the colon itself
-  EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
-  # Then, remove everything from the first hyphen onwards.
-  PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
+  log_debug_var DEBIAN_VERSION
+  log_debug_var PACKAGE_VERSION
 
   # Opportunistically copy the upstream tarball if it exists. Command dpkg-source
   # expects it in the parent directory of the source tree for '3.0 (quilt)'

@@ -53,6 +53,17 @@ case "$DISTRIBUTION" in
     BASEIMAGE="$(get_baseimage_from_distribution_name "$DISTRIBUTION")"
 esac
 
+# Extract package version from debian/changelog
+if [ -e debian/changelog ]
+then
+  PACKAGE="$(head -n 1 debian/changelog | cut -d ' ' -f 1)"
+  DEBIAN_VERSION="$(head -n 1 debian/changelog | grep --only-matching --perl-regexp '\(\K[^)]+')"
+  # First, remove everything before the colon, including the colon itself
+  EPOCHLESS_DEBIAN_VERSION="${DEBIAN_VERSION#*:}"
+  # Then, remove everything from the first hyphen onward
+  PACKAGE_VERSION="${EPOCHLESS_DEBIAN_VERSION%-*}"
+fi
+
 # Remove longest pattern from end of variable, e.g. 'bookworm-security' would be 'bookworm'
 # (https://tldp.org/LDP/abs/html/parameter-substitution.html)
 #RELEASE_NAME="${1%%-*}"
@@ -136,6 +147,8 @@ CACHE_DIR="$BUILD_DIRS_PATH/debcraft-cache-$PACKAGE"
 
 # Explicit exports
 export PACKAGE
+export DEBIAN_VERSION
+export PACKAGE_VERSION
 export BASEIMAGE
 export CONTAINER
 export BUILD_ID
