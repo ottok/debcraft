@@ -52,8 +52,17 @@ function debcraft_test() {
   then
     echo "TEST PASSED"
   else
-    echo "ERROR: TEST FAILED (exit code $RET)"
-    echo "For full test log see $TEMPDIR/test-$TEST_NUMBER.log"
+    echo "ERROR: TEST $TEST_NUMBER FAILED"
+    echo "  Command: debcraft $COMMAND_TO_TEST"
+    echo "  Exit code: ${RET:-0}"
+    echo "  Last line: $TEST_OUTPUT_LAST_LINE"
+    echo "  Expected:  $EXPECTED_OUTPUT_LAST_LINE_START"
+    echo "  Full log:  $TEMPDIR/test-$TEST_NUMBER.log"
+
+    echo "  Directory contents:"
+    find . -maxdepth 1 -printf "%M %u %g %s %t %f\n" 2>/dev/null | head -20
+    echo "  Git status:"
+    git status --porcelain 2>/dev/null || echo "  (not a git repo)"
     exit 1
   fi
 }
