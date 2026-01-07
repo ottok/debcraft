@@ -244,7 +244,7 @@ do
       IMPORT_BRANCH_NAME="next/$(git branch --show-current)"
       log_info "Run the following commands to have the import on a new branch" \
               "and publish it for review in your project fork on Salsa:"
-      echo "  git checkout -b $IMPORT_BRANCH_NAME"
+      echo "  git checkout -B $IMPORT_BRANCH_NAME"
       echo "  git checkout $DEBIAN_BRANCH && git reset --hard $DEBIAN_BRANCH_COMMIT_ID_BEFORE"
       echo "  git checkout $IMPORT_BRANCH_NAME"
       echo "  git push --set-upstream <fork> $IMPORT_BRANCH_NAME"
