@@ -1,5 +1,55 @@
 #!/bin/bash
 
+# Helper function to show what commands are run. Note that commands that include
+# output redirection, piping or chaining can't be given as an argument to a
+# this function.
+log_command() {
+  local exit_code=0
+
+  echo "++ $*"
+  "$@" || exit_code=$?
+
+  if [ "$exit_code" -ne 0 ]
+  then
+    log_error "Command returned exit code: $exit_code"
+  fi
+
+  return "$exit_code"
+}
+
+# Helper function to show the command and also cap the output to max 10 lines
+log_command_cap_output() {
+  # shellcheck disable=SC2155
+  local temp_file=$(mktemp)
+  local exit_code=0
+
+  trap 'rm -f "$temp_file"' EXIT
+
+  echo "++ $*"
+   # Continue despite errors, but capture exit code
+  "$@" > "$temp_file" 2>&1 || exit_code=$?
+
+  # shellcheck disable=SC2155
+  local total_lines=$(wc -l < "$temp_file")
+
+  if [ "$total_lines" -gt 10 ] && [ "$exit_code" -eq 0 ]
+  then
+    head -n 5 "$temp_file"
+    echo " [... output suppressed ...]"
+    tail -n 5 "$temp_file"
+  else
+    # Print full output if it was short, or if there was an error
+    cat "$temp_file"
+  fi
+
+  if [ "$exit_code" -ne 0 ]
+  then
+    log_error "Command returned exit code: $exit_code"
+  fi
+
+  return "$exit_code"
+}
+
 # Expand backslash sequences once into a variable, then print literally using %s
 # to avoid double-expansion mangling nested escape sequences (like links).
 function log_error() {

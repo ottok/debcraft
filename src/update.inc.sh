@@ -13,14 +13,18 @@ set -o pipefail
 # or not
 function revert_import() {
   log_info "Attempting to revert the changes done by 'debcraft update'"
-  git checkout "$UPSTREAM_BRANCH" && git tag -d "$(git tag --points-at)" && git reset --hard "$UPSTREAM_BRANCH_COMMIT_ID_BEFORE"
+  log_command git checkout "$UPSTREAM_BRANCH" \
+  && log_command git tag -d "$(git tag --points-at)" \
+  && log_command git reset --hard "$UPSTREAM_BRANCH_COMMIT_ID_BEFORE"
 
   if [ "$PRISTINE_TAR" = "True" ]
   then
-    git checkout pristine-tar && git reset --hard "$PRISTINE_TAR_COMMIT_ID_BEFORE"
+    log_command git checkout pristine-tar \
+    && log_command git reset --hard "$PRISTINE_TAR_COMMIT_ID_BEFORE"
   fi
 
-  git checkout "$DEBIAN_BRANCH" && git reset --hard "$DEBIAN_BRANCH_COMMIT_ID_BEFORE"
+  log_command git checkout "$DEBIAN_BRANCH" \
+  && log_command git reset --hard "$DEBIAN_BRANCH_COMMIT_ID_BEFORE"
 
   log_info "Successfully reverted the changes done by 'debcraft update'"
 }
@@ -144,16 +148,11 @@ then
   log_debug_var PRISTINE_TAR_COMMIT_ID_BEFORE
 fi
 
-if [ -n "$DEBUG" ]
-then
-  set -x
-fi
-
 log_info "Ensuring local git checkout is up-to-date with git remote '$VCS_GIT'"
 
 # Make sure latest commits are fetched from the official vcs-git location
 git remote add vcs-git "$VCS_GIT"
-gbp pull --track-missing vcs-git
+log_command gbp pull --track-missing vcs-git
 git remote remove vcs-git
 # @TODO: If git-buildpackage adds support for fetching with URL, the above could
 # be replaced with simply:
@@ -197,13 +196,13 @@ log_info "Fetching upstream git tags from $(git remote get-url upstreamvcs) to" 
          "see if there are new release tags"
 # Use `--verbose` so there is always some output, capture stderr as `--verbose`
 # seems to use it, and `tail` to avoid too much output
-git fetch upstreamvcs --tags --verbose 2>&1 | tail -n 5
+log_command_cap_output git fetch upstreamvcs --tags --verbose
 
 # @TODO: If Debian packaging stored upstream OpenPGP or SSH keys, the next step
 # after fetching tags would be to run `git verify-tag`
 
-log_info "Run git-buildpackage with uscan to import new upstream version (if found)"
-gbp import-orig --uscan --no-interactive --postimport="dch -v %(version)s 'New upstream release'"
+log_info "Run 'gbp import-orig --uscan' to import new upstream version (if found)"
+log_command gbp import-orig --uscan --no-interactive --postimport="dch -v %(version)s 'New upstream release'"
 
 # @TODO: Note that if upstream was already imported to the git repository, but
 # `debcraft update` is run on some other branch, `uscan` won't find anything and
@@ -217,7 +216,7 @@ gbp import-orig --uscan --no-interactive --postimport="dch -v %(version)s 'New u
 log_info "Pre-populate debian/changelog with appropriate update and launch" \
          "editor for proof-reading and tweaking"
 # Note that this will use whatever user has configured as their preferred 'sensible-editor'
-gbp dch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="Update changelog and refresh patches after %(version)s import" -- debian
+log_command gbp dch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="Update changelog and refresh patches after %(version)s import" -- debian
 
 # Remove Debian revision from `%(version)s` to have pure upstream version in commit message
 message=$(git log -1 --pretty=%s)
@@ -226,7 +225,7 @@ message="${message//-[0-9]* / }"  # Remove Debian revision (e.g., "-0ubuntu1") w
 git commit --amend --no-edit --message="$message"
 
 log_info "Rebase debian/patches/* on this new upstream version"
-gbp pq import --force --time-machine=10
+log_command gbp pq import --force --time-machine=10
 
 # Perform rebase with safeguard
 if ! git rebase -
@@ -288,17 +287,12 @@ fi
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$CURRENT_BRANCH" == patch-queue/* ]]
 then
-    gbp pq export --drop
-    git commit --amend --all --no-edit
+    log_command gbp pq export --drop
+    log_command git commit --amend --all --no-edit
 else
     log_error "Unexpected branch state: '$CURRENT_BRANCH' not a patch-queue branch."
     revert_import
     exit 1
-fi
-
-if [ -n "$DEBUG" ]
-then
-  set +x
 fi
 
 echo
@@ -310,6 +304,7 @@ do
   read -r -p "Was the new upstream version import successful and should the result be kept, or reverted [K|r]?  " selection
   case $selection in
     ''|[Kk]*)
+      echo
       IMPORT_BRANCH_NAME="next/$(git branch --show-current)"
       log_info "Run the following commands to have the import on a new branch" \
               "and publish it for review in your project fork on Salsa:"
@@ -334,6 +329,7 @@ do
       break
       ;;
     [Rr]*)
+      echo
       log_warn "Reverting upstream import!"
       revert_import
       break
