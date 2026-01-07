@@ -12,6 +12,7 @@ set -o pipefail
 # latest tag and commit contents to know if they actually should be rolled back
 # or not
 function revert_import() {
+  log_info "Attempting to revert the changes done by 'debcraft update'"
   git checkout "$UPSTREAM_BRANCH" && git tag -d "$(git tag --points-at)" && git reset --hard "$UPSTREAM_BRANCH_COMMIT_ID_BEFORE"
 
   if [ "$PRISTINE_TAR" = "True" ]
@@ -20,6 +21,8 @@ function revert_import() {
   fi
 
   git checkout "$DEBIAN_BRANCH" && git reset --hard "$DEBIAN_BRANCH_COMMIT_ID_BEFORE"
+
+  log_info "Successfully reverted the changes done by 'debcraft update'"
 }
 
 # Get configs
@@ -173,8 +176,9 @@ OPEN_MRS="$(curl -s https://salsa.debian.org/api/v4/projects/"$SALSA_PROJECT_API
 
 if [ -n "$OPEN_MRS" ]
 then
-  log_warn "This project has open Merge Requests that should probably be reviewed first:"
+  log_info "This project has open Merge Requests that should probably be reviewed first:"
   echo "$OPEN_MRS"
+  echo
   read -r -p "Press Ctrl+C to abort and attend Merge Requests, or press enter to proceed"
 fi
 
@@ -223,9 +227,74 @@ git commit --amend --no-edit --message="$message"
 
 log_info "Rebase debian/patches/* on this new upstream version"
 gbp pq import --force --time-machine=10
-git rebase -
-gbp pq export --drop
-git commit --amend --all --no-edit
+
+# Perform rebase with safeguard
+if ! git rebase -
+then
+    # Failure path - instruct user to use separate shell session
+    log_warn "Patch rebase failed due to conflicts"
+    echo
+    log_info "You must resolve these conflicts in a SEPARATE shell session before 'debcraft update' can proceed"
+    echo
+    echo "  1. Open a NEW shell session / terminal window"
+    echo "  2. Ensure you are in directory $(pwd)"
+    echo "  3. To start resolving the merge conflict, run:"
+    echo "       git mergetool"
+    echo "  4. After exiting the merge tool, run:"
+    echo "       git rebase --continue"
+    echo "  5. Repeat steps 3-4 until you see 'Successfully rebased and updated'"
+    echo "  6. Return to THIS session when rebase is complete and press Enter to continue"
+    echo
+
+    while true
+    do
+        read -r -p "Press [Enter] to continue after rebase, or type [a]bort to revert all changes: " choice
+
+        case $choice in
+            '')
+                # Verify rebase actually completed successfully
+                if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]
+                then
+                    log_warn "Rebase appears to still be in progress! Please ensure you completed the rebase in the other shell."
+                    echo
+                else
+                    break
+                fi
+                ;;
+            [aA])
+                log_info "Aborting update and cleaning up..."
+
+                # Abort rebase if still in progress
+                if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]
+                then
+                    git rebase --abort
+                fi
+
+                # Drop patch-queue branch
+                gbp pq drop 2>/dev/null || true
+
+                # Revert entire import
+                revert_import
+                exit 1
+                ;;
+            *)
+                log_warn "Invalid input. Press [Enter] after rebase, or type 'a' to abort."
+                ;;
+        esac
+    done
+fi
+
+# Verify we're on the patch-queue branch and export patches
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" == patch-queue/* ]]
+then
+    gbp pq export --drop
+    git commit --amend --all --no-edit
+else
+    log_error "Unexpected branch state: '$CURRENT_BRANCH' not a patch-queue branch."
+    revert_import
+    exit 1
+fi
 
 if [ -n "$DEBUG" ]
 then
