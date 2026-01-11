@@ -423,6 +423,8 @@ See https://github.com/centic9/debian-packages/blob/main/.github/workflows/debia
 for a resulting GitHub Action which can build any package as long as sources
 are available in a repository on GitHub.
 
-## Licence
+## Copyright and licence
+
+Copyright 2023-2026 Otto Kekäläinen & collaborators
 
 Debcraft is free and open source software as published under GPL version 3.
