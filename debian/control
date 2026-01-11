@@ -1,6 +1,5 @@
 Source: debcraft
 Section: misc
-Priority: optional
 Maintainer: Otto Kekäläinen <otto@debian.org>
 Build-Depends:
  debhelper-compat (= 13),
