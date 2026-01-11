@@ -8,7 +8,7 @@ Build-Depends:
  help2man,
  podman | docker.io <!nocheck>,
  shellcheck <!nocheck>,
-Standards-Version: 4.7.0
+Standards-Version: 4.7.3
 Homepage: https://salsa.debian.org/debian/debcraft
 Vcs-Git: https://salsa.debian.org/debian/debcraft.git
 Vcs-Browser: https://salsa.debian.org/debian/debcraft
