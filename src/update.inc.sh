@@ -301,7 +301,7 @@ echo
 
 while true
 do
-  read -r -p "Was the new upstream version import successful and should the result be kept, or reverted [K|r]?  " selection
+  read -r -p "Was the new upstream version import successful and should the result be [k]ept, or reverted [K|r]?  " selection
   case $selection in
     ''|[Kk]*)
       echo
