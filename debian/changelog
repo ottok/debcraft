@@ -1,3 +1,22 @@
+debcraft (0.8.1) unstable; urgency=medium
+
+  * Fix various typos and grammar issues
+  * When building for Ubuntu, use the *-proposed pocket by default
+  * Build Ubuntu 26.04 binaries as amd64v3 by default
+  * Refactor DEBIAN_VERSION and PACKAGE_VERSION into shared location
+  * Improve version parsing in commit message amendment
+  * Use -B flag when creating import branch in instructions
+  * Add interactive safeguard for patch rebase failures
+  * Implement log_command() to show users what commands are run
+  * Store git commit id in source exports
+  * Update Debian copyright for 2026
+  * Drop redundant `Priority: optional`
+  * Bump Debian Policy version
+  * Surround K in `[k]ept` for clarity on what K means in the prompt when
+    running `debcraft update`
+
+ -- Otto Kekäläinen <otto@debian.org>  Tue, 20 Jan 2026 07:14:34 +0000
+
 debcraft (0.8.0) unstable; urgency=medium
 
   * Replace deprecated `cp` option `no-clobber` with equivalent `update=none`
