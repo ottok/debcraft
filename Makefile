@@ -19,6 +19,8 @@ test-depends:
 	@echo -n "Codespell version: "
 	@codespell --version
 	@echo $$(shellcheck --version | head -n 2)
+	@echo -n "shfmt version: "
+	@shfmt --version
 
 build: manpage build-depends
 
@@ -65,6 +67,8 @@ test-static: test-depends
 	@echo "Running static tests"
 	codespell --interactive=0 --check-filenames --check-hidden --skip=.git
 	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
+	@echo "Checking shell script formatting with shfmt"
+	shfmt --diff $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
 
 # Run Debcraft and ensure it behaves as expected
 test-debcraft:
