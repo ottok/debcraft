@@ -196,6 +196,30 @@ title_running "$ACTION $PACKAGE"
 # (cd "$DEBSNAP_DIR"; debsnap --first "$PREVIOUS_VERSION" "$SOURCE_PACKAGE_NAME")
 # gbp import-dscs "$DEBSNAP_DIR"/*/*.dsc
 
+# Update watch file format to uscan v5 if needed
+if [ -f debian/watch ] && ! grep -q "Version: 5" debian/watch
+then
+  # Check if uscan is available and devscripts version is new enough
+  if command -V uscan > /dev/null 2>&1 && \
+     dpkg --compare-versions "$(dpkg-query -W -f='${Version}' devscripts 2>/dev/null)" ge "2.25.18"
+  then
+    log_info "Updating debian/watch to uscan v5 format"
+    uscan --update-watchfile || true  # Ignore exit code as warnings are not failures
+    if [ -n "$(git diff --name-only debian/watch)" ]
+    then
+      git add debian/watch
+      git commit -m "Update d/watch to use uscan v5 format"
+    else
+      log_error "Updating debian/watch failed, please complete it manually"
+      exit 1
+    fi
+  else
+    log_debug "uscan not available or devscripts version too old for v5 format update"
+  fi
+else
+  log_debug "Skip v5 format update: no watch file or already using v5"
+fi
+
 log_info "Fetching upstream git tags from $(git remote get-url upstreamvcs) to" \
          "see if there are new release tags"
 # Use `--verbose` so there is always some output, capture stderr as `--verbose`
