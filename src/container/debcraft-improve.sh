@@ -67,14 +67,19 @@ set -x
 # have findings but Debcraft should continue to execute and run all of them
 set +e
 
-debputy lint --spellcheck --auto-fix
-
-debputy reformat --style black
-
 codespell --write-changes --check-filenames --check-hidden \
   --skip="debian/changelog,debian/patches,debian/vendor,debian/source/lintian-overrides,*.lintian-overrides,*.po,*.pot" \
   debian/
 # add overrides in debian/.codespellrc
+
+debputy lint --spellcheck --auto-fix
+
+# Apply `debputy reformat --style black`
+debputy reformat --style black
+
+# Apply `wrap-and-sort -vast` that modifies more files than debputy, and helps
+# ensure all changes are easy to track in git
+wrap-and-sort -vast
 
 lrc
 # add overrides in debian/lrc.config
