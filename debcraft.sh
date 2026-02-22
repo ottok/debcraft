@@ -256,7 +256,10 @@ then
   exit 1
 fi
 
-if [ -n "$DISTRIBUTION" ] && { [ "$ACTION" == "logs" ] || [ "$ACTION" == "update" ]; }
+if [ -n "$DISTRIBUTION" ] &&
+{
+  [ "$ACTION" == "logs" ] || [ "$ACTION" == "update" ]
+}
 then
   log_error "Parameter --distribution is not supported for action '$ACTION'"
   echo
