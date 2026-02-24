@@ -117,6 +117,21 @@ fi
 
 # Automatically make specific changes and commit them in git
 
+# Commit formatting changes if any files were modified by the tools above
+if ! git diff --quiet
+then
+  git add -A
+  git commit -F - <<'EOF'
+Apply consistent formatting to packaging files
+
+Run `debputy reformat --style black` and `wrap-and-sort -vast` to enforce
+uniform deb822 formatting with one item per line. This makes future
+changes to dependencies and other lists easier to track in git diffs.
+
+No functional changes.
+EOF
+fi
+
 # Drop redundant Rules-Requires-Root: no
 if grep -qE "^\s*Rules-Requires-Root:\s*no\s*$" debian/control
 then
