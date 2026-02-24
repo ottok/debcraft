@@ -63,7 +63,7 @@ set -x
 
 # Don't stop on errors as the tools below are likely to emit exit codes if they
 # have findings but Debcraft should continue to execute and run all of them
-set +e
+{ set +e; } 2>/dev/null
 
 codespell --write-changes --check-filenames --check-hidden \
   --skip="debian/changelog,debian/patches,debian/vendor,debian/source/lintian-overrides,*.lintian-overrides,*.po,*.pot" \
@@ -82,7 +82,7 @@ wrap-and-sort -vast
 lrc
 # add overrides in debian/lrc.config
 
-set +x
+{ set +x; } 2>/dev/null
 
 # Run Shellcheck only if files of the type were found
 if [ "${#SH_SCRIPTS[@]}" -gt 0 ]
