@@ -11,6 +11,24 @@ mkdir --parents "$CACHE_DIR" "$BUILD_DIR/source"
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
+
+  # Warn if binaries are older than latest git commit
+  if [ -d "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ] && [ -n "$(find "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" -maxdepth 1 -name '*.deb' -print -quit 2>/dev/null)" ]
+  then
+    latest_commit_time=$(git log -1 --format=%ct 2>/dev/null)
+    newest_deb_time=$(find "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" -name '*.deb' -printf '%T@\n' 2>/dev/null | sort -rn | head -1 | cut -d. -f1)
+
+    if [ -n "$latest_commit_time" ] && [ -n "$newest_deb_time" ] && [ "$latest_commit_time" -gt "$newest_deb_time" ]
+    then
+      log_warn "Latest git commit is newer than built binaries"
+      log_warn "Binaries built: $(date -d @"$newest_deb_time" '+%Y-%m-%d %H:%M:%S')"
+      log_warn "Latest commit:  $(date -d @"$latest_commit_time" '+%Y-%m-%d %H:%M:%S')"
+      log_warn "Run 'debcraft build' to test current code"
+      echo
+      read -r -p "Press Ctrl+C to abort, or press enter to proceed with test"
+    fi
+  fi
+
   mkdir --parents "$BUILD_DIR/previous-build"
   EXTRA_CONTAINER_MOUNTS=" --volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous-build $EXTRA_CONTAINER_MOUNTS"
 else
