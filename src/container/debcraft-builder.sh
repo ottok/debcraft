@@ -46,11 +46,29 @@ else
   # with Quilt
   if [ -f debian/patches/series ]
   then
-    log_info "Apply patches with Quilt"
-    export QUILT_PATCHES=debian/patches
-    # If all patches have already been applied, attempting to push any more results
-    # in an exit status of 2.  As this is not an error, it should be ignored.
-    quilt push -a || [ $? -eq 2 ]
+    SKIP_PATCHES=false
+
+    # Skip applying patches if on a gbp patch-queue branch where patches are
+    # already applied as git commits. Attempting to apply them again with Quilt
+    # would fail as the changes already exist in the working tree.
+    if [ -d ".git" ]
+    then
+      CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+      if [[ "$CURRENT_BRANCH" == patch-queue/* ]]
+      then
+        log_info "On patch-queue branch '$CURRENT_BRANCH' - patches already applied, skipping Quilt"
+        SKIP_PATCHES=true
+      fi
+    fi
+
+    if [ "$SKIP_PATCHES" = false ]
+    then
+      log_info "Apply patches with Quilt"
+      export QUILT_PATCHES=debian/patches
+      # If all patches have already been applied, attempting to push any more results
+      # in an exit status of 2.  As this is not an error, it should be ignored.
+      quilt push -a || [ $? -eq 2 ]
+    fi
   fi
 fi
 
