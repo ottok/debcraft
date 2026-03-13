@@ -132,7 +132,7 @@ fi
 # access to build artifacts from previous builds
 if [ -z "${CI:-}" ]
 then
-  debcraft_test "test" "Testing passed"
+  debcraft_test "test" "Test passed!"
 fi
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
