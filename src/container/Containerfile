@@ -5,6 +5,9 @@ ARG HOST_ARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Standardize date formats and timestamps in output and logs
+ENV LC_ALL=C
+
 # Automatically remove 500MB+ of debug symbols that GCC maintainers have
 # intentionally in unstable for bootstrapping new stack tracing, but which is
 # unnecessary for Debcraft containers
