@@ -26,12 +26,15 @@ source "/cache.inc.sh"
 # '<package>_<version>_<arch>.build' for consistency across builds
 BUILD_LOG="build.log"
 
-# shellcheck source=src/container/pristine-tar.inc.sh
-source "/pristine-tar.inc.sh"
-
 # Normal builds in Debian are full binary releases with sources
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
+  # Parse upstream version to extract pristine-tar only when doing full builds
+  # that need the upstream source tarball. Skip this for binary-only builds
+  # (--skip-sources) to save time.
+  # shellcheck source=src/container/pristine-tar.inc.sh
+  source "/pristine-tar.inc.sh"
+
   # Empty means full build, both source and binaries
   DPKG_BUILDPACKAGE_ARGS=""
   GBP_ARGS=""
