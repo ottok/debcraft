@@ -22,10 +22,9 @@ BUILD_START_TIME="$EPOCHSECONDS"
 # shellcheck source=src/container/cache.inc.sh
 source "/cache.inc.sh"
 
-# Mimic debuild log filename '<package>_<version>_<arch>.build'
-# https://manpages.debian.org/unstable/devscripts/debuild.1.en.html#DESCRIPTION
-# https://salsa.debian.org/debian/devscripts/-/blob/main/scripts/debuild.pl?ref_type=heads#L974-983
-BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_$(dpkg-architecture --query DEB_HOST_ARCH).build"
+# Use a normalized build log filename instead of the debuild-style
+# '<package>_<version>_<arch>.build' for consistency across builds
+BUILD_LOG="build.log"
 
 # shellcheck source=src/container/pristine-tar.inc.sh
 source "/pristine-tar.inc.sh"
