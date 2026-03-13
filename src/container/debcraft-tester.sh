@@ -35,7 +35,7 @@ fi
 
 
 log_info "Run autopkgtest"
-autopkgtest --ignore-restrictions=breaks-testbed --no-built-binaries --shell-fail -- null
+autopkgtest --ignore-restrictions=breaks-testbed --no-built-binaries --shell-fail --log-file=/debcraft/previous-build/test.log -- null
 
 # For command options and configs, see
 # - https://manpages.debian.org/unstable/autopkgtest/autopkgtest.1.en.html

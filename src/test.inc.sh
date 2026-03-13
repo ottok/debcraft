@@ -76,12 +76,13 @@ then
   set +x
 fi
 
+log_info "Test output saved to ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}/test.log"
+
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
 then
-  log_error "Testing found issues - please read the output above carefully"
+  log_error "Test failed! Please read the output above carefully"
   exit 1
 fi
 
-
-log_info "Testing passed"
+log_info "Test passed!"
