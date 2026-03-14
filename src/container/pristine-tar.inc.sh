@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Parse upstream version to extract pristine-tar
 # Use pre-set DEBIAN_VERSION from host if available, otherwise parse it
 if [ -z "$DEBIAN_VERSION" ]
