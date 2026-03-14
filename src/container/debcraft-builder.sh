@@ -87,14 +87,28 @@ then
   log_info "Running 'gbp buildpackage $GBP_ARGS' to create .deb packages from git repository"
   log_info "followed by './debian/rules clean' to ensure source directory is clean"
   # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
+  # Capture both stdout and stderr to build.log, while also isolating stderr to
+  # build.err.log for quick troubleshooting. Process substitution (2> >(...))
+  # creates a background process that handles stderr separately from stdout.
+  #
+  # stderr flow: build command -> tee build.err.log (captures just stderr) ->
+  #              append to build.log (mixes with stdout) -> back to terminal >&2
+  # stdout flow:  build command -> tee build.log (appends to same file)
   gbp buildpackage --git-ignore-branch \
     --git-builder="dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS" \
-    $GBP_ARGS | tee -a "../$BUILD_LOG"
+    $GBP_ARGS 2> >(tee -a "../build.err.log" "../$BUILD_LOG" >&2) | tee -a "../$BUILD_LOG"
 else
   # Fall-back to plain dpkg-buildpackage if no git repository
   log_info "Running 'dpkg-buildpackage $DPKG_BUILDPACKAGE_ARGS' to create .deb packages from plain sources directory"
   # shellcheck disable=SC2086 # intentionally pass variable that can be multiple arguments
-  dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS | tee -a "../$BUILD_LOG"
+  # Capture both stdout and stderr to build.log, while also isolating stderr to
+  # build.err.log for quick troubleshooting. Process substitution (2> >(...))
+  # creates a background process that handles stderr separately from stdout.
+  #
+  # stderr flow: build command -> tee build.err.log (captures just stderr) ->
+  #              append to build.log (mixes with stdout) -> back to terminal >&2
+  # stdout flow:  build command -> tee build.log (appends to same file)
+  dpkg-buildpackage --post-clean --no-sign $DPKG_BUILDPACKAGE_ARGS 2> >(tee -a "../build.err.log" "../$BUILD_LOG" >&2) | tee -a "../$BUILD_LOG"
 fi
 # @TODO: Test building just binaries to make build faster, and later also
 # test skipping rules/clean steps with '--no-pre-clean --no-post-clean'
