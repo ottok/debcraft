@@ -151,11 +151,15 @@ then
   rmdir "$BUILD_DIR/last-tagged"
 fi
 
-if [ -z "$COPY" ] && [ -d "$BUILD_DIR/source" ]
+if [ -n "$COPY" ] && [ -d "$BUILD_DIR/source" ]
+then
+  # Clean up copied source files to save space after build completes
+  rm -rf "$BUILD_DIR/source"
+elif [ -d "$BUILD_DIR/source" ]
 then
   # Clean up temporary mount directory from polluting build artifacts
   # if a "source" directory was mounted (i.e. COPY was *not* used)
-  rmdir "$BUILD_DIR/source"
+  rmdir "$BUILD_DIR/source" || true
 fi
 
 # Clean up temporary mount directorie from polluting build artifacts, but
