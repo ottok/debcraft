@@ -8,6 +8,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Standardize date formats and timestamps in output and logs
 ENV LC_ALL=C
 
+# Ensure output is colorized in Node.js / general tools
+ENV FORCE_COLOR=1
+# BSD-style tools (autopkgtest)
+ENV CLICOLOR_FORCE=1
+# CMake
+ENV CMAKE_COLOR_MAKEFILE=ON
+ENV CMAKE_COLOR_DIAGNOSTICS=ON
+
 # Automatically remove 500MB+ of debug symbols that GCC maintainers have
 # intentionally in unstable for bootstrapping new stack tracing, but which is
 # unnecessary for Debcraft containers
