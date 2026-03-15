@@ -134,12 +134,14 @@ then
 
   echo
   log_info "Create diffoscope report comparing to previous build"
+  # Find the previous changes file and ensure only one file is returned
+  PREVIOUS_CHANGES_FILE="$(find previous/ -maxdepth 1 -name "*.changes" -print -quit)"
   # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
   # than that, the output is probably massive and unreadable. Diffoscope is more
   # useful for hunting small changes which might be hard to find with other
   # tools.
   diffoscope --html=diffoscope.html --timeout=$((60*5)) \
-    previous/*.changes ./*.changes || true
+    "$PREVIOUS_CHANGES_FILE" ./*.changes || true
   # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
@@ -160,12 +162,14 @@ then
 
   echo
   log_info "Create diffoscope report comparing to last tagged build"
+  # Find the previous changes file and ensure only one file is returned
+  LAST_TAGGED_CHANGES_FILE="$(find previous/ -maxdepth 1 -name "*.changes" -print -quit)"
   # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
   # than that, the output is probably massive and unreadable. Diffoscope is more
   # useful for hunting small changes which might be hard to find with other
   # tools.
-  diffoscope --html=diffoscope.last-tagged.html --timeout=$((60*5)) \
-    previous/*.changes ./*.changes || true
+  diffoscope --html=diffoscope.html --timeout=$((60*5)) \
+    "$LAST_TAGGED_CHANGES_FILE" ./*.changes || true
   # Exit status is zero only if inputs are identical, so ignore exit code
 fi
 
