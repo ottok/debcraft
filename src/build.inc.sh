@@ -197,9 +197,9 @@ then
   echo
   log_info "To compare build artifacts with those of previous similar build you can use for example:"
   log_info "  meld ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
-  if [ -f "$BUILD_DIR/diffoscope.html" ]
+  if [ -f "$BUILD_DIR/diffoscope.previous.html" ]
   then
-    log_info "  browse $(clickable_link "$BUILD_DIR/diffoscope.html")"
+    log_info "  browse $(clickable_link "$BUILD_DIR/diffoscope.previous.html")"
   fi
 fi
 
@@ -208,7 +208,7 @@ then
   echo
   log_info "To compare build artifacts with the previous tagged release run:"
   log_info "  meld ${LAST_TAGGED_SUCCESSFUL_BUILD_DIRS[0]} $BUILD_DIR &"
-  if [ -f "$BUILD_DIR/diffoscope.html" ]
+  if [ -f "$BUILD_DIR/diffoscope.last-tagged.html" ]
   then
     log_info "  browse $(clickable_link "$BUILD_DIR/diffoscope.last-tagged.html")"
   fi
