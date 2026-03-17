@@ -184,6 +184,10 @@ do
       export COPY="true"
       shift
       ;;
+    --yes)
+      export DEBCRAFT_YES="true"
+      shift
+      ;;
     --debug)
       # Debug mode detection is already done earlier, ignore it at this stage
       shift

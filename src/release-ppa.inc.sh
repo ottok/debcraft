@@ -31,24 +31,29 @@ then
   exit 1
 fi
 
-while true
-do
-  read -r -p "Upload to PPA '$DEBCRAFT_PPA' release '$SERIES' [Y|n]?  " selection
-  case $selection in
-    ''|[Yy]*)
-      log_info "Proceed with upload"
-      break
-      ;;
-    [Nn]*)
-      log_warn "Upload to PPA skipped"
-      return # skip the rest of this file and return bach to calling script
-      # no break needed due to 'return' above
-      ;;
-    *)
-      log_warn "Invalid selection. Please enter y or n."
-      ;;
-  esac
-done
+if [ -n "$DEBCRAFT_YES" ]
+then
+  log_info "Upload to PPA '$DEBCRAFT_PPA' release '$SERIES' (auto-confirmed via --yes)"
+else
+  while true
+  do
+    read -r -p "Upload to PPA '$DEBCRAFT_PPA' release '$SERIES' [Y|n]?  " selection
+    case $selection in
+      ''|[Yy]*)
+        log_info "Proceed with upload to PPA"
+        break
+        ;;
+      [Nn]*)
+        log_warn "Upload to PPA skipped"
+        return # skip the rest of this file and return bach to calling script
+        # no break needed due to 'return' above
+        ;;
+      *)
+        log_warn "Invalid selection. Please enter y or n."
+        ;;
+    esac
+  done
+fi
 
 # Run backportpackage in the RELEASE_DIR
 cd "$RELEASE_DIR" > /dev/null || (log_error "Unable to change directory to $RELEASE_DIR"; exit 1)
