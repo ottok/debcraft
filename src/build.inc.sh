@@ -123,10 +123,9 @@ fi
 
 # @TODO: Lintian supports build artifacts both in '..' and in '../build-area'
 
-if [ -n "$DEBUG" ]
-then
-  set +x
-fi
+# Regardless if running with `--debug` and if `set -x` was set or not, always
+# turn it off now and in a way that does not print extra `++` prefixed lines
+{ set +x; } 2>/dev/null
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then

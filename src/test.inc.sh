@@ -71,10 +71,9 @@ $CONTAINER_CMD run \
 # NOTE! Intentionally omit $CONTAINER_RUN_ARGS as this container should run as
 # root so user can install/upgrade tools.
 
-if [ -n "$DEBUG" ]
-then
-  set +x
-fi
+# Regardless if running with `--debug` and if `set -x` was set or not, always
+# turn it off now and in a way that does not print extra `++` prefixed lines
+{ set +x; } 2>/dev/null
 
 log_info "Test output saved to ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}/test.log"
 

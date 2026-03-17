@@ -82,6 +82,8 @@ wrap-and-sort -vast
 lrc
 # add overrides in debian/lrc.config
 
+# Regardless if running with `--debug` and if `set -x` was set or not, always
+# turn it off now and in a way that does not print extra `++` prefixed lines
 { set +x; } 2>/dev/null
 
 # Run Shellcheck only if files of the type were found
