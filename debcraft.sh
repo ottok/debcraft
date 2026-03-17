@@ -201,6 +201,10 @@ do
       shift
       break
       ;;
+    -*=*)
+      log_error "Equals sign syntax in options unsupported: $1"
+      exit 1
+      ;;
     -*)
       log_error "Unknown option: $1"
       ## or call function display_help
