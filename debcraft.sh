@@ -188,13 +188,17 @@ do
       export DEBCRAFT_EXTRA_REPOSITORY="$2"
       shift 2
       ;;
+    --release-to)
+      export DEBCRAFT_RELEASE_TO="$2"
+      shift 2
+      ;;
+    --yes)
+      export DEBCRAFT_YES="true"
+      shift
+      ;;
     --config)
       log_debug "Using CONFIG=$2"
       export CONFIG="$2"
-      shift 2
-      ;;
-    --release-to)
-      export DEBCRAFT_RELEASE_TO="$2"
       shift 2
       ;;
     --debug)
