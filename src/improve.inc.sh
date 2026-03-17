@@ -23,10 +23,9 @@ $CONTAINER_CMD run \
     /debcraft-improve.sh \
     || FAILURE="true"
 
-if [ -n "$DEBUG" ]
-then
-  set +x
-fi
+# Regardless if running with `--debug` and if `set -x` was set or not, always
+# turn it off now and in a way that does not print extra `++` prefixed lines
+{ set +x; } 2>/dev/null
 
 # If the container returned an error code, stop here after cleanup completed
 if [ -n "$FAILURE" ]
