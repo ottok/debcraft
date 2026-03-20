@@ -2,6 +2,23 @@
 
 log_info "Improving source package at $PWD"
 
+if ! git rev-parse --git-dir >/dev/null 2>&1
+then
+  log_error "Package sources are not tracked in git. Aborting attempt to" \
+            "improve the package as without version control the effort will" \
+            "be in vain."
+  exit 1
+fi
+
+if ! git diff --quiet HEAD
+then
+  log_error "There are uncommitted changes:" \
+            "\n$(git status --porcelain --ignored --untracked-files=all | head)"\
+            "\n\nPlease commit or reset files so that git can easily be used" \
+            "to commit new changes."
+  exit 1
+fi
+
 if [ -n "$DEBUG" ]
 then
   set -x
