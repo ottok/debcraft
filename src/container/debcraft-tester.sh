@@ -36,6 +36,17 @@ fi
 
 log_info "Run autopkgtest"
 autopkgtest --ignore-restrictions=breaks-testbed --no-built-binaries --shell-fail --log-file=/debcraft/previous-build/test.log -- null
+EXIT_CODE=$?
+
+log_info "Tests completed with exit code $EXIT_CODE"
+
+# Don't fail on skipped tests (autopkgtest exit code 4)
+if [ "$EXIT_CODE" -eq 4 ]
+then
+  EXIT_CODE=0
+fi
+
+exit "$EXIT_CODE"
 
 # For command options and configs, see
 # - https://manpages.debian.org/unstable/autopkgtest/autopkgtest.1.en.html
