@@ -166,3 +166,4 @@ RUN ccache --show-stats --verbose || true; sccache --show-stats || true
 # put any scripts into the /debcraft folder, as it is dedicated for build
 # artifacts that will be stored.
 COPY *.sh /
+COPY improve.d/ /improve.d/
