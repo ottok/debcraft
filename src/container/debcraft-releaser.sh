@@ -40,8 +40,26 @@ source "/pristine-tar.inc.sh"
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
   DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
-  # Empty means full build, both source and binaries
-  GBP_ARGS=""
+  # Check if orig tarball already exists (from pristine-tar or copied by release.inc.sh)
+  # If it exists, prevent gbp from creating a duplicate. If not, let gbp create it.
+  PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
+  ORIG_TARBALL_EXISTS=false
+  for ext in gz xz bz2 lzma zst
+  do
+    if [ -f "../${PACKAGE_NAME}_${UPSTREAM_VERSION}.orig.tar.${ext}" ]
+    then
+      ORIG_TARBALL_EXISTS=true
+      break
+    fi
+  done
+  if [ "$ORIG_TARBALL_EXISTS" = true ]
+  then
+    log_info "Using existing orig tarball, preventing gbp from creating a new one"
+    GBP_ARGS="--git-no-create-orig"
+  else
+    log_info "No orig tarball found, allowing gbp to create one from upstream tag"
+    GBP_ARGS=""
+  fi
 else
   DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
   # Use -S so all tools (dpkg-build, dpkg-source) see it as using --build=source

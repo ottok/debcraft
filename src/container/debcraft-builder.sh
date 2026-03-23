@@ -37,7 +37,26 @@ then
 
   # Empty means full build, both source and binaries
   DPKG_BUILDPACKAGE_ARGS=""
-  GBP_ARGS=""
+  # Check if orig tarball already exists (from pristine-tar or copied by build.inc.sh)
+  # If it exists, prevent gbp from creating a duplicate. If not, let gbp create it.
+  PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
+  ORIG_TARBALL_EXISTS=false
+  for ext in gz xz bz2 lzma zst
+  do
+    if [ -f "../${PACKAGE_NAME}_${UPSTREAM_VERSION}.orig.tar.${ext}" ]
+    then
+      ORIG_TARBALL_EXISTS=true
+      break
+    fi
+  done
+  if [ "$ORIG_TARBALL_EXISTS" = true ]
+  then
+    log_info "Using existing orig tarball, preventing gbp from creating a new one"
+    GBP_ARGS="--git-no-create-orig"
+  else
+    log_info "No orig tarball found, allowing gbp to create one from upstream tag"
+    GBP_ARGS=""
+  fi
 else
   # Skip generating source package to make (binary) build faster by default
   DPKG_BUILDPACKAGE_ARGS="--build=any,all"

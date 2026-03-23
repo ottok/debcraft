@@ -33,6 +33,8 @@ then
   if [ -n "$SIGNATURE_FILE" ]
   then
     TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
+    # pristine-tar checkout automatically appends .delta, so strip it if present
+    TARBALL_FILE="${TARBALL_FILE%.delta}"
     # The option --signature-file exists only starting from version 1.45 in Debian Buster
     if dpkg --compare-versions "$(dpkg-query -W -f='${Version}' pristine-tar)" gt "1.45"
     then
@@ -43,6 +45,16 @@ then
       pristine-tar checkout "../$TARBALL_FILE"
     fi
   else
-    log_info "No signature file found on pristine-tar branch"
+    # No signature file, but check if tarball exists without signature
+    TARBALL_FILE="$(git ls-tree --name-only pristine-tar | grep "_${UPSTREAM_VERSION}\.orig\.tar\." | head -n 1)" || true
+    if [ -n "$TARBALL_FILE" ]
+    then
+      # pristine-tar checkout automatically appends .delta, so strip it if present
+      TARBALL_FILE="${TARBALL_FILE%.delta}"
+      log_info "Create original source package using pristine-tar"
+      pristine-tar checkout "../$TARBALL_FILE"
+    else
+      log_info "No orig tarball found on pristine-tar branch"
+    fi
   fi
 fi
