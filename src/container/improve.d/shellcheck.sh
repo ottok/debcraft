@@ -13,13 +13,15 @@ source "/output.inc.sh"
 mapfile -t SH_SCRIPTS < <(grep -rlnw debian/ -e '^#!.*/sh' | sort -u || true)
 mapfile -t BASH_SCRIPTS < <(grep -rlnw debian/ -e '^#!.*/bash' | sort -u || true)
 
+SHELLCHECK_DIFF=$(mktemp)
+
 # Run Shellcheck only if files of the type were found
 if [ "${#SH_SCRIPTS[@]}" -gt 0 ]
 then
   # Don't stop on findings
   echo "++ shellcheck -x --enable=all --shell=sh" "${SH_SCRIPTS[@]}"
   shellcheck -x --enable=all --shell=sh "${SH_SCRIPTS[@]}" || true
-  shellcheck -x --enable=all --format=diff --shell=sh "${SH_SCRIPTS[@]}" >> shellcheck-fixes.diff || true
+  shellcheck -x --enable=all --format=diff --shell=sh "${SH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
 fi
 
 if [ "${#BASH_SCRIPTS[@]}" -gt 0 ]
@@ -27,24 +29,22 @@ then
   # Don't stop on findings
   echo "++ shellcheck -x --enable=all --shell=bash" "${BASH_SCRIPTS[@]}"
   shellcheck -x --enable=all --shell=bash "${BASH_SCRIPTS[@]}" || true
-  shellcheck -x --enable=all --format=diff --shell=bash "${BASH_SCRIPTS[@]}" >> shellcheck-fixes.diff || true
+  shellcheck -x --enable=all --format=diff --shell=bash "${BASH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
 fi
 
 # Apply patch if not empty, otherwise just remove it
-if [[ -s shellcheck-fixes.diff ]]
+if [[ -s "$SHELLCHECK_DIFF" ]]
 then
   # Extra newline for better legibility
   echo
-  patch --quiet --strip=1 < shellcheck-fixes.diff
-else
-  rm -f shellcheck-fixes.diff
+  patch --quiet --strip=1 < "$SHELLCHECK_DIFF"
 fi
+rm -f "$SHELLCHECK_DIFF"
 
 # Commit formatting changes if any files were modified by the tools above
 if ! git diff --quiet
 then
-  git add -A
-  git commit -F - <<'EOF'
+  git commit -a -F - <<'EOF'
 Fix issues found by Shellcheck
 
 Apply all fixes suggested by Shellcheck that can be applied automatically in
