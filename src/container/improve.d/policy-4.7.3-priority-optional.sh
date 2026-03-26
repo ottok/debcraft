@@ -18,6 +18,8 @@ then
   # Commit if file changed
   if ! git diff --quiet debian/control
   then
+    # Only stage the specific file we modified to avoid committing any
+    # unrelated changes that might exist in the working directory
     git add debian/control
     git commit -F - <<'EOF'
 Drop redundant `Priority: optional`
