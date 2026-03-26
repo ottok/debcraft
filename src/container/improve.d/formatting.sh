@@ -28,8 +28,7 @@ log_command wrap-and-sort -ast
 # Commit formatting changes if any files were modified by the tools above
 if ! git diff --quiet
 then
-  git add -A
-  git commit -F - <<'EOF'
+  git commit -a -F - <<'EOF'
 Apply consistent formatting to packaging files
 
 Run `debputy reformat --style black` and `wrap-and-sort -vast` to enforce

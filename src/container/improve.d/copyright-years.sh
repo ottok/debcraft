@@ -166,7 +166,9 @@ else
     # Clean up the temporary mapping file
     rm -f "$map_file"
 
-    # Commit the updated copyright file
+    # Commit the updated copyright file.
+    # Only stage the specific file we modified to avoid committing any
+    # unrelated changes that might exist in the working directory.
     git add debian/copyright
     git commit -F - <<'EOF'
 Update copyright years for recent contributors

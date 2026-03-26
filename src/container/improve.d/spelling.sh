@@ -39,8 +39,7 @@ fi
 
 if ! git diff --quiet
 then
-  git add -A
-  git commit -F - <<'EOF'
+  git commit -a -F - <<'EOF'
 Fix spelling
 
 Fix minor typos and spelling mistakes that can be automatically corrected.
