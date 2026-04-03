@@ -10,7 +10,7 @@ set -o pipefail
 source "/output.inc.sh"
 
 PACKAGE_POLICY_VERSION="$(grep --only-matching --perl-regex "Standards-Version: \K([0-9.]+)" debian/control)"
-LATEST_POLICY_VERSION="4.7.3"
+LATEST_POLICY_VERSION="4.7.4"
 
 # Bump Standards-Version to 4.7.3 (if not already)
 if dpkg --compare-versions "$PACKAGE_POLICY_VERSION" lt "$LATEST_POLICY_VERSION"
