@@ -205,6 +205,21 @@ then
   then
     log_info "Updating debian/watch to uscan v5 format"
     uscan --update-watchfile || true  # Ignore exit code as warnings are not failures
+
+    # Convert GitHub template format to preferred format with Dist URL
+    if [ -n "$(git diff --name-only debian/watch)" ]
+    then
+      if grep -q "^Template: Github$" debian/watch
+      then
+        log_info "Convert debian/watch to preferred GitHub template syntax and fix spelling"
+        # Fix Template case and replace Owner/Project with Dist URL
+        sed -i \
+          -e 's/^Template: Github$/Template: GitHub/' \
+          -e '/^Owner: /{N;s/^Owner: \(.*\)\nProject: \(.*\)$/Dist: https:\/\/github.com\/\1\/\2/}' \
+          debian/watch
+      fi
+    fi
+
     if [ -n "$(git diff --name-only debian/watch)" ]
     then
       git add debian/watch
