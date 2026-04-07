@@ -60,6 +60,7 @@ optional arguments:
   --clean              Ensure sources are clean before and after build
                        (only needed for packages with incomplete 'debian/clean'
                        or 'debian/.gitignore' definitions)
+  --extra-repository   Use directory as local package repository for builds
   --debug              Emit debug information
   -h, --help           Display this help and exit
   --version            Display version and exit
@@ -183,6 +184,10 @@ do
     --copy)
       export COPY="true"
       shift
+      ;;
+    --extra-repository)
+      export DEBCRAFT_EXTRA_REPOSITORY="$2"
+      shift 2
       ;;
     --debug)
       # Debug mode detection is already done earlier, ignore it at this stage
