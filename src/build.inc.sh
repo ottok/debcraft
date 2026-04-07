@@ -186,6 +186,15 @@ fi
 echo
 log_info "Artifacts at $(clickable_link "$BUILD_DIR")"
 
+if [ "$PUSH_TO_EXTRA_REPOSITORY" = true ] && [ -n "$DEBCRAFT_EXTRA_REPOSITORY" ] && [ -d "$DEBCRAFT_EXTRA_REPOSITORY" ]
+then
+  echo
+  log_info "Making built packages available in $DEBCRAFT_EXTRA_REPOSITORY"
+  (shopt -s nullglob ; for i in "$BUILD_DIR"/*.deb ; do
+    cp --verbose "$i" "$DEBCRAFT_EXTRA_REPOSITORY"/
+  done)
+fi
+
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   echo
