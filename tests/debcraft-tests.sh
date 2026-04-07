@@ -142,6 +142,12 @@ rm --recursive --force --verbose .git
 # Once git is deleted, there are no sources available for the build
 debcraft_test "build --skip-sources" "Artifacts at /"
 
+EXTRA="$TEMPDIR/extra-repository"
+debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
+mkdir "$EXTRA"
+debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
+debcraft_test "build --extra-repository $EXTRA --push-to-repository" "Making built packages available in /"
+
 cd .. # exit 'entr' subdirectory
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
