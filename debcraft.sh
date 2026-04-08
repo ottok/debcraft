@@ -356,6 +356,14 @@ fi
 
 log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 
+# Initialize TITLE_UPDATE_PID (populated by title_* functions in output.inc.sh) to
+# prevent unbound variable errors
+TITLE_UPDATE_PID=""
+
+# Start title animation in background and ensure cleanup on exit
+title_running "$ACTION $PACKAGE"
+trap 'kill $TITLE_UPDATE_PID 2>/dev/null; title_clear' EXIT
+
 # Make sure sources are clean on actions that depend on it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
 then

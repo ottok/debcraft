@@ -43,6 +43,9 @@ echo "Upload using command:
   $CMD
 "
 
+# Show waiting indicator as PPA upload requires user confirmation
+title_waiting "$ACTION $PACKAGE (PPA upload)"
+
 while true
 do
   read -r -p "Proceed with upload to PPA using the command above [Y|n]?  " selection
@@ -62,6 +65,9 @@ do
       ;;
   esac
 done
+
+# Resume running animation after PPA upload prompt
+title_running "$ACTION $PACKAGE"
 
 # Return to original directory where sources reside, and don't output anything
 cd - > /dev/null || exit 1

@@ -178,8 +178,12 @@ then
   log_info "This project has open Merge Requests that should probably be reviewed first:"
   echo "$OPEN_MRS"
   echo
+  title_waiting "$ACTION $PACKAGE (merge requests pending)"
   read -r -p "Press Ctrl+C to abort and attend Merge Requests, or press enter to proceed"
 fi
+
+# Resume running animation after prompt
+title_running "$ACTION $PACKAGE"
 
 # @TODO: Debsnap is too verbose, write something custom and light-weight that
 # ensures git history includes the latest versions uploaded to Debian
@@ -245,6 +249,7 @@ then
     echo "  6. Return to THIS session when rebase is complete and press Enter to continue"
     echo
 
+    title_waiting "$ACTION $PACKAGE (rebase complete)"
     while true
     do
         read -r -p "Press [Enter] to continue after rebase, or type [a]bort to revert all changes: " choice
@@ -283,6 +288,9 @@ then
     done
 fi
 
+# Resume running animation after rebase prompt
+title_running "$ACTION $PACKAGE"
+
 # Verify we're on the patch-queue branch and export patches
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$CURRENT_BRANCH" == patch-queue/* ]]
@@ -299,6 +307,7 @@ echo
 log_info "Please review the result of the import using 'gitk --all &' or similar command/tool"
 echo
 
+title_waiting "$ACTION $PACKAGE (import complete)"
 while true
 do
   read -r -p "Was the new upstream version import successful and should the result be [k]ept, or reverted [K|r]?  " selection

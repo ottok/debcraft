@@ -188,3 +188,43 @@ function progress_bar() {
     ((i++))
   done
 }
+
+# Clear terminal window title (reset to default)
+function title_clear() {
+  printf "\e]0;\a" >&2
+}
+
+# Start a new title animation, killing any existing one
+# Note: TITLE_UPDATE_PID is initialized in debcraft.sh but maintained by these functions
+function title_animate() {
+  local DELAY="$1"
+  local SPINNER="$2"
+  local TITLE="$3"
+
+  # Stop any existing animation before starting a new one to prevent multiple
+  # background processes from writing to the terminal title simultaneously
+  log_debug "Kill previous title update PID: $TITLE_UPDATE_PID"
+  kill "$TITLE_UPDATE_PID" 2>/dev/null || true
+
+  (
+    local i=0
+    while true
+    do
+      printf "\e]0;%s Debcraft: %s\a" "${SPINNER:i++%${#SPINNER}:1}" "$TITLE" >&2
+      sleep "$DELAY"
+    done
+  ) &
+
+  # Capture the PID of the background subshell so we can kill it later when
+  # switching animation states or cleaning up on exit
+  TITLE_UPDATE_PID=$!
+  log_debug_var TITLE_UPDATE_PID
+}
+
+function title_running() {
+  title_animate 0.6 "☆★" "$1"
+}
+
+function title_waiting() {
+  title_animate 1.6 "¿?" "$1"
+}
