@@ -48,26 +48,26 @@ Note that Debcraft builds never runs as root, and thus packages with
 DEB_RULES_REQUIRES_ROOT are not supported.
 
 optional arguments:
-  --build-dirs-path    Path for writing build files and artifacts (default: ~/.cache/debcraft)
-  --distribution       Linux distribution to build in (default: debian:sid)
-  --container-command  Container command to use (default: podman)
-  --host-architecture  Host architecture to use when performing a cross build
-  --skip-sources       Build only binaries and skip creating a source
-                       tarball to make the build slightly faster
-                       ('debcraft build' only)
-  --with-binaries      Create a release with both source and binaries,
-                       for example with the intent to upload to NEW
-                       ('debcraft release' only)
-  --pull               Ensure container base is updated
-  --copy               Perform the build on a copy of the package directory
-  --clean              Ensure sources are clean before and after build
-                       (only needed for packages with incomplete 'debian/clean'
-                       or 'debian/.gitignore' definitions)
-  --extra-repository   Use directory as local package repository for builds
-  --push-to-repository After build, push generated packages to extra-repository
-  --debug              Emit debug information
-  -h, --help           Display this help and exit
-  --version            Display version and exit
+  --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)
+  --distribution          Linux distribution to build in (default: debian:sid)
+  --container-command     Container command to use (default: podman)
+  --host-architecture     Host architecture to use when performing a cross build
+  --skip-sources          Build only binaries and skip creating a source
+                          tarball to make the build slightly faster
+                          ('debcraft build' only)
+  --with-binaries         Create a release with both source and binaries,
+                          for example with the intent to upload to NEW
+                          ('debcraft release' only)
+  --pull                  Ensure container base is updated
+  --copy                  Perform the build on a copy of the package directory
+  --clean                 Ensure sources are clean before and after build
+                          (only needed for packages with incomplete 'debian/clean'
+                          or 'debian/.gitignore' definitions)
+  --extra-repository      Use directory as local package repository for builds
+  --publish-to-repository After build, push generated packages to extra-repository
+  --debug                 Emit debug information
+  -h, --help              Display this help and exit
+  --version               Display version and exit
 
 To learn more, or to contribute to Debcraft, see project page at
 $(clickable_link "salsa.debian.org/debian/debcraft")
@@ -193,8 +193,8 @@ do
       export DEBCRAFT_EXTRA_REPOSITORY="$2"
       shift 2
       ;;
-    --push-to-repository)
-      export PUSH_TO_EXTRA_REPOSITORY="true"
+    --publish-to-repository)
+      export PUBLISH_TO_EXTRA_REPOSITORY="true"
       shift
       ;;
     --debug)

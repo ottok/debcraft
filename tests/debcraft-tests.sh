@@ -146,7 +146,7 @@ EXTRA="$TEMPDIR/extra-repository"
 debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
 mkdir "$EXTRA"
 debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
-debcraft_test "build --extra-repository $EXTRA --push-to-repository" "Making built packages available in /"
+debcraft_test "build --extra-repository $EXTRA --publish-to-repository" "Making built packages available in /"
 
 cd .. # exit 'entr' subdirectory
 
