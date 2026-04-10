@@ -6,6 +6,9 @@ set -e
 # @TODO: pipefail not in POSIX
 set -o pipefail
 
+# Expand non-matching globs to nothing (not even an empty string)
+shopt -s nullglob
+
 # show commands (debug)
 #set -x
 

@@ -190,9 +190,9 @@ if [ "$PUSH_TO_EXTRA_REPOSITORY" = true ] && [ -n "$DEBCRAFT_EXTRA_REPOSITORY" ]
 then
   echo
   log_info "Making built packages available in $DEBCRAFT_EXTRA_REPOSITORY"
-  (shopt -s nullglob ; for i in "$BUILD_DIR"/*.deb ; do
+  for i in "$BUILD_DIR"/*.deb ; do
     cp --verbose "$i" "$DEBCRAFT_EXTRA_REPOSITORY"/
-  done)
+  done
 fi
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]

@@ -38,13 +38,10 @@ if [ -n "${DEBCRAFT_EXTRA_REPOSITORY}" ]
 then
   log_info "Include extra repository in build container: ${DEBCRAFT_EXTRA_REPOSITORY[0]}"
   mkdir --parents "$CONTAINER_DIR/extra_repository_dir"
-  (
-    shopt -s nullglob
-    for i in "${DEBCRAFT_EXTRA_REPOSITORY[0]}"/*.deb
-    do
-      cp --archive --verbose "$i" "$CONTAINER_DIR/extra_repository_dir/"
-    done
-  )
+  for i in "${DEBCRAFT_EXTRA_REPOSITORY[0]}"/*.deb
+  do
+    cp --archive --verbose "$i" "$CONTAINER_DIR/extra_repository_dir/"
+  done
 else
   # If DEBCRAFT_EXTRA_REPOSITORY is no longer set, ensure no extra local
   # repository exists in container either
