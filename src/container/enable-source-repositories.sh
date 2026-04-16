@@ -6,6 +6,9 @@ set -e
 # @TODO: pipefail not in POSIX
 set -o pipefail
 
+# Expand non-matching globs to nothing (not even an empty string)
+shopt -s nullglob
+
 # show commands (debug)
 #set -x
 
@@ -42,16 +45,19 @@ On newer Debian/Ubuntu containers the sources typically look like this:
 Adding a 'deb-src' on the 'Types' line is enough to activate source repos.
 EOF
 
-if [ -f /etc/apt/sources.list.d/debian.sources ] || [ -f /etc/apt/sources.list.d/ubuntu.sources ]
-then
-  log_info "Enable deb-src repositories in container (new format)"
-  sed 's/Types: deb/Types: deb deb-src/g' -i /etc/apt/sources.list.d/*.sources
-elif  [ -f /etc/apt/sources.list ]
-then
-  log_info "Enable deb-src repositories in container (legacy format)"
-  grep '^deb ' /etc/apt/sources.list | \
-    sed 's/^deb /deb-src /g' > /etc/apt/sources.list.d/sources-list-with-deb-src.list
-else
-  log_error "Unable to detect deb-src format - source repositories not enabled!"
-  exit 1
-fi
+# Check for the new DEB822 format (.sources) first
+for file in /etc/apt/sources.list.d/*.sources
+do
+  log_info "Enabling deb-src repositories in $file (new format)"
+  sed --in-place 's/Types: deb$/Types: deb deb-src/g' "$file"
+done
+
+# Check for the legacy format (.list) only if no .sources were processed
+for file in /etc/apt/sources.list.d/*.list /etc/apt/sources.list; do
+  if [[ -f "$file" ]]
+  then
+    log_info "Enabling deb-src repositories for $file (legacy format)"
+    grep '^deb ' "$file" | \
+      sed 's/^deb /deb-src /g' >> /etc/apt/sources.list.d/sources-list-with-deb-src.list
+  fi
+done
