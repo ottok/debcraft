@@ -157,3 +157,14 @@ then
     log_info "  browse $(clickable_link "$RELEASE_DIR/diffoscope.last-tagged.html")"
   fi
 fi
+
+if [ "$DEBCRAFT_RELEASE_TO" ]
+then
+  echo
+  log_info "Making built packages available in $DEBCRAFT_RELEASE_TO"
+  mkdir --parents "$DEBCRAFT_RELEASE_TO"
+  for i in "$RELEASE_DIR"/*
+  do
+    cp --verbose "$i" "$DEBCRAFT_RELEASE_TO"/
+  done
+fi

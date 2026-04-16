@@ -53,10 +53,10 @@ _debcraft_complete() {
       ;;
     build*)
        targets="$(find_targets "$cur")"
-       options="$generic_options $targets --publish-to-repository --skip-sources https://"
+       options="$generic_options $targets --release-to --skip-sources https://"
       ;;
     release*)
-      options="$generic_options --with-binaries"
+      options="$generic_options --with-binaries --release-to"
       ;;
     update*)
       targets="$(find_targets "$cur")"

@@ -190,14 +190,14 @@ fi
 echo
 log_info "Artifacts at $(clickable_link "$BUILD_DIR")"
 
-if [ "$PUBLISH_TO_EXTRA_REPOSITORY" = true ] && [ -n "$DEBCRAFT_EXTRA_REPOSITORY" ]
+if [ "$DEBCRAFT_RELEASE_TO" ]
 then
   echo
-  log_info "Making built packages available in $DEBCRAFT_EXTRA_REPOSITORY"
-  mkdir --parents "$DEBCRAFT_EXTRA_REPOSITORY"
+  log_info "Making built packages available in $DEBCRAFT_RELEASE_TO"
+  mkdir --parents "$DEBCRAFT_RELEASE_TO"
   for i in "$BUILD_DIR"/*.deb
   do
-    cp --verbose "$i" "$DEBCRAFT_EXTRA_REPOSITORY"/
+    cp --verbose "$i" "$DEBCRAFT_RELEASE_TO"/
   done
 fi
 

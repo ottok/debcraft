@@ -64,8 +64,8 @@ optional arguments:
                           (only needed for packages with incomplete 'debian/clean'
                           or 'debian/.gitignore' definitions)
   --extra-repository      Use directory as local package repository for builds
-  --publish-to-repository After build, push generated packages to extra-repository
   --config                Path to debcraft configuration file
+  --release-to            After build or release, copy artefacts to specified dir
   --debug                 Emit debug information
   -h, --help              Display this help and exit
   --version               Display version and exit
@@ -188,13 +188,13 @@ do
       export DEBCRAFT_EXTRA_REPOSITORY="$2"
       shift 2
       ;;
-    --publish-to-repository)
-      export PUBLISH_TO_EXTRA_REPOSITORY="true"
-      shift
-      ;;
     --config)
       log_debug "Using CONFIG=$2"
       export CONFIG="$2"
+      shift 2
+      ;;
+    --release-to)
+      export DEBCRAFT_RELEASE_TO="$2"
       shift 2
       ;;
     --debug)

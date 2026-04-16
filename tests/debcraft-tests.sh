@@ -97,6 +97,14 @@ then
   export TERM=dumb
 fi
 
+# Set expectations for CI environments
+if [ -n "${CI:-}" ]
+then
+  EXPECTED="Artifacts at /"
+else
+  EXPECTED="  browse /"
+fi
+
 gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/debian/entr.git
 debcraft_test "build entr" "Artifacts at /"
 
@@ -104,12 +112,7 @@ cd entr
 
 # Build FIRST to create artifacts needed for release
 git clean -fdx
-if [ -n "${CI:-}" ]
-then
-  debcraft_test "build" "Artifacts at /"
-else
-  debcraft_test "build" "  browse /"
-fi
+debcraft_test "build" "$EXPECTED"
 
 # NOW release can work with existing build artifacts
 # Don't clean here - release needs the build artifacts and changelog
@@ -123,9 +126,9 @@ fi
 git clean -fdx
 if [ -n "${CI:-}" ]
 then
-  debcraft_test "build ." "Artifacts at /"
+  debcraft_test "build ." "$EXPECTED"
 else
-  debcraft_test "build ." "  browse /"
+  debcraft_test "build ." "$EXPECTED"
 fi
 
 # Skip test in CI - Docker-in-Docker volume mount restrictions prevent
@@ -146,14 +149,53 @@ mkdir -v "$EXTRA_REPOSITORY_DIR"
 # On GitLab CI no previous build artifacts persists due to how Docker-in-Docker
 # is used to run this debcraft-tests.sh, so tests never output "browse /...",
 # while local tests will have the fully realistic output
+debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR" "$EXPECTED"
 if [ -n "${CI:-}" ]
 then
-  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR" "Artifacts at /"
-  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --publish-to-repository" "Making built packages available"
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --release-to $EXTRA_REPOSITORY_DIR" "Making built packages available"
 else
-  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR" "  browse /"
-  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --publish-to-repository" "  browse /"
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --release-to $EXTRA_REPOSITORY_DIR" "  browse /"
 fi
+
+git clean -fdx
+git reset --hard
+tmp_release_dir=$(mktemp --directory)
+if [ -n "${CI:-}" ]
+then
+  debcraft_test "build --release-to $tmp_release_dir" "Making built packages available in $tmp_release_dir"
+else
+  debcraft_test "build --release-to $tmp_release_dir" "  browse /"
+fi
+if [ -z "${CI:-}" ] && ! ls "$tmp_release_dir"/entr_*.deb &> /dev/null
+then
+  echo "Packages not released to $tmp_release_dir"
+  ls -lha "$tmp_release_dir"
+  exit 1
+fi
+rm -rf "$tmp_release_dir"
+
+# On GitLab CI no previous build artifacts persists due to how Docker-in-Docker
+# is used to run this debcraft-tests.sh, so this test cannot work there
+# Local testing still works
+if [ -z "${CI:-}" ]
+then
+  tmp_release_dir=$(mktemp --directory)
+  debcraft_test "release --with-binaries --release-to $tmp_release_dir"  "  gbp tag --verbose"
+  if [ -z "${CI:-}" ] && ! ls "$tmp_release_dir"/entr_*.deb &> /dev/null
+  then
+    echo "Packages not released to $tmp_release_dir"
+    ls -lha "$tmp_release_dir"
+    exit 1
+  fi
+  rm -rf "$tmp_release_dir"
+fi
+
+git reset --hard
+git clean -fdx
+EXTRA="$TEMPDIR/extra-repository"
+debcraft_test "build --extra-repository $EXTRA" "$EXPECTED"
+mkdir --parents "$EXTRA"
+debcraft_test "build --extra-repository $EXTRA" "$EXPECTED"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
 echo "Deleting /.git so next build will build without access to git repository branches or tags"
