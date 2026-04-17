@@ -65,6 +65,7 @@ optional arguments:
                           or 'debian/.gitignore' definitions)
   --extra-repository      Use directory as local package repository for builds
   --publish-to-repository After build, push generated packages to extra-repository
+  --config                Path to debcraft configuration file
   --debug                 Emit debug information
   -h, --help              Display this help and exit
   --version               Display version and exit
@@ -124,12 +125,6 @@ esac
 # Output formatting library is reused inside container as well
 # shellcheck source=src/container/output.inc.sh
 source "$DEBCRAFT_LIB_DIR/container/output.inc.sh"
-
-# shellcheck source=src/distributions.inc.sh
-source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
-
-# shellcheck source=src/generic.inc.sh
-source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 
 if [ -z "$1" ]
 then
@@ -196,6 +191,11 @@ do
     --publish-to-repository)
       export PUBLISH_TO_EXTRA_REPOSITORY="true"
       shift
+      ;;
+    --config)
+      log_debug "Using CONFIG=$2"
+      export CONFIG="$2"
+      shift 2
       ;;
     --debug)
       # Debug mode detection is already done earlier, ignore it at this stage
@@ -265,6 +265,24 @@ then
 fi
 
 log_debug_var ACTION
+
+# This variable allows debcraft to map distribution names to specific container
+# images using a configuration file sourced below.
+declare -A DEBCRAFT_DISTRIBUTION_MAPPING
+
+# Source debcraft's configuration files if they exist
+# shellcheck source=/dev/null
+[[ -f /etc/debcraft ]] && source /etc/debcraft
+# shellcheck source=/dev/null
+[[ -f "$HOME/.config/debcraft" ]] && source "$HOME/.config/debcraft"
+# shellcheck source=/dev/null
+[[ -n "$CONFIG" && -f "$CONFIG" ]] && source "$CONFIG"
+
+# shellcheck source=src/distributions.inc.sh
+source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
+
+# shellcheck source=src/generic.inc.sh
+source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 
 # Configure general program behavior after user options and arguments have been parsed
 # shellcheck source=src/config-general.inc.sh

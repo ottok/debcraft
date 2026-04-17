@@ -423,6 +423,31 @@ See https://github.com/centic9/debian-packages/blob/main/.github/workflows/debia
 for a resulting GitHub Action which can build any package as long as sources
 are available in a repository on GitHub.
 
+### Custom Distribution Mapping
+
+If you are using a custom or private Debian derivative (e.g., Scibian, Kali
+Linux) or need to use internal base images, you can map distribution names to
+specific container images.
+
+`debcraft` reads configuration files in the following order:
+1. `/etc/debcraft`
+2. `~/.config/debcraft`
+3. A custom file provided via `--config <path>`
+
+Example configuration file:
+```bash
+# /etc/debcraft
+# The pattern should be as follow :
+DEBCRAFT_DISTRIBUTION_MAPPING["distribution_name"]="container_image_name"
+# e.g.
+DEBCRAFT_DISTRIBUTION_MAPPING["scibian*"]="scibian"
+DEBCRAFT_DISTRIBUTION_MAPPING["kali*"]="kali-linux/kali-rolling"
+DEBCRAFT_DISTRIBUTION_MAPPING["custom-distribution*"]="my-registry.com/build-image"
+```
+
+**Note:** Pattern matching (globs) like `*` are supported for distribution names
+parsed from the changelog.
+
 ## Copyright and licence
 
 Copyright 2023-2026 Otto Kekäläinen & collaborators

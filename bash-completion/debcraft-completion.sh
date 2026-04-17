@@ -6,7 +6,7 @@ _debcraft_complete() {
   COMPREPLY=()
 
   # Options that can be used with most commands in Debcraft
-  generic_options="--build-dirs-path --distribution --container-command --host-architecture --pull --copy --clean --extra-repository"
+  generic_options="--build-dirs-path --distribution --container-command --host-architecture --pull --copy --clean --extra-repository --config"
 
   # Examples of distributions
   distributions="debian:sid debian:bookworm ubuntu:devel ubuntu:24.04"

@@ -11,6 +11,19 @@ function get_baseimage_from_distribution_name() {
   # Remove -proposed-updates suffix as it is not a container tag
   NAME="${NAME%%-proposed-updates}"
 
+  # This allow the user to map distribution names to specific base container
+  # images using debcraft's config file sourced in debcraft.sh
+  for pattern in "${!DEBCRAFT_DISTRIBUTION_MAPPING[@]}"
+  do
+      # Disable SC2053 because we intentionally want glob matching for patterns
+      # shellcheck disable=SC2053
+      if [[ $NAME == $pattern ]]
+      then
+          echo "${DEBCRAFT_DISTRIBUTION_MAPPING[$pattern]}:$NAME"
+          return 0
+      fi
+  done
+
   # @TODO: Compary to how sbuild does this based
   # Debian: -security, -updates, -backports, -backports-sloppy, -proposed-updates, -lts
   # At https://hub.docker.com/_/debian/tags?name=bookworm- bookworm-backports exist, but not the others
