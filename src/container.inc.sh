@@ -66,6 +66,7 @@ fi
 # shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
 $CONTAINER_CMD build  \
   --tag "$CONTAINER" \
+  --build-arg SOURCE_DATE_EPOCH=0 \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
   --build-arg HOST_ARCH=$HOST_ARCH \
   $CONTAINER_BUILD_ARGS \
