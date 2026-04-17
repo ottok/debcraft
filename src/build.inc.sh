@@ -47,16 +47,7 @@ then
   # format. This needs to happen before the container is run.
   #
   # Attempt to copy the tarball with any compression supported by dpkg-source
-  for ext in xz gz bz2 lzma zst
-  do
-    TARBALL_PATH="../${PACKAGE}_${PACKAGE_VERSION}.orig.tar.${ext}"
-    if [ -f "$TARBALL_PATH" ]
-    then
-      cp_update_none "$TARBALL_PATH" "$BUILD_DIR/"
-      # Exit loop after finding and copying the first tarball
-      break
-    fi
-  done
+  copy_upstream_tarball "$PACKAGE" "$PACKAGE_VERSION" "$BUILD_DIR" || true
 fi
 
 # Ensure directories exist before they are mounted
