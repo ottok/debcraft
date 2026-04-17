@@ -83,7 +83,7 @@ TEMPDIR="$(mktemp --directory)"
 
 cd "$TEMPDIR" || exit 1
 
-echo "Using directory $TEMPDIR for logs and artifacts in "
+echo "Using directory $TEMPDIR for logs and artifacts in"
 
 debcraft_test "help" "and www.debian.org/doc/debian-policy/" IGNORE_NONZERO_EXIT_CODE
 
@@ -135,18 +135,31 @@ then
   debcraft_test "test" "Test passed!"
 fi
 
-echo "$SEPARATOR" # Extra separator for test bed modifications
+# Clean up test artifacts
 git reset --hard
 git clean -fdx
-rm --recursive --force --verbose .git
-# Once git is deleted, there are no sources available for the build
-debcraft_test "build --skip-sources" "Artifacts at /"
 
-EXTRA="$TEMPDIR/extra-repository"
-debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
-mkdir "$EXTRA"
-debcraft_test "build --extra-repository $EXTRA" "Artifacts at /"
-debcraft_test "build --extra-repository $EXTRA --publish-to-repository" "Making built packages available in /"
+EXTRA_REPOSITORY_DIR="$TEMPDIR/extra-repository"
+echo "Using directory $EXTRA_REPOSITORY_DIR for test repository"
+mkdir -v "$EXTRA_REPOSITORY_DIR"
+
+# On GitLab CI no previous build artifacts persists due to how Docker-in-Docker
+# is used to run this debcraft-tests.sh, so tests never output "browse /...",
+# while local tests will have the fully realistic output
+if [ -n "${CI:-}" ]
+then
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR" "Artifacts at /"
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --publish-to-repository" "Making built packages available"
+else
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR" "  browse /"
+  debcraft_test "build --extra-repository $EXTRA_REPOSITORY_DIR --publish-to-repository" "  browse /"
+fi
+
+echo "$SEPARATOR" # Extra separator for test bed modifications
+echo "Deleting /.git so next build will build without access to git repository branches or tags"
+rm --recursive --force --verbose .git
+
+debcraft_test "build --skip-sources" "Artifacts at /"
 
 cd .. # exit 'entr' subdirectory
 
