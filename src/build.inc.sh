@@ -195,7 +195,8 @@ then
   echo
   log_info "Making built packages available in $DEBCRAFT_EXTRA_REPOSITORY"
   mkdir --parents "$DEBCRAFT_EXTRA_REPOSITORY"
-  for i in "$BUILD_DIR"/*.deb ; do
+  for i in "$BUILD_DIR"/*.deb
+  do
     cp --verbose "$i" "$DEBCRAFT_EXTRA_REPOSITORY"/
   done
 fi

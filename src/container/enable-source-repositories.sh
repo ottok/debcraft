@@ -53,7 +53,8 @@ do
 done
 
 # Check for the legacy format (.list) only if no .sources were processed
-for file in /etc/apt/sources.list.d/*.list /etc/apt/sources.list; do
+for file in /etc/apt/sources.list.d/*.list /etc/apt/sources.list
+do
   if [[ -f "$file" ]]
   then
     log_info "Enabling deb-src repositories for $file (legacy format)"
