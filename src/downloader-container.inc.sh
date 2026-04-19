@@ -44,6 +44,8 @@ fi
 # shellcheck disable=SC2086
 $CONTAINER_CMD build  \
   --tag "$DOWNLOAD_CONTAINER" \
+  --build-arg SOURCE_DATE_EPOCH=0 \
+  --build-arg HOST_ARCH=$HOST_ARCH \
   --file "$CONTAINER_DIR/Containerfile" \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
   $CONTAINER_BUILD_ARGS \
