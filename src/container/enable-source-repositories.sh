@@ -55,7 +55,8 @@ done
 # Check for the legacy format (.list) only if no .sources were processed
 for file in /etc/apt/sources.list.d/*.list /etc/apt/sources.list
 do
-  if [[ -f "$file" ]]
+  # Check file exists AND contains deb lines to avoid grep exit code 1 with pipefail
+  if [[ -f "$file" ]] && grep -q '^deb ' "$file" 2>/dev/null
   then
     log_info "Enabling deb-src repositories for $file (legacy format)"
     grep '^deb ' "$file" | \
