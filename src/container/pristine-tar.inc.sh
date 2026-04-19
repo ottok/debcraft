@@ -13,6 +13,14 @@ UPSTREAM_VERSION="${DEBIAN_VERSION#*:}"
 log_debug_var UPSTREAM_VERSION
 UPSTREAM_VERSION="${UPSTREAM_VERSION%%-*}"
 log_debug_var UPSTREAM_VERSION
+# Ensure local pristine-tar branch exists if remote has it
+# (handles fresh clones where only origin/pristine-tar exists)
+if [ -z "$(git branch --list pristine-tar)" ] && \
+   git show-ref --verify --quiet refs/remotes/origin/pristine-tar
+then
+  log_info "Creating local pristine-tar branch from origin/pristine-tar"
+  git branch pristine-tar origin/pristine-tar
+fi
 
 # If pristine-tar branch exists, attempt to export so when package builds it
 # would already have access to upstream source tarball and signature so they are
