@@ -126,6 +126,10 @@ esac
 # shellcheck source=src/container/output.inc.sh
 source "$DEBCRAFT_LIB_DIR/container/output.inc.sh"
 
+# Initialize TITLE_UPDATE_PID early to prevent unbound variable errors
+# and allow setting title before package name is known (e.g. during download)
+TITLE_UPDATE_PID=""
+
 if [ -z "$1" ]
 then
   log_error "Missing argument <build|improve|test|release|shell|logs|prune>"
@@ -334,6 +338,12 @@ then
   # If the argument exists, but didn't point to a valid path, try to use the
   # argument to download the package
 
+  # Set title early to show activity during potentially long download
+  title_running "download $TARGET"
+  # Ensure title is cleaned up if download fails before main trap is set
+  trap 'kill $TITLE_UPDATE_PID 2>/dev/null || true; title_clear' EXIT
+  trap 'kill $TITLE_UPDATE_PID 2>/dev/null || true; title_clear; exit 130' INT TERM
+
   # shellcheck source=src/downloader-container.inc.sh
   source "$DEBCRAFT_LIB_DIR/downloader-container.inc.sh"
 
@@ -385,13 +395,13 @@ fi
 
 log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 
-# Initialize TITLE_UPDATE_PID (populated by title_* functions in output.inc.sh) to
-# prevent unbound variable errors
-TITLE_UPDATE_PID=""
-
 # Start title animation in background and ensure cleanup on exit
+# Note: TITLE_UPDATE_PID was already initialized at script start and may
+# contain a PID from the download phase; title_animate will kill it
 title_running "$ACTION $PACKAGE"
-trap 'kill $TITLE_UPDATE_PID 2>/dev/null; title_clear' EXIT
+# Trap EXIT, INT (Ctrl+C), and TERM to ensure title always resets
+trap 'kill $TITLE_UPDATE_PID 2>/dev/null || true; title_clear' EXIT
+trap 'kill $TITLE_UPDATE_PID 2>/dev/null || true; title_clear; exit 130' INT TERM
 
 # Make sure sources are clean on actions that depend on it
 if [ "$ACTION" == "build" ] || [ "$ACTION" == "release" ]
