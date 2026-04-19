@@ -171,7 +171,7 @@ SALSA_PROJECT_API_NAME="${VCS_GIT#https://salsa.debian.org/}"
 SALSA_PROJECT_API_NAME="${SALSA_PROJECT_API_NAME%.git}"
 SALSA_PROJECT_API_NAME="${SALSA_PROJECT_API_NAME//\//%2F}"
 
-OPEN_MRS="$(curl -s https://salsa.debian.org/api/v4/projects/"$SALSA_PROJECT_API_NAME"/merge_requests?state=opened | jq -r '.[] | "\t\u001b]8;;\(.web_url)\u001b\\MR!\(.iid)\t\(.title)\u001b]8;;\u001b\\"')"
+OPEN_MRS="$(curl -s "https://salsa.debian.org/api/v4/projects/$SALSA_PROJECT_API_NAME/merge_requests?state=opened" | jq -r '.[] | "\t\u001b]8;;\(.web_url)\u001b\\MR!\(.iid)\t\(.title)\u001b]8;;\u001b\\"')"
 
 if [ -n "$OPEN_MRS" ]
 then
