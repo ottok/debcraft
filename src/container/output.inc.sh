@@ -23,8 +23,6 @@ log_command_cap_output() {
   local temp_file=$(mktemp)
   local exit_code=0
 
-  trap 'rm -f "$temp_file"' EXIT
-
   echo "++ $*"
    # Continue despite errors, but capture exit code
   "$@" > "$temp_file" 2>&1 || exit_code=$?
@@ -41,6 +39,8 @@ log_command_cap_output() {
     # Print full output if it was short, or if there was an error
     cat "$temp_file"
   fi
+
+  rm -f "$temp_file"
 
   if [ "$exit_code" -ne 0 ]
   then
