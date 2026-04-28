@@ -135,8 +135,8 @@ then
 fi
 
 while :
-log_debug "Parse option/argument: $1"
 do
+  log_debug "Parse option/argument: $1"
   case "$1" in
     --build-dirs-path)
       if [ -z "$2" ] || [ ! -d "$2" ]
