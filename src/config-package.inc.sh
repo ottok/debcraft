@@ -79,7 +79,7 @@ BUILD_ID="$(date '+%s')"
 if [ -d "$PWD/.git" ]
 then
   # Set git commit id and name for later use
-  COMMIT_ID="$(git -C "$PWD/.git" rev-parse --short HEAD || true)"
+  COMMIT_ID="$(git -C "$PWD" rev-parse --short HEAD || true)"
   if [ -z "$COMMIT_ID" ]
   then
     log_error "No git commit id found, git repository does not seem to be valid"
@@ -89,7 +89,7 @@ then
   # Strip branch paths and any slashes so version string is clean, and if there
   # is no symbolic-ref at all ("fatal: ref HEAD is not a symbolic ref") when
   # for example building a detached head, fall-back to using just commit id
-  BRANCH_NAME="$(git -C "$PWD/.git" symbolic-ref HEAD | sed 's|.*heads/||' || echo "$COMMIT_ID")"
+  BRANCH_NAME="$(git -C "$PWD" symbolic-ref HEAD | sed 's|.*heads/||' || echo "$COMMIT_ID")"
 
   # The BUILD_ID will appended to the Debian/Ubuntu version string, and thus
   # cannot have slahses, dashes or underscores.
