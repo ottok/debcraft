@@ -143,7 +143,7 @@ COPY control /
 # Verify build dependencies are satisfiable before attempting installation
 # This provides much clearer error messages than mk-build-deps failure output.
 # Skip this step if /control is missing (e.g. when building downloader container).
-RUN [ -z $HOST_ARCH ] || dpkg --add-architecture $HOST_ARCH; \
+RUN [ -z "$HOST_ARCH" ] || dpkg --add-architecture "$HOST_ARCH"; \
     apt-get update -q && \
     if [ -s /control ]; then \
         cd /tmp && \
