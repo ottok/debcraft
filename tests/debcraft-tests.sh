@@ -180,7 +180,7 @@ rm -rf "$tmp_release_dir"
 if [ -z "${CI:-}" ]
 then
   tmp_release_dir=$(mktemp --directory)
-  debcraft_test "release --with-binaries --release-to $tmp_release_dir"  "  gbp tag --verbose"
+  DEBCRAFT_PPA='' debcraft_test "release --with-binaries --release-to $tmp_release_dir"  "  gbp tag --verbose"
   if ! ls "$tmp_release_dir"/entr_*.deb &> /dev/null
   then
     echo "Packages not released to $tmp_release_dir"
