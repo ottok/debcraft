@@ -1,3 +1,36 @@
+debcraft (0.9.0) unstable; urgency=medium
+
+  [ Otto Kekäläinen ]
+  * Add terminal title to indicate Debcraft state
+  * Force color output when possible
+  * Clean up source directory after build when --copy is used
+  * Normalize build log filename to build.log
+  * Capture stderr in both build.log and dedicated build.err.log
+  * Automate watch file migration to uscan v5 format
+  * Convert uscan watch template for GitHub to Dist URL format
+  * Add check to ensure binaries used in autopkgtest are from latest commit
+  * Save autopkgtest output to test.log alongside build artifacts
+  * Emit autopkgtest exit code and don't fail on skipped tests
+  * Skip Quilt patch application on gbp patch-queue branches
+  * Auto-create local pristine-tar branch on fresh clones
+  * Fix duplicate orig tarball error in full builds
+  * Support zstd compressed orig tarballs
+  * Optimize PPA uploads to skip redundant tarballs on subsequent revisions
+  * Add `--yes` option to skip PPA upload confirmation prompt
+  * Implement content-based container caching via SOURCE_DATE_EPOCH=0
+
+  [ Roland Mas ]
+  * Add --extra-repository to $DEBCRAFT_EXTRA_REPOSITORY
+  * Implement --release-to
+  * Set nullglob globally
+  * Use cp --no-clobber/--update=none according to coreutils version
+
+  [ Luca Soler ]
+  * Support custom apt source filenames for Debian derivatives
+  * Add support for custom distribution mapping via config files
+
+ -- Otto Kekäläinen <otto@debian.org>  Tue, 05 May 2026 11:50:14 +0000
+
 debcraft (0.8.1) unstable; urgency=medium
 
   * Fix various typos and grammar issues
