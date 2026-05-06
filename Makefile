@@ -64,7 +64,8 @@ test: test-static test-debcraft
 test-static: test-depends
 	@echo "Running static tests"
 	if grep --exclude Makefile --exclude Containerfile -r -E '; do|; then' *; then echo "Unnecessary semicolon use found"; exit 1; fi
-	codespell --interactive=0 --check-filenames --check-hidden --skip=.git
+	codespell --interactive=0 --check-filenames --check-hidden --skip=.git \
+	  --ignore-words-list soler
 	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
 
 # Run Debcraft and ensure it behaves as expected
