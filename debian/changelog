@@ -1,3 +1,19 @@
+debcraft (0.9.1) unstable; urgency=medium
+
+  * Extend 'improve' to make multiple recurring mechanical changes
+  * Apply automated formatting before linting in debcraft-improve
+  * Automate bumping copyright years for debian/ contributors
+  * Correctly pass multiple files as multiple arguments to shellcheck
+  * Apply consistent formatting to packaging files
+  * Hide shell tracing commands from output of all commands
+  * Refactor improvement tools into modular standalone scripts
+  * Use mktemp for Shellcheck diff and commit only tracked changes
+  * Bump policy version to 4.7.4 in `debcraft improve`
+  * Add 'stonking' as the new default Ubuntu development release
+  * Fix several smaller issues and typos
+
+ -- Otto Kekäläinen <otto@debian.org>  Wed, 27 May 2026 08:08:08 +0000
+
 debcraft (0.9.0) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
