@@ -10,6 +10,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Standardize date formats and timestamps in output and logs
 ENV LC_ALL=C
 
+# Inside the container there are no GPG keys available, so ensure Git never
+# tries to sign commits. Using environment variables avoids modifying the
+# repository's local git config and only affects processes in this container.
+ENV GIT_CONFIG_COUNT=1
+ENV GIT_CONFIG_KEY_0=commit.gpgsign
+ENV GIT_CONFIG_VALUE_0=false
+
 # Ensure output is colorized in Node.js / general tools
 ENV FORCE_COLOR=1
 # BSD-style tools (autopkgtest)
