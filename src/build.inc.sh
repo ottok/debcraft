@@ -53,6 +53,9 @@ then
   #
   # Attempt to copy the tarball with any compression supported by dpkg-source
   copy_upstream_tarball "$PACKAGE" "$PACKAGE_VERSION" "$BUILD_DIR" || true
+
+  # Also copy any component tarballs for multipart source packages
+  copy_upstream_component_tarballs "$PACKAGE" "$PACKAGE_VERSION" "$BUILD_DIR" || true
 fi
 
 # Ensure directories exist before they are mounted

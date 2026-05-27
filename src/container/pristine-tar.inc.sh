@@ -27,33 +27,82 @@ fi
 # used.
 if [ -n "$(git branch --list pristine-tar)" ]
 then
-  # Get signature file if exists while ignoring any errors from the output parsing
-  SIGNATURE_FILE="$(git ls-tree --name-only pristine-tar | grep "_$UPSTREAM_VERSION.*asc$")" || true
-  log_debug_var SIGNATURE_FILE
-  if [ -n "$SIGNATURE_FILE" ]
+  # Get signature file(s) if exists while ignoring any errors from the output parsing
+  SIGNATURE_FILES="$(git ls-tree --name-only pristine-tar | grep "_$UPSTREAM_VERSION.*asc$" || true)"
+  log_debug_var SIGNATURE_FILES
+  if [ -n "$SIGNATURE_FILES" ]
   then
-    TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
-    # pristine-tar checkout automatically appends .delta, so strip it if present
-    TARBALL_FILE="${TARBALL_FILE%.delta}"
-    # The option --signature-file exists only starting from version 1.45 in Debian Buster
-    if dpkg --compare-versions "$(dpkg-query -W -f='${Version}' pristine-tar)" gt "1.45"
-    then
-      log_info "Create original source package and signature using pristine-tar"
-      pristine-tar checkout "../$TARBALL_FILE" --signature-file "../$SIGNATURE_FILE"
-    else
-      log_info "Create original source package using pristine-tar"
-      pristine-tar checkout "../$TARBALL_FILE"
-    fi
-  else
-    # No signature file, but check if tarball exists without signature
-    TARBALL_FILE="$(git ls-tree --name-only pristine-tar | grep "_${UPSTREAM_VERSION}\.orig\.tar\." | head -n 1)" || true
-    if [ -n "$TARBALL_FILE" ]
-    then
+    while IFS= read -r SIGNATURE_FILE
+    do
+      [ -n "$SIGNATURE_FILE" ] || continue
+      TARBALL_FILE="$(basename --suffix .asc "$SIGNATURE_FILE")"
       # pristine-tar checkout automatically appends .delta, so strip it if present
       TARBALL_FILE="${TARBALL_FILE%.delta}"
-      log_info "Create original source package using pristine-tar"
-      pristine-tar checkout "../$TARBALL_FILE"
-    else
+      # The option --signature-file exists only starting from version 1.45 in Debian Buster
+      if [ ! -f "../$TARBALL_FILE" ]
+      then
+        if dpkg --compare-versions "$(dpkg-query -W -f='${Version}' pristine-tar)" gt "1.45"
+        then
+          log_info "Create original source package and signature using pristine-tar"
+          if ! pristine-tar checkout "../$TARBALL_FILE" --signature-file "../$SIGNATURE_FILE"
+          then
+            if [[ "$TARBALL_FILE" == *"orig-"*.tar.* ]]
+            then
+              log_error "pristine-tar failed to checkout component tarball $TARBALL_FILE"
+              exit 1
+            else
+              log_info "pristine-tar failed to checkout main tarball $TARBALL_FILE - will let gbp create it from upstream tag"
+            fi
+          fi
+        else
+          log_info "Create original source package using pristine-tar"
+          if ! pristine-tar checkout "../$TARBALL_FILE"
+          then
+            if [[ "$TARBALL_FILE" == *"orig-"*.tar.* ]]
+            then
+              log_error "pristine-tar failed to checkout component tarball $TARBALL_FILE"
+              exit 1
+            else
+              log_info "pristine-tar failed to checkout main tarball $TARBALL_FILE - will let gbp create it from upstream tag"
+            fi
+          fi
+        fi
+      else
+        log_info "Tarball $TARBALL_FILE already exists, skipping pristine-tar checkout"
+      fi
+    done <<< "$SIGNATURE_FILES"
+  else
+    # No signature file, but check if tarball(s) exist without signature
+    # Support multipart packages with multiple upstream tarballs (e.g. orig-component.tar)
+    TARBALL_FOUND=false
+    while IFS= read -r TARBALL_FILE
+    do
+      [ -n "$TARBALL_FILE" ] || continue
+      # pristine-tar checkout automatically appends .delta, so strip it if present
+      TARBALL_FILE="${TARBALL_FILE%.delta}"
+      if [ ! -f "../$TARBALL_FILE" ]
+      then
+        log_info "Create original source package using pristine-tar"
+        if ! pristine-tar checkout "../$TARBALL_FILE"
+        then
+          # Component tarballs (orig-*.tar.*) cannot be recreated by gbp, so
+          # their absence is fatal. The main orig.tar.* can be recreated by gbp
+          # from the upstream tag, so allow that to fail gracefully.
+          if [[ "$TARBALL_FILE" == *"orig-"*.tar.* ]]
+          then
+            log_error "pristine-tar failed to checkout component tarball $TARBALL_FILE"
+            exit 1
+          else
+            log_info "pristine-tar failed to checkout main tarball $TARBALL_FILE - will let gbp create it from upstream tag"
+          fi
+        fi
+      else
+        log_info "Tarball $TARBALL_FILE already exists, skipping pristine-tar checkout"
+      fi
+      TARBALL_FOUND=true
+    done < <(git ls-tree --name-only pristine-tar | grep "_${UPSTREAM_VERSION}\.orig.*\.tar\..*\.delta$" || true)
+    if [ "$TARBALL_FOUND" = false ]
+    then
       log_info "No orig tarball found on pristine-tar branch"
     fi
   fi

@@ -50,6 +50,30 @@ function check_orig_tarball_exists() {
   return 1
 }
 
+# Copy upstream component tarballs from parent directory to destination if they exist
+# Usage: copy_upstream_component_tarballs <package> <version> <destination>
+# Returns: 0 if found, 1 if not found
+function copy_upstream_component_tarballs() {
+  local package="$1"
+  local version="$2"
+  local dest="$3"
+  local found=false
+
+  for tarball_path in "../${package}_${version}.orig-"*.tar.*
+  do
+    if [ -f "$tarball_path" ]
+    then
+      cp_update_none "$tarball_path" "$dest/"
+      found=true
+    fi
+  done
+  if [ "$found" = true ]
+  then
+    return 0
+  fi
+  return 1
+}
+
 # cp --update=none if available, otherwise use legacy/obsolete cp --no-clobber
 # coreutils version 9.3 was released 2023-04-18
 function cp_update_none() {
