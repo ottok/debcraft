@@ -61,3 +61,40 @@ function cp_update_none() {
     cp --verbose --no-clobber "$@"
   fi
 }
+
+# Ensure git user identity is available for operations that make commits.
+# If the repository has local user.name/email, nothing is done.  If not
+# locally but globally configured, exports GIT_AUTHOR_NAME,
+# GIT_AUTHOR_EMAIL, GIT_COMMITTER_NAME and GIT_COMMITTER_EMAIL so the
+# identity can be forwarded into containers.  If neither is configured,
+# prints an error and exits.
+function ensure_git_identity() {
+  if git config --local user.name >/dev/null 2>&1 &&
+     git config --local user.email >/dev/null 2>&1
+  then
+    return 0
+  fi
+
+  local global_name global_email
+  global_name="$(git config --global user.name 2>/dev/null || true)"
+  global_email="$(git config --global user.email 2>/dev/null || true)"
+
+  if [ -n "$global_name" ] && [ -n "$global_email" ]
+  then
+    export GIT_AUTHOR_NAME="$global_name"
+    export GIT_AUTHOR_EMAIL="$global_email"
+    export GIT_COMMITTER_NAME="$global_name"
+    export GIT_COMMITTER_EMAIL="$global_email"
+    log_info "Using global git identity '$global_name <$global_email>'"
+    return 0
+  fi
+
+  log_error "Git user name and email are not configured." \
+            "Please set them in this repository with:" \
+            "  git config --local user.name 'Your Name'" \
+            "  git config --local user.email 'you@example.com'" \
+            "Or configure them globally with:" \
+            "  git config --global user.name 'Your Name'" \
+            "  git config --global user.email 'you@example.com'"
+  exit 1
+}

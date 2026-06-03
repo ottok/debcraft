@@ -19,6 +19,8 @@ then
   exit 1
 fi
 
+ensure_git_identity
+
 if [ -n "$DEBUG" ]
 then
   set -x
@@ -35,6 +37,10 @@ $CONTAINER_CMD run \
     --volume="${SOURCE_DIR:=$PWD}":/debcraft/source \
     --workdir=/debcraft/source \
     --env="DEB*" \
+    ${GIT_AUTHOR_NAME:+--env="GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME"} \
+    ${GIT_AUTHOR_EMAIL:+--env="GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL"} \
+    ${GIT_COMMITTER_NAME:+--env="GIT_COMMITTER_NAME=$GIT_COMMITTER_NAME"} \
+    ${GIT_COMMITTER_EMAIL:+--env="GIT_COMMITTER_EMAIL=$GIT_COMMITTER_EMAIL"} \
     "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-improve.sh \

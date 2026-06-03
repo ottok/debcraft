@@ -124,6 +124,8 @@ then
   exit 1
 fi
 
+ensure_git_identity
+
 # Used in commands below
 SOURCE_PACKAGE_NAME=$(head -n 1 debian/changelog | cut -d ' ' -f 1)
 
