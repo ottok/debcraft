@@ -37,7 +37,10 @@ the command 'update' tries to update the package to the latest upstream version
 if the package git repository layout is compatible.
 
 The command 'shell' can be used to explore the container and 'prune' will
-clean up temporary files created by Debcraft.
+clean up temporary files created by Debcraft. Unlike the other commands,
+'prune' is not tied to any source package and can be run from anywhere: it
+cleans up the build directories of all packages, and reports how much disk
+space Debcraft occupies before it deletes anything.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
 be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
@@ -66,6 +69,12 @@ optional arguments:
   --extra-repository      Use directory as local package repository for builds
   --config                Path to debcraft configuration file
   --release-to            After build or release, copy artefacts to specified dir
+  --older-than            Only prune files and directories that are older than
+                          the given number of days (default: 365)
+                          ('debcraft prune' only)
+  --yes                   Don't ask for confirmation, delete everything that
+                          the action matches
+                          ('debcraft prune' and PPA release uploads)
   --debug                 Emit debug information
   -h, --help              Display this help and exit
   --version               Display version and exit
@@ -138,6 +147,10 @@ then
   exit 1
 fi
 
+# Number of days that 'prune' prunes, if not given by the user. The default is
+# applied by the 'prune' implementation itself, as this is its only option.
+PRUNE_AGE_DAYS=""
+
 while :
 do
   log_debug "Parse option/argument: $1"
@@ -203,6 +216,17 @@ do
     --config)
       log_debug "Using CONFIG=$2"
       export CONFIG="$2"
+      shift 2
+      ;;
+    --older-than)
+      if [ -z "$2" ] || ! [[ "$2" =~ ^[0-9]+$ ]]
+      then
+        log_error "Parameter --older-than requires a number"
+        exit 1
+      fi
+      PRUNE_AGE_DAYS="$2"
+      export PRUNE_AGE_DAYS
+      log_debug "Using PRUNE_AGE_DAYS=$PRUNE_AGE_DAYS"
       shift 2
       ;;
     --debug)
@@ -279,6 +303,14 @@ then
   exit 1
 fi
 
+if [ -n "$PRUNE_AGE_DAYS" ] && [ "$ACTION" != "prune" ]
+then
+  log_error "Parameter --older-than can only be used with action 'prune'"
+  echo
+  display_help
+  exit 1
+fi
+
 log_debug_var ACTION
 
 # This variable allows debcraft to map distribution names to specific container
@@ -293,18 +325,21 @@ declare -A DEBCRAFT_DISTRIBUTION_MAPPING
 # shellcheck source=/dev/null
 [[ -n "$CONFIG" && -f "$CONFIG" ]] && source "$CONFIG"
 
-# shellcheck source=src/distributions.inc.sh
-source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
-
-# shellcheck source=src/generic.inc.sh
-source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
-
-# Configure general program behavior after user options and arguments have been parsed
-# shellcheck source=src/config-general.inc.sh
-source "$DEBCRAFT_LIB_DIR/config-general.inc.sh"
+# The build directories path is the only setting that every action needs, and
+# it defaults to a subdirectory in the user's cache directory
+if [ -z "$BUILD_DIRS_PATH" ]
+then
+  if [ -n "$XDG_CACHE_HOME" ] && [ -d "$XDG_CACHE_HOME" ]
+  then
+    BUILD_DIRS_PATH="$XDG_CACHE_HOME/debcraft"
+  else
+    BUILD_DIRS_PATH="$HOME/.cache/debcraft"
+  fi
+fi
+export BUILD_DIRS_PATH
 
 # Check that dependencies are available
-for cmd in git tee sed
+for cmd in git tee sed du numfmt
 do
   if ! command -v "$cmd" > /dev/null 2>&1
   then
@@ -319,6 +354,34 @@ then
   log_error "Bash version too old - 'mapfile' builtin is required"
   exit 1
 fi
+
+# 'prune' only cleans up what Debcraft has left behind, so unlike every other
+# action it is not tied to any source package. It thus needs none of the
+# package and container specific configuration that is set up below, and it must
+# not require any of it to be available: no container engine, no git
+# repository, no source package and not even the build directories themselves.
+if [ "$ACTION" = "prune" ]
+then
+  if [ -n "$DEBCRAFT_YES" ]
+  then
+    log_info "Pruning Debcraft build directories in '$BUILD_DIRS_PATH' (auto-confirmed via --yes)"
+  else
+    log_info "Pruning Debcraft build directories in '$BUILD_DIRS_PATH'"
+  fi
+  # shellcheck source=src/prune.inc.sh
+  source "$DEBCRAFT_LIB_DIR/prune.inc.sh"
+  exit 0
+fi
+
+# shellcheck source=src/distributions.inc.sh
+source "$DEBCRAFT_LIB_DIR/distributions.inc.sh"
+
+# shellcheck source=src/generic.inc.sh
+source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
+
+# Configure general program behavior after user options and arguments have been parsed
+# shellcheck source=src/config-general.inc.sh
+source "$DEBCRAFT_LIB_DIR/config-general.inc.sh"
 
 # Docker does not support '--noheading', so the command will always output at
 # least one line
@@ -399,13 +462,12 @@ if [ -f "debian/changelog" ]
 then
   # If parsing the changelog emits exit code, intentionally stop here
   PACKAGE="$(head -n 1 debian/changelog | cut -d ' ' -f 1)"
+  log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 else
   log_error "Directory '$TARGET' is not a valid source package directory as" \
             "debian/changelog was not found"
   exit 1
 fi
-
-log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 
 # Start title animation in background and ensure cleanup on exit
 # Note: TITLE_UPDATE_PID was already initialized at script start and may
@@ -452,7 +514,7 @@ reset_if_source_repository_and_option_clean
 source "$DEBCRAFT_LIB_DIR/config-package.inc.sh"
 
 # If the action needs to run in a container, automatically create it
-if [ "$ACTION" != "update" ] && [ "$ACTION" != "prune" ] && [ "$ACTION" != "logs" ]
+if [ "$ACTION" != "update" ] && [ "$ACTION" != "logs" ]
 then
   # shellcheck source=src/container.inc.sh
   source "$DEBCRAFT_LIB_DIR/container.inc.sh"
@@ -490,10 +552,6 @@ case "$ACTION" in
   logs)
     # shellcheck source=src/logs.inc.sh
     source "$DEBCRAFT_LIB_DIR/logs.inc.sh"
-    ;;
-  prune)
-    # shellcheck source=src/prune.inc.sh
-    source "$DEBCRAFT_LIB_DIR/prune.inc.sh"
     ;;
 esac
 

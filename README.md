@@ -376,7 +376,11 @@ and other tools to automatically improve the package source code might be added
 later, or a command to run dynamic tests on the built binaries (create local
 repo, run piuparts, autopkgtests, some of the Salsa-CI tests locally etc).
 
-The `prune` command currently does nothing.
+The `prune` command is not tied to any source package, but to the build
+directories of all of them, and it can be run from anywhere. It is not
+complete yet: the container images and volumes it builds are not touched, older
+artifacts have no longer expiration than the general prune age, and the logs of
+past builds are never compressed or removed.
 
 To help Debian Developers with recurring work, a command such as `update` to
 automatically import a new upstream version might also be implemented later.

@@ -157,9 +157,9 @@ export BUILD_DIR
 export RELEASE_DIR
 export CACHE_DIR
 
-# Containers are not used to run 'logs' or 'prune', so don't emit info about
-# containers while executing those actions
-if [ "$ACTION" != "prune" ] && [ "$ACTION" != "logs" ]
+# Containers are not used to run 'logs', so don't emit info about containers
+# while executing that action
+if [ "$ACTION" != "logs" ]
 then
   log_info "Use '$CONTAINER_CMD' container image '$CONTAINER' for package '$PACKAGE'"
 fi

@@ -70,7 +70,7 @@ _debcraft_complete() {
       options="--build-dirs-path --copy --clean $targets"
       ;;
     prune*)
-      # These commands have no options
+      options="--build-dirs-path --older-than --yes"
       ;;
     --container-command*)
       # Complete file paths for options requiring paths
