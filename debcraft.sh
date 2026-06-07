@@ -138,6 +138,9 @@ then
   exit 1
 fi
 
+# Default prune age in days
+PRUNE_AGE_DAYS=365
+
 while :
 do
   log_debug "Parse option/argument: $1"
@@ -203,6 +206,17 @@ do
     --config)
       log_debug "Using CONFIG=$2"
       export CONFIG="$2"
+      shift 2
+      ;;
+    --older-than)
+      if [ -z "$2" ] || ! [[ "$2" =~ ^[0-9]+$ ]]
+      then
+        log_error "Parameter --older-than requires a positive integer"
+        exit 1
+      fi
+      PRUNE_AGE_DAYS="$2"
+      export PRUNE_AGE_DAYS
+      log_debug "Using PRUNE_AGE_DAYS=$PRUNE_AGE_DAYS"
       shift 2
       ;;
     --debug)
@@ -395,17 +409,21 @@ cd "$TARGET" || (log_error "Unable to change directory to $TARGET"; exit 1)
 
 log_debug_var PWD
 
-if [ -f "debian/changelog" ]
+if [ "$ACTION" != "prune" ]
 then
-  # If parsing the changelog emits exit code, intentionally stop here
-  PACKAGE="$(head -n 1 debian/changelog | cut -d ' ' -f 1)"
+  if [ -f "debian/changelog" ]
+  then
+    # If parsing the changelog emits exit code, intentionally stop here
+    PACKAGE="$(head -n 1 debian/changelog | cut -d ' ' -f 1)"
+    log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
+  else
+    log_error "Directory '$TARGET' is not a valid source package directory as" \
+              "debian/changelog was not found"
+    exit 1
+  fi
 else
-  log_error "Directory '$TARGET' is not a valid source package directory as" \
-            "debian/changelog was not found"
-  exit 1
+  log_info "Running in directory $PWD"
 fi
-
-log_info "Running in directory $PWD that has Debian package sources for '$PACKAGE'"
 
 # Start title animation in background and ensure cleanup on exit
 # Note: TITLE_UPDATE_PID was already initialized at script start and may
