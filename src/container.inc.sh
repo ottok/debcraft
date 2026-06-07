@@ -11,7 +11,7 @@ CONTAINER_DIR="$BUILD_DIRS_PATH/debcraft-container-$PACKAGE"
 
 log_info "Building container '$CONTAINER' in '$CONTAINER_DIR' for build ID '$BUILD_ID'"
 
-mkdir --verbose --parents "$CONTAINER_DIR"
+mkdir --parents "$CONTAINER_DIR"
 cp --archive "$DEBCRAFT_LIB_DIR"/container/* "$CONTAINER_DIR"
 
 # Make it visible what this temporary directory was used for
