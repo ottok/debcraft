@@ -62,6 +62,28 @@ then
   log_debug_var CONTAINER_BUILD_ARGS
 fi
 
+# Mount persistent apt cache directory into container build so downloaded .deb
+# packages survive across image builds. Podman supports --volume during build;
+# Docker does not, so this is Podman-only.
+#
+# Intentionally left unimplemented for Docker: `docker build` does not support
+# bind-mounting host directories during the build phase (unlike Podman's
+# `--volume`), and BuildKit cache mounts would require invasive Dockerfile
+# syntax changes. Docker builds therefore start with an empty apt cache each
+# time and re-download packages on every container rebuild.
+# Note: `docker buildx build` (BuildKit) does support `RUN --mount=type=cache`,
+# which could be an option if the project switched to BuildKit syntax.
+if [[ "${CONTAINER_CMD:-}" == *podman* ]]
+then
+  mkdir -p "$APT_CACHE_DIR"
+  # Pre-create partial directory with host ownership so apt does not create it
+  # inside the container as an unmapped subuid
+  mkdir -p "$APT_CACHE_DIR/partial"
+  log_debug "Mounting apt cache directory '$APT_CACHE_DIR' into container build"
+  CONTAINER_BUILD_ARGS="$CONTAINER_BUILD_ARGS --volume=$APT_CACHE_DIR:/var/cache/apt/archives"
+fi
+# Docker builds do not mount APT_CACHE_DIR; see comment above.
+
 # Podman does not need '--file=Containerfile', but needed for Docker compatibility
 # shellcheck disable=SC2086 # intentionally allow variable to expand to multiple arguments
 $CONTAINER_CMD build  \
@@ -77,6 +99,12 @@ $CONTAINER_CMD build  \
 
 # @TODO: Redirect all output to log if too verbose?
 # --logfile="$CONTAINER_DIR/container-$BUILD_ID.log" \
+
+# Fix ownership of apt cache files created by container root user mapped to subuid
+if [ -d "$APT_CACHE_DIR" ]
+then
+  find "$APT_CACHE_DIR" ! -uid "${UID}" -execdir chown --no-dereference "${UID}":"${GROUPS[0]}" {} + 2>/dev/null || true
+fi
 
 if [ -n "$FAILURE" ]
 then

@@ -448,6 +448,26 @@ DEBCRAFT_DISTRIBUTION_MAPPING["custom-distribution*"]="my-registry.com/build-ima
 **Note:** Pattern matching (globs) like `*` are supported for distribution names
 parsed from the changelog.
 
+### Build cache
+
+Debcraft mounts a persistent host directory into the container build so
+downloaded `.deb` packages are cached across image builds. The cache is stored
+in `~/.cache/debcraft/apt-cache` and shared across all packages.
+
+To inspect its contents or size:
+
+```shell
+ls ~/.cache/debcraft/apt-cache
+du -sh ~/.cache/debcraft/apt-cache
+ncdu ~/.cache/debcraft/apt-cache
+```
+
+To clear the cache, simply delete the directory:
+
+```shell
+rm -rf ~/.cache/debcraft/apt-cache
+```
+
 ## Copyright and licence
 
 Copyright 2023-2026 Otto Kekäläinen & collaborators

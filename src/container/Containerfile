@@ -30,6 +30,12 @@ ENV CMAKE_COLOR_DIAGNOSTICS=ON
 # unnecessary for Debcraft containers
 COPY 80-strip-gcc-debug-symbols /etc/apt/apt.conf.d/
 
+# The official Debian container image includes an apt hook that automatically
+# cleans /var/cache/apt/archives after each install. Remove it so the bind-
+# mounted host cache directory is not wiped on every build.
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+    echo 'APT::Get::Clean "never";' > /etc/apt/apt.conf.d/99no-clean
+
 # When building on amd64 prefer variant amd64v3 on new releases that support
 # the dpkg feature 'Architecture-Variants'
 RUN if grep -q 'VERSION="26.04 (Resolute Raccoon)"' /etc/os-release; \

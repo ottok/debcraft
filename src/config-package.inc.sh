@@ -144,6 +144,10 @@ BUILD_DIR="$BUILD_DIRS_PATH/debcraft-build-$PACKAGE-$BUILD_ID"
 RELEASE_DIR="$BUILD_DIRS_PATH/debcraft-release-$PACKAGE-$BUILD_ID"
 # Shared cache directory for all builds of the same package
 CACHE_DIR="$BUILD_DIRS_PATH/debcraft-cache-$PACKAGE"
+# Shared apt cache directory across all packages. Intentionally placed at the
+# top level of BUILD_DIRS_PATH rather than under a package-specific path, so
+# that all builds reuse the same apt cache and avoid re-downloading packages.
+APT_CACHE_DIR="$BUILD_DIRS_PATH/apt-cache"
 
 # Explicit exports
 export PACKAGE
@@ -156,6 +160,7 @@ export BUILD_DIRS_PATH
 export BUILD_DIR
 export RELEASE_DIR
 export CACHE_DIR
+export APT_CACHE_DIR
 
 # Containers are not used to run 'logs' or 'prune', so don't emit info about
 # containers while executing those actions
