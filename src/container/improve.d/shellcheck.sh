@@ -19,17 +19,19 @@ SHELLCHECK_DIFF=$(mktemp)
 if [ "${#SH_SCRIPTS[@]}" -gt 0 ]
 then
   # Don't stop on findings
-  echo "++ shellcheck -x --enable=all --shell=sh" "${SH_SCRIPTS[@]}"
-  shellcheck -x --enable=all --shell=sh "${SH_SCRIPTS[@]}" || true
-  shellcheck -x --enable=all --format=diff --shell=sh "${SH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
+  # Exclude SC2250: "Prefer putting braces around variable references even when not strictly required"
+  echo "++ shellcheck -x --enable=all --exclude=SC2250 --shell=sh" "${SH_SCRIPTS[@]}"
+  shellcheck -x --enable=all --exclude=SC2250 --shell=sh "${SH_SCRIPTS[@]}" || true
+  shellcheck -x --enable=all --exclude=SC2250 --format=diff --shell=sh "${SH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
 fi
 
 if [ "${#BASH_SCRIPTS[@]}" -gt 0 ]
 then
   # Don't stop on findings
-  echo "++ shellcheck -x --enable=all --shell=bash" "${BASH_SCRIPTS[@]}"
-  shellcheck -x --enable=all --shell=bash "${BASH_SCRIPTS[@]}" || true
-  shellcheck -x --enable=all --format=diff --shell=bash "${BASH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
+  # Exclude SC2250: "Prefer putting braces around variable references even when not strictly required"
+  echo "++ shellcheck -x --enable=all --exclude=SC2250 --shell=bash" "${BASH_SCRIPTS[@]}"
+  shellcheck -x --enable=all --exclude=SC2250 --shell=bash "${BASH_SCRIPTS[@]}" || true
+  shellcheck -x --enable=all --exclude=SC2250 --format=diff --shell=bash "${BASH_SCRIPTS[@]}" >> "$SHELLCHECK_DIFF" || true
 fi
 
 # Apply patch if not empty, otherwise just remove it
