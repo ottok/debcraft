@@ -48,6 +48,13 @@ RUN if grep -q 'PRETTY_NAME="Debian GNU/Linux 9 (stretch)"' /etc/os-release; \
         > /etc/apt/sources.list; \
     fi
 
+# Before installing anything else, install auto-apt-proxy that will hook into
+# /etc/apt/apt.conf.d/auto-apt-proxy.conf and try to use a proxy if available
+# https://manpages.debian.org/unstable/auto-apt-proxy/auto-apt-proxy.1.en.html#PRECEDENCE_BETWEEN_MULTIPLE_POSSIBLE_PROXIES
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      auto-apt-proxy
+
 # Debian build essentials and Debcraft essentials
 # Unfortunately this is almost 500 MB but here is no way around it. Luckily due
 # to caching all rebuilds and all later containers will build much faster.

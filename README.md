@@ -271,6 +271,53 @@ cd debcraft
 make install-local
 ```
 
+## Caching build dependencies
+
+The containers built by Debcraft use
+[auto-apt-proxy](https://manpages.debian.org/unstable/auto-apt-proxy/auto-apt-proxy.1.en.html)
+and will enable any proxy that was found at the time of building the container.
+
+To benefit from caching,
+[apt-cacher-ng](https://manpages.debian.org/unstable/apt-cacher-ng/apt-cacher-ng.8.en.html)
+or equivalent needs to be installed on the host machine or somewhere on the
+local network where `auto-apt-proxy` can find it. Example commands to install
+and verify that caching works below:
+
+```
+$ sudo apt-get install --yes --no-install-recommends apt-cacher-ng
+..
+
+$ sudo systemctl enable --now apt-cacher-ng
+Synchronizing state of apt-cacher-ng.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable apt-cacher-ng
+
+$ ss -tlnp | grep 3142
+LISTEN 0      250          0.0.0.0:3142      0.0.0.0:*
+LISTEN 0      250             [::]:3142         [::]:*
+
+$ sudo tail --follow /var/log/apt-cacher-ng/apt-cacher.log
+[sudo] password for otto:
+1781237516|I|14782|192.168.1.8|debrep/dists/sid/InRelease
+1781237516|O|102|192.168.1.8|debrep/dists/sid/InRelease
+1781237523|I|443636|192.168.1.8|debrep/pool/main/n/ncurses/ncurses-bin_6.6+20251231-1+b1_amd64.deb
+1781237523|O|442411|192.168.1.8|debrep/pool/main/n/ncurses/ncurses-bin_6.6+20251231-1+b1_amd64.deb
+1781237524|I|1678530|192.168.1.8|debrep/pool/main/p/perl/perl-base_5.40.1-8_amd64.deb
+1781237524|O|1677282|192.168.1.8|debrep/pool/main/p/perl/perl-base_5.40.1-8_amd64.deb
+1781237524|I|1099100|192.168.1.8|debrep/pool/main/g/glibc/libc-gconv-modules-extra_2.42-16_amd64.deb
+1781237524|O|1097877|192.168.1.8|debrep/pool/main/g/glibc/libc-gconv-modules-extra_2.42-16_amd64.deb
+```
+
+During the container build you would see something along:
+
+```
+STEP 17/36: RUN apt-get update -q &&     apt-get install -q --yes --no-install-recommends       auto-apt-proxy && ...
+Get:1 http://deb.debian.org/debian sid InRelease [189 kB]
+Get:2 http://deb.debian.org/debian sid/main amd64 Packages [10.5 MB]
+...
+Setting up auto-apt-proxy (17.1) ...
+Detected apt proxy: http://192.168.1.8:3142
+```
+
 ## Development
 
 ### Design tenets
