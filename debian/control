@@ -27,8 +27,8 @@ Description: Easy, fast and secure way to build Debian packages
  nor update root filesystems. If there is no source package, Debcraft will
  automatically download it.
  .
- Thanks to efficient caching, rebuilds are blazing fast, and additional logs make
- it easy to see what changed in the end result between each build.
+ Thanks to efficient caching, rebuilds are blazing fast, and additional logs
+ make it easy to see what changed in the end result between each build.
  .
  The tool is fully written in Bash, so reasoning about how it works is easy. It
  does not need to run on Debian as all builds happen inside containers.
