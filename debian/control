@@ -19,6 +19,9 @@ Depends:
  podman | docker.io,
  sensible-utils,
  ${misc:Depends},
+Suggests:
+ libnotify-bin,
+ pulseaudio-utils,
 Description: Easy, fast and secure way to build Debian packages
  Debcraft is a tool to build Debian packages as easily as possible. It uses
  Podman/Docker to automatically create a hermetic network-less build container
