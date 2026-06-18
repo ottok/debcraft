@@ -7,6 +7,11 @@ mkdir --parents "$BUILD_DIR/source"
 # Copy sources if requested
 if [ -n "$COPY" ]
 then
+  if ! command -v rsync >/dev/null 2>&1
+  then
+    log_error "rsync is required for --copy but is not installed"
+    exit 1
+  fi
   log_info "Copying sources to build directory to not pollute current directory with build artifacts"
   rsync --archive --exclude="**/.git/" "$PWD/" "$BUILD_DIR/source"
   SOURCE_DIR="$BUILD_DIR/source"

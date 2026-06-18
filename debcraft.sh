@@ -303,10 +303,22 @@ source "$DEBCRAFT_LIB_DIR/generic.inc.sh"
 # shellcheck source=src/config-general.inc.sh
 source "$DEBCRAFT_LIB_DIR/config-general.inc.sh"
 
-# @TODO: Check that dependencies are available: git, dpkg-parsechangelog, rsync,
-# notify-send, paplay, tee, sed
-#
+# Check that dependencies are available
+for cmd in git tee sed
+do
+  if ! command -v "$cmd" > /dev/null 2>&1
+  then
+    log_error "Required dependency '$cmd' is not installed"
+    exit 1
+  fi
+done
+
 # Bash must be new enough to have 'mapfile'.
+if ! type mapfile > /dev/null 2>&1
+then
+  log_error "Bash version too old - 'mapfile' builtin is required"
+  exit 1
+fi
 
 # Docker does not support '--noheading', so the command will always output at
 # least one line
