@@ -4,3 +4,15 @@ Depends:
  debcraft,
 Restrictions:
  superficial,
+
+Tests:
+ build-entr,
+Depends:
+ dpkg-dev,
+ debcraft,
+ podman,
+Restrictions:
+ allow-stderr,
+ breaks-testbed,
+ isolation-machine,
+ needs-internet,
