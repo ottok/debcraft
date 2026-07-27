@@ -26,6 +26,8 @@ else
            "or add overrides in debian/.codespellrc to suppress false findings."
 fi
 
+# Note that `debputy lint` already ran before this, so only the `--spellcheck`
+# part of the command above should cause new fixes
 CMD=(debputy lint --spellcheck --auto-fix)
 echo "++ ${CMD[*]}"
 
