@@ -362,6 +362,7 @@ do
       echo "  git checkout $DEBIAN_BRANCH && git reset --hard $DEBIAN_BRANCH_COMMIT_ID_BEFORE"
       echo "  git checkout $IMPORT_BRANCH_NAME"
       echo "  git push --set-upstream <fork> $IMPORT_BRANCH_NAME"
+      echo "  gbp push --debian-tag='' <fork>"
       echo
       log_info "Once all changes are done and approved, merge to Debian branch" \
                "and finalize changelog for upload:"
