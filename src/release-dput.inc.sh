@@ -26,6 +26,10 @@ then
   log_info "Remember to tag the exact commit that was uploaded about 10 minutes"
   log_info "later after seeing acknowledgement email from ftp-master:"
   log_info "  gbp tag --verbose --ignore-new && gbp push --verbose"
+  echo
+  log_info "Alternatively both the dput and gbp commands can be replaced by"
+  log_info "simply running:"
+  log_info "  git-debpush --gbp"
 else
   log_info "To submit a package to Debian or Ubuntu officially you need to have"
   log_info "your PGP key in the Debian/Ubuntu keyring, and configured in"
