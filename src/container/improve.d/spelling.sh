@@ -13,7 +13,7 @@ CMD=(codespell
      --write-changes
      --check-filenames
      --check-hidden
-     --skip="debian/changelog,debian/copyright,debian/patches,debian/vendor,debian/source/lintian-overrides,*.lintian-overrides,*.po,*.pot"
+     --skip="debian/changelog,debian/copyright,debian/patches,debian/vendor,debian/source/lintian-overrides,*.lintian-overrides,*.po,*.pot,*.pm"
      debian/)
 echo "++ ${CMD[*]}"
 
