@@ -1,3 +1,15 @@
+debcraft (0.9.4) unstable; urgency=medium
+
+  * Extend `debcraft update` to document pushing all branches in gbp
+  * Automate upgrading from Debhelper 13 to 14
+  * Document option to run `git-debpush --gbp`
+  * Exclude debian/copyright from codespell due to frequent false positives
+  * Exclude .pm from codespell to decrease false positives (Closes: #1140488)
+  * Temporarily disable automatic copyright year bumping due to frequent bugs
+  * Bump Debhelper version from 13 to 14
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 14 Sep 2026 09:09:09 +0000
+
 debcraft (0.9.3) unstable; urgency=medium
 
   * Run `debputy lint` as a separate improvement (Closes: #1142619)
