@@ -2,7 +2,8 @@ Source: debcraft
 Section: misc
 Maintainer: Otto Kekäläinen <otto@debian.org>
 Build-Depends:
- debhelper-compat (= 13),
+ debhelper-compat (= 14),
+ dh-sequence-single-binary,
  codespell <!nocheck>,
  git-buildpackage <!nocheck>,
  help2man,
@@ -18,7 +19,6 @@ Architecture: all
 Depends:
  podman | docker.io,
  sensible-utils,
- ${misc:Depends},
 Suggests:
  libnotify-bin,
  pulseaudio-utils,
