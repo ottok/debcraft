@@ -262,7 +262,7 @@ log_command gbp import-orig --uscan --no-interactive --postimport="dch -v %(vers
 log_info "Pre-populate debian/changelog with appropriate update and launch" \
          "editor for proof-reading and tweaking"
 # Note that this will use whatever user has configured as their preferred 'sensible-editor'
-log_command gbp dch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="Update changelog and refresh patches after %(version)s import" -- debian
+log_command gbp dch --ignore-branch --distribution=UNRELEASED --spawn-editor=always --commit --commit-msg="Update changelog and refresh patches after %(version)s import" -- debian
 
 # Remove Debian revision from `%(version)s` to have pure upstream version in commit message
 message=$(git log -1 --pretty=%s)
