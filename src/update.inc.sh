@@ -198,8 +198,9 @@ title_running "$ACTION $PACKAGE"
 # (cd "$DEBSNAP_DIR"; debsnap --first "$PREVIOUS_VERSION" "$SOURCE_PACKAGE_NAME")
 # gbp import-dscs "$DEBSNAP_DIR"/*/*.dsc
 
-# Update watch file format to uscan v5 if needed
-if [ -f debian/watch ] && ! grep -q "Version: 5" debian/watch
+# Update watch file format to uscan v5 if it hasn't been done yet, and if doing
+# a new release into Debian unstable
+if [ -f debian/watch ] && [ "$DEBIAN_BRANCH" == "debian/latest" ] && ! grep -q "Version: 5" debian/watch
 then
   # Check if uscan is available and devscripts version is new enough
   if command -V uscan > /dev/null 2>&1 && \
