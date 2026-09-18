@@ -10,7 +10,7 @@ set -o pipefail
 # shellcheck source=src/container/output.inc.sh
 source "/output.inc.sh"
 
-log_info "Bumping the copyright year in debian/copyright temporarily disabled due to frequent bugs in the awk code"
+echo "Bumping the copyright year in debian/copyright temporarily disabled due to frequent bugs in the awk code"
 exit 0
 
 # -------------------------------------------------------------------------
