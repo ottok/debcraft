@@ -84,8 +84,15 @@ prune_report_usage() {
   local cache_path
 
   # Show the build directories path the way a user would write it, as the full
-  # path of a cache directory is long enough to push the report off the screen
-  cache_path="${BUILD_DIRS_PATH/#$HOME/\~}"
+  # path of a cache directory is long enough to push the report off the screen.
+  # Shorten it only when it really is below the home directory: a home of just
+  # / is a prefix of every absolute path, and replacing it would leave the rest
+  # of the path without its first directory
+  # shellcheck disable=SC2088 # tilde is literal text for the report, not expanded
+  case "$BUILD_DIRS_PATH" in
+    "$HOME"/*) cache_path="~/${BUILD_DIRS_PATH#"$HOME"/}" ;;
+    *) cache_path="$BUILD_DIRS_PATH" ;;
+  esac
 
   container_dirs=$(prune_bytes "$BUILD_DIRS_PATH" -maxdepth 1 -name "debcraft-container-*" -type d)
   container_dirs_description="in $cache_path/debcraft-container-* directories"
