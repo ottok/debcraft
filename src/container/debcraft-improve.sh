@@ -80,8 +80,10 @@ for script in /improve.d/*.sh
 do
   log_info "Running $(basename "$script"):"
   # Don't stop on errors as the tools below are likely to emit exit codes if they
-  # have findings but Debcraft should continue to execute and run all of them
-  ( $script )
+  # have findings but Debcraft should continue to execute and run all of them.
+  # Note that the explicit '|| log_warn' is required: a non-zero exit code of
+  # the subshell would otherwise abort the loop due to 'set -e' in effect.
+  ( $script ) || log_warn "$(basename "$script") exited with a non-zero exit code, continuing with the remaining scripts"
 done
 
 # Disable until lintian-brush re-enters Debian testing (and Ubuntu 26.04), see
