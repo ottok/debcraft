@@ -89,7 +89,13 @@ then
   # Strip branch paths and any slashes so version string is clean, and if there
   # is no symbolic-ref at all ("fatal: ref HEAD is not a symbolic ref") when
   # for example building a detached head, fall-back to using just commit id
-  BRANCH_NAME="$(git -C "$PWD" symbolic-ref HEAD | sed 's|.*heads/||' || echo "$COMMIT_ID")"
+  # Note: 'sed' always succeeds, also on empty input, so the fall-back must be
+  # based on the 'git symbolic-ref' output and not on a '|| echo' chain
+  BRANCH_NAME="$(git -C "$PWD" symbolic-ref HEAD 2> /dev/null | sed 's|.*heads/||')"
+  if [ -z "$BRANCH_NAME" ]
+  then
+    BRANCH_NAME="$COMMIT_ID"
+  fi
 
   # The BUILD_ID will appended to the Debian/Ubuntu version string, and thus
   # cannot have slahses, dashes or underscores.
