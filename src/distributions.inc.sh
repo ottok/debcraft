@@ -2,6 +2,9 @@
 
 # Given a debian/changelog distribution pocket name, return container tag
 function get_baseimage_from_distribution_name() {
+  # Use local variables so that the helper does not leak 'NAME' into the
+  # caller's environment
+  local NAME
 
   # Keep '-backports' suffix as e.g. 'bookworm-backports' is a valid container
   # image name at https://hub.docker.com/_/debian/tags
@@ -10,7 +13,6 @@ function get_baseimage_from_distribution_name() {
   NAME="${1%%-security}"
   # Remove -proposed-updates suffix as it is not a container tag
   NAME="${NAME%%-proposed-updates}"
-
   # This allow the user to map distribution names to specific base container
   # images using debcraft's config file sourced in debcraft.sh
   for pattern in "${!DEBCRAFT_DISTRIBUTION_MAPPING[@]}"
@@ -49,6 +51,9 @@ function get_baseimage_from_distribution_name() {
 }
 
 function get_ubuntu_equivalent_from_debian_release() {
+  # Use a local variable so that the helper does not leak 'SERIES' into the
+  # caller's environment, as 'SERIES' is also a caller variable elsewhere
+  local SERIES
 
   # Remove any suffix, e.g. 'bookworm-security' or 'bookworm-backports' would be
   # just 'bookworm' for the sake of Ubuntu equivalent lookup
