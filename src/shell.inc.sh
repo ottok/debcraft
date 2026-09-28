@@ -10,7 +10,6 @@ mkdir --parents "$CACHE_DIR" "$SHELL_DIR/source"
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
   log_info "Previous build was in ${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}"
-  mkdir --parents "$SHELL_DIR/previous-build"
   EXTRA_CONTAINER_MOUNTS=" --volume=${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}:/debcraft/previous-build $EXTRA_CONTAINER_MOUNTS"
 fi
 
@@ -18,7 +17,6 @@ fi
 if [ -n "${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}" ]
 then
   log_info "Previous release was in ${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}"
-  mkdir --parents "$SHELL_DIR/previous-release"
   EXTRA_CONTAINER_MOUNTS=" --volume=${PREVIOUS_SUCCESSFUL_RELEASE_DIRS[0]}:/debcraft/previous-release $EXTRA_CONTAINER_MOUNTS"
 fi
 
@@ -38,6 +36,10 @@ then
 fi
 
 # See build.inc.sh for explanation of container run parameters
+# Note! The exit code is captured explicitly because 'set -e' is in effect and
+# would otherwise abort the script before the temporary directory gets cleaned
+# up, leaving it behind whenever the container exits non-zero.
+EXIT_CODE=0
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
@@ -53,7 +55,8 @@ $CONTAINER_CMD run \
     --workdir=/debcraft/source \
     --env="DEB*" \
     "$CONTAINER" \
-    /debcraft-shell.sh
+    /debcraft-shell.sh \
+    || EXIT_CODE=$?
 
 # NOTE! Intentionally omit $CONTAINER_RUN_ARGS as this container should run as
 # root so user can install/upgrade tools.
@@ -61,5 +64,15 @@ $CONTAINER_CMD run \
 # Regardless if running with `--debug` and if `set -x` was set or not, always
 # turn it off now and in a way that does not print extra `++` prefixed lines
 { set +x; } 2>/dev/null
+
+# Clean up the temporary directory used to provide the container mounts
+rm --recursive --force "$SHELL_DIR"
+
+# Propagate the container exit code now that cleanup is done
+if [ "$EXIT_CODE" -ne 0 ]
+then
+  log_error "Interactive shell exited with a non-zero exit code $EXIT_CODE"
+  exit "$EXIT_CODE"
+fi
 
 log_info "Interactive shell exited"
