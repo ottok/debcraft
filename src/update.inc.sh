@@ -153,8 +153,17 @@ fi
 log_info "Ensuring local git checkout is up-to-date with git remote '$VCS_GIT'"
 
 # Make sure latest commits are fetched from the official vcs-git location
+# The remote is only needed for this command, so remove any left over from a
+# previous run first to keep this idempotent and recover from a failed run that
+# never got to the cleanup below (e.g. Ctrl+C during 'gbp pull')
+git remote remove vcs-git > /dev/null 2>&1 || true
 git remote add vcs-git "$VCS_GIT"
-log_command gbp pull --track-missing vcs-git
+# Always clean up the temporary remote, also if 'gbp pull' fails
+if ! log_command gbp pull --track-missing vcs-git
+then
+  git remote remove vcs-git > /dev/null 2>&1 || true
+  exit 1
+fi
 git remote remove vcs-git
 # @TODO: If git-buildpackage adds support for fetching with URL, the above could
 # be replaced with simply:
