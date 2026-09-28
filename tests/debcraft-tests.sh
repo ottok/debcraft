@@ -120,7 +120,7 @@ debcraft_test "build" "$EXPECTED"
 # dpkg-parsechangelog from accessing debian/changelog inside the container
 if [ -z "${CI:-}" ]
 then
-  DEBCRAFT_PPA='' debcraft_test "release" "  gbp tag --verbose"
+  DEBCRAFT_PPA='' debcraft_test "release" "  git-debpush --gbp"
 fi
 
 git clean -fdx
@@ -180,7 +180,7 @@ rm -rf "$tmp_release_dir"
 if [ -z "${CI:-}" ]
 then
   tmp_release_dir=$(mktemp --directory)
-  DEBCRAFT_PPA='' debcraft_test "release --with-binaries --release-to $tmp_release_dir"  "  gbp tag --verbose"
+  DEBCRAFT_PPA='' debcraft_test "release --with-binaries --release-to $tmp_release_dir"  "  git-debpush --gbp"
   if ! ls "$tmp_release_dir"/entr_*.deb &> /dev/null
   then
     echo "Packages not released to $tmp_release_dir"
