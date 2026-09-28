@@ -1,3 +1,28 @@
+debcraft (0.9.5) unstable; urgency=medium
+
+  * Implement partial `debcraft prune`
+  * Additionally do a lot of small bugfixes and polish:
+    - Align output of info message with other improve jobs
+    - Migrate to uscan v5 only when `debcraft update` runs branch `debian/latest`
+    - Allow running `debcraft update` on a feature branch without gbp errors
+    - Prevent running `debcraft improve` directly on the Debian branch
+    - Shorten the cache path in the report only below the home directory
+    - Update test string that was left out from f48942e
+    - Capture autopkgtest exit code in debcraft-tester
+    - Make temporary 'vcs-git' git remote idempotent and always cleaned up
+    - Run all improve.d hooks even if one of them fails
+    - Stop PPA upload if no backport .changes file was found
+    - Make detached-HEAD branch name fall-back independent of pipefail
+    - Use local variables in distributions.inc.sh helper functions
+    - Clean up temporary mount/shell directories properly
+    - Update `debcraft --help` output in README to match current
+  * This is likely the last release before announcing version 1.0. If you have
+    suggestions on what Debcraft still needs to do so you can use it as your
+    main .deb building tool, please participate in the discussion at
+    https://salsa.debian.org/debian/debcraft/-/work_items/49
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 28 Sep 2026 13:13:13 +0000
+
 debcraft (0.9.4) unstable; urgency=medium
 
   * Extend `debcraft update` to document pushing all branches in gbp
