@@ -35,8 +35,12 @@ fi
 
 
 log_info "Run autopkgtest"
+# Temporarily disable 'set -e' so that the non-zero exit code of autopkgtest can
+# be captured and examined below instead of aborting the script immediately
+set +e
 autopkgtest --ignore-restrictions=breaks-testbed --no-built-binaries --shell-fail --log-file=/debcraft/previous-build/test.log -- null
 EXIT_CODE=$?
+set -e
 
 log_info "Tests completed with exit code $EXIT_CODE"
 
