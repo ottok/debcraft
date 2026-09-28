@@ -81,6 +81,15 @@ backportpackage --yes --dont-sign --release-pocket --destination="$SERIES" --suf
 # Find the backports generated .changes file (with '~bpo' in the name)
 BPO_CHANGES_FILE=$(find "$BPO_DIR" -maxdepth 1 -name "*~bpo*_source.changes" -print -quit)
 
+# Without the file, everything below (sed, debsign, dput) would misbehave, e.g.
+# an interactive 'sed' reading from stdin, so stop here with a clear error
+if [ -z "$BPO_CHANGES_FILE" ]
+then
+  log_error "Unable to find a backport .changes file in $BPO_DIR" \
+            "as 'backportpackage' most likely failed, see $BPO_DIR/backportpackage.log"
+  exit 1
+fi
+
 # Extract Debian revision e.g. "26.4.25-2" -> "2"
 DEBIAN_REVISION="${DEBIAN_VERSION##*-}"
 
