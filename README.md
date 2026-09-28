@@ -83,47 +83,67 @@ DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build <package>
 
 ```
 $ debcraft --help
-usage: debcraft <build|improve|test|release|shell|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
+usage: debcraft <build|improve|test|release|update|shell|logs|prune> [options] [<path|pkg|srcpkg|dsc|git-url>]
 
 Debcraft is a tool to easily build .deb packages. The 'build' argument accepts
-as a subargument any of:
+any of the following:
 
   * path to directory with program sources including a debian/ subdirectory with
-  * the Debian packaging instructions
+    the Debian packaging instructions
 
   * path to a .dsc file and source tarballs that can be built into a .deb
 
-  * Debian package name, or source package name, that apt can download
+  * Debian package name or source package name that apt can download
 
   * git http(s) or ssh URL that can be downloaded and built
 
-The commands 'validate' and 'release' are intended to be used to finalize a
-package build. The command 'test' will run the Debian-specific regression test
-suite if the package has autopkgtest support, and drop to a shell for
-investigation if tests failed to pass. The command 'shell' can be used to play
-around in the container and 'prune' will clean up temporary files by Debcraft.
+The command 'improve' will try to apply various improvements to the package
+based on tools in Debian that automate package maintenance. The command 'test'
+will run the Debian-specific regression test suite if the package has
+autopkgtest support, and drops to a shell for investigation if tests fail to
+pass. The command 'release' uploads a package that is ready to be released and
+the command 'update' tries to update the package to the latest upstream version
+if the package git repository layout is compatible.
+
+The command 'shell' can be used to explore the container and 'prune' will
+clean up temporary files created by Debcraft. Unlike the other commands,
+'prune' is not tied to any source package and can be run from anywhere: it
+cleans up the build directories of all packages, and reports how much disk
+space Debcraft occupies before it deletes anything.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Note that
-Debcraft builds never run as root, and thus packages with
-DEB_RULES_REQUIRES_ROOT are not supported.
+be honored (currently DEB_BUILD_OPTIONS='parallel=4 noautodbgsym'). Successful builds
+include running './debian/rules clean' to clean up artifacts, while failed
+builds will leave them around for inspection.
 
 optional arguments:
-  --build-dirs-path    Path for writing build files and artifacts (default: parent directory)
-  --distribution       Linux distribution to build in (default: debian:sid)
-  --container-command  container command to use (default: podman)
-  --skip-sources       build only binaries and skip creating a source
-                       tarball to make the build slightly faster
-                       ('debcraft build' only)
-  --with-binaries      create a release with both source and binaries,
-                       for example with intent to upload to NEW
-                       ('debcraft release' only)
-  --pull               ensure container base is updated
-  --copy               perform the build on a copy of the package directory
-  --clean              ensure sources are clean
-  --debug              emit debug information
-  -h, --help           display this help and exit
-  --version            display version and exit
+  --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)
+  --distribution          Linux distribution to build in (default: debian:sid)
+  --container-command     Container command to use (default: podman)
+  --host-architecture     Host architecture to use when performing a cross build
+  --skip-sources          Build only binaries and skip creating a source
+                          tarball to make the build slightly faster
+                          ('debcraft build' only)
+  --with-binaries         Create a release with both source and binaries,
+                          for example with the intent to upload to NEW
+                          ('debcraft release' only)
+  --pull                  Ensure container base is updated
+  --copy                  Perform the build on a copy of the package directory
+  --clean                 Ensure sources are clean before and after build
+                          (only needed for packages with incomplete 'debian/clean'
+                          or 'debian/.gitignore' definitions)
+  --extra-repository      Use directory as local package repository for builds
+  --config                Path to debcraft configuration file
+  --release-to            After build or release, copy artefacts to specified dir
+  --older-than            Only prune files and directories that are older than
+                          the given number of days (default: 365)
+                          ('debcraft prune' only)
+  --yes                   Don't ask for confirmation, delete everything that
+                          the action matches
+                          ('debcraft prune' and PPA release uploads)
+  --debug                 Emit debug information
+  -h, --help              Display this help and exit
+  --version               Display version and exit
 
 To learn more, or to contribute to Debcraft, see project page at
 https://salsa.debian.org/debian/debcraft
@@ -348,6 +368,11 @@ The core design principles are:
    Salsa instead of just making their own private Debian packages.
 9. **Teach users about the Debian policy** gradually and in context, so that
    over time users grow towards Debian maintainership.
+
+Note! Debcraft builds never runs as root, and thus packages with
+`DEB_RULES_REQUIRES_ROOT` are not supported, and won't be supported as also
+[dpkg](https://manpages.debian.org/unstable/dpkg/) itself is heading in the
+direction of never using root in package builds.
 
 ### Development as an open source project
 

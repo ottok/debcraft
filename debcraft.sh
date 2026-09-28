@@ -47,9 +47,6 @@ be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
 include running './debian/rules clean' to clean up artifacts, while failed
 builds will leave them around for inspection.
 
-Note that Debcraft builds never runs as root, and thus packages with
-DEB_RULES_REQUIRES_ROOT are not supported.
-
 optional arguments:
   --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)
   --distribution          Linux distribution to build in (default: debian:sid)
