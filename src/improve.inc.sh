@@ -19,6 +19,31 @@ then
   exit 1
 fi
 
+# Use plain grep so Debcraft avoids depending on gbp being installed and check
+# if there is a custom debian-branch value, and otherwise fall back to 'master'
+DEBIAN_BRANCH="$(grep --only-matching --perl-regex "^\s?debian-branch\s?=\s?\K([^ #]*)" debian/gbp.conf 2>/dev/null || true)"
+if [ -z "$DEBIAN_BRANCH" ]
+then
+  DEBIAN_BRANCH="master"
+fi
+log_debug_var DEBIAN_BRANCH
+
+# If HEAD is detached, no branch name is returned and no warning is needed
+CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
+log_debug_var CURRENT_BRANCH
+
+if [ "$CURRENT_BRANCH" = "$DEBIAN_BRANCH" ]
+then
+  log_error "Running 'debcraft improve' directly on the Debian branch" \
+            "'$DEBIAN_BRANCH' is not supported as Debcraft can't guarantee" \
+            "that all automatic improvements are fully correct. Run the" \
+            "command on a development branch, review the commits generated," \
+            "and run 'git rebase -i $DEBIAN_BRANCH' while reworking the" \
+            " commits until the final version is ready to be merged on the" \
+            "main packaging branch."
+  exit 1
+fi
+
 ensure_git_identity
 
 if [ -n "$DEBUG" ]

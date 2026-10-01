@@ -46,36 +46,6 @@ source "/output.inc.sh"
 
 # @TODO: diffoscope --html report.html old.deb new.deb
 
-# Warn if running on the Debian branch, as the improvements committed below are
-# then permanent and may be uploaded as-is without further review
-if [ -d .git ]
-then
-  # Read the Debian branch name as configured for 'gbp' and fall-back to gbp's
-  # own default if the configuration cannot be read
-  DEBIAN_BRANCH="$(gbp config import-orig.debian-branch 2>/dev/null || true)"
-  if [ -z "$DEBIAN_BRANCH" ]
-  then
-    DEBIAN_BRANCH="debian/latest"
-  fi
-  log_debug_var DEBIAN_BRANCH
-
-  # If HEAD is detached, no branch name is returned and no warning is needed
-  CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
-  log_debug_var CURRENT_BRANCH
-
-  if [ "$CURRENT_BRANCH" = "$DEBIAN_BRANCH" ]
-  then
-    log_error "Running 'debcraft improve' directly on the Debian branch" \
-              "'$DEBIAN_BRANCH' is not supported. Debcraft can't guarantee" \
-              "that all automatic improvements are fully correct. Run the" \
-              "command on a development branch, review the commits generated," \
-              "and run 'git rebase -i $DEBIAN_BRANCH' and rework the commits" \
-              "until the final version is ready to be merged on the Debian" \
-              "branch."
-    exit 1
-  fi
-fi
-
 for script in /improve.d/*.sh
 do
   log_info "Running $(basename "$script"):"
