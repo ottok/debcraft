@@ -10,9 +10,10 @@ set -o pipefail
 source "/output.inc.sh"
 
 # Bump Debhelper version by one, which most of the time should be safe to do
-if grep --quiet --only-matching "debhelper-compat (= 13)" debian/control
+if grep --only-matching --perl-regex "debhelper-compat \(=\s?13\)" debian/control
 then
-  log_command sed -i 's/ debhelper-compat (= 13)/ debhelper-compat (= 14)/' debian/control
+  # Existing value can be either '(=13)' or '(= 13)'
+  log_command sed -i -r 's/ debhelper-compat \(=\s?13\)/ debhelper-compat (= 14)/' debian/control
 
   # Commit if file changed
   if ! git diff --quiet debian/control
