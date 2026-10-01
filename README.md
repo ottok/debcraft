@@ -10,8 +10,9 @@
   and it also teaches users about Debian packaging in context.
 
 * **Fast**: Container layer caching is utilized to make builds and re-builds
-  blazingly fast. Debian packages that support [ccache](https://ccache.dev/)
-  build even faster.
+  blazingly fast. Debian packages that support [ccache](https://ccache.dev/),
+  as well as C/C++ and Rust builds that support
+  [sccache](https://github.com/mozilla/sccache), build even faster.
 
 * **Secure**: Builds happen inside hermetic containers with no network access.
   This ensures all dependencies are properly managed and the built binaries
@@ -19,19 +20,13 @@
   the host system from getting polluted with extra development libraries, and
   adds an extra layer of protection to prevent anything malicious in the source
   code from accessing secrets on the host system. The additional logs provided
-  by Debcraft also helps audit changes in Debian package sources and build
+  by Debcraft also help audit changes in Debian package sources and build
   artifacts.
 
-> **Feedback welcome!** Debcraft is still in early development and your feedback
-> is greatly appreciated. Bug reports at
-> https://salsa.debian.org/debian/debcraft/-/issues are welcome on for example:
->
-> * Documentation: Is it easy to start using Debcraft? How could the
->   documentation be clarified further?
-> * Structure: Are you able to productively use Debcraft? Is the tool easy to
->   reason about? Do the features and code architecture make sense?
-> * Compatibility: Does Debcraft work on your laptop and with your favorite
->   Linux distro / release / package?
+  Commands that need to reach the network in order to do their job are the
+  exceptions: the `build` and `release` commands run hermetically, but
+  `improve`, `test` and `shell` deliberately do not, and `update` never runs a
+  container at all.
 
 ## Usage
 
@@ -46,37 +41,96 @@ debcraft build <package>
 #### Build package from a specific Debian/Ubuntu release
 
 ```shell
-debcraft build --distribution bullseye <package>
+debcraft build --distribution trixie <package>
 ```
 
 #### Build from a local directory
 
 ```shell
-debcraft build <path to sources>
+debcraft build
 ```
 
 #### Drop into a shell inside the build container for debugging
 
 ```shell
-debcraft shell <path to sources>
+debcraft shell
+```
+
+Note that the shell is the one command that intentionally runs as `root` inside
+the container, so that packages can be installed and upgraded while debugging,
+whereas builds always run as an unprivileged user.
+
+#### Automatically apply packaging improvements on a branch
+
+```shell
+git switch -c develop
+debcraft improve
+```
+
+#### Update the package to the latest upstream version
+
+```shell
+debcraft update
+```
+
+#### Run the Debian-specific regression tests (autopkgtest)
+
+```shell
+debcraft test
 ```
 
 #### Build and ensure all dependencies are latest possible
 
 ```shell
-debcraft build --pull <path to sources>
+debcraft build --pull
+```
+
+#### Build on a copy so that the sources stay free of build artifacts
+
+```shell
+debcraft build --copy
+```
+
+#### Perform a cross build
+
+```shell
+debcraft build --host-architecture arm64
+```
+
+#### Build using additional packages from a local repository
+
+```shell
+debcraft build --extra-repository <path to .deb files>
+```
+
+#### List previous builds and their logs
+
+```shell
+debcraft logs
 ```
 
 #### Build and publish to Launchpad Personal Package Archive (PPA)
 
 ```shell
-DEBCRAFT_PPA=ppa:otto/ppa debcraft release <path to sources>
+DEBCRAFT_PPA=ppa:otto/ppa debcraft release
+```
+
+#### Copy build artifacts to another directory
+
+```shell
+debcraft build --release-to ~/deb-builds
+```
+
+#### Free disk space by removing old build directories
+
+```shell
+debcraft prune --older-than 180
 ```
 
 #### Pass build options
 
 ```shell
-DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build <package>
+DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build
 ```
 
 ### Command reference
@@ -112,7 +166,7 @@ cleans up the build directories of all packages, and reports how much disk
 space Debcraft occupies before it deletes anything.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='parallel=4 noautodbgsym'). Successful builds
+be honored (currently DEB_BUILD_OPTIONS=''). Successful builds
 include running './debian/rules clean' to clean up artifacts, while failed
 builds will leave them around for inspection.
 
@@ -157,45 +211,89 @@ and https://www.debian.org/doc/debian-policy/
 
 ```
 $ debcraft build
-Running in path ~/entr/entr that has Debian package sources for 'entr'
+Running in directory /home/otto/debian/entr that has Debian package sources for 'entr'
 Use 'podman' container image 'debcraft-entr-debian-sid' for package 'entr'
-Building container 'debcraft-entr-debian-sid' in '~/entr/debcraft-container-entr' for build ID '1705046461.1964390+debian.latest'
-STEP 1/12: FROM debian:sid
+Building container 'debcraft-entr-debian-sid' in '/home/otto/.cache/debcraft/debcraft-container-entr' for build ID '1790865664.548d1d5+debian.latest'
+STEP 1/36: FROM debian:sid
+STEP 2/36: ARG HOST_ARCH
+--> Using cache 2a3cb9adb7e1ef4dfd8ce7cb2b1b9a03dc7d1483b78dcbbe3e83385e8afb5ccb
+--> 2a3cb9adb7e1
 ...
 COMMIT debcraft-entr-debian-sid
---> d9975574b37
+--> 3665920e16bf
 Successfully tagged localhost/debcraft-entr-debian-sid:latest
-d9975574b37ac5ff5fd1874ee935a8d35152126798d339a53c076cd0461c9354
-Previous build was in ~/entr/debcraft-build-entr-1705046398.1964390+debian.latest
-Building package at ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest
+3665920e16bf9eb8216d49c417504f25615e46e49216f6d6027ca0961c37ef12
+Previous build was in /home/otto/.cache/debcraft/debcraft-build-entr-1789446347.548d1d5+debian.latest
+Previous tagged release was in /home/otto/.cache/debcraft/debcraft-build-entr-1789446347.548d1d5+debian.latest
+Building package at /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest
+'../entr_5.8.orig.tar.gz' -> '/home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest/entr_5.8.orig.tar.gz'
+Create original source package and signature using pristine-tar
+pristine-tar: /debcraft/entr_5.8.orig.tar.gz already exists and is valid
+pristine-tar: successfully generated ../entr_5.8.orig.tar.gz
+pristine-tar: successfully generated ../entr_5.8.orig.tar.gz.asc
+Using existing orig tarball, preventing gbp from creating a new one
+DEB_BUILD_OPTIONS set as 'parallel=4 noautodbgsym'
 Running 'dpkg-buildpackage --build=any,all' to create .deb packages
+Running 'gbp buildpackage --git-no-create-orig' to create .deb packages from git repository
+followed by './debian/rules clean' to ensure source directory is clean
 gbp:info: Performing the build
 dpkg-buildpackage: info: source package entr
-dpkg-buildpackage: info: source version 5.5-1
+dpkg-buildpackage: info: source version 5.8-1
 dpkg-buildpackage: info: source distribution unstable
 dpkg-buildpackage: info: source changed by Otto Kekäläinen <otto@debian.org>
  dpkg-source --before-build .
-...
-make -j4 "INSTALL=install --strip-program=true"
+dpkg-buildpackage: info: host architecture amd64
+dpkg-source: info: using patch list from debian/patches/series
+dpkg-source: info: applying system-test-with-system-binary.patch
+dpkg-source: info: applying Include-local-strlcpy.patch
+ debian/rules clean
+dh clean --buildsystem=makefile
+   dh_auto_clean -O--buildsystem=makefile
+   dh_autoreconf_clean -O--buildsystem=makefile
+   dh_clean -O--buildsystem=makefile
+ dpkg-source -b .
+dpkg-source: info: using source format '3.0 (quilt)'
+dpkg-source: info: verifying ../entr_5.8.orig.tar.gz.asc
+dpkg-source: info: building entr using existing ../entr_5.8.orig.tar.gz
+dpkg-source: info: building entr using existing ../entr_5.8.orig.tar.gz.asc
+dpkg-source: info: using patch list from debian/patches/series
+dpkg-source: info: building entr in ../entr_5.8-1.debian.tar.xz
+dpkg-source: info: building entr in ../entr_5.8-1.dsc
+ debian/rules binary
+dh binary --buildsystem=makefile
+   dh_update_autotools_config -O--buildsystem=makefile
+   dh_autoreconf -O--buildsystem=makefile
+   debian/rules override_dh_auto_configure
 make[1]: Entering directory '/debcraft/source'
-cc -g -O2 -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -D_GNU_SOURCE -D_LINUX_PORT -isystem /usr/include/bsd -DLIBBSD_OVERLAY  -Imissing -Wdate-time -D_FORTIFY_SOURCE=2 -DRELEASE=\"5.5\" -Wl,-z,relro -Wl,-z,now -lpthread -Wl,-z,nodlopen -Wl,-u,libbsd_init_func -lbsd-ctor -lbsd  missing/kqueue_inotify.c entr.c -o entr
-entr.c: In function ‘print_child_status’:
-entr.c:289:9: warning: ignoring return value of ‘write’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-  289 |         write(STDOUT_FILENO, buf, len);
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-entr.c: In function ‘run_utility’:
-entr.c:433:17: warning: ignoring return value of ‘realpath’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-  433 |                 realpath(leading_edge->fn, arg_buf);
-      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ln -sf Makefile.linux Makefile
 make[1]: Leaving directory '/debcraft/source'
-dh: command-omitted: The call to "dh_auto_test -O--buildsystem=makefile" was omitted due to "DEB_BUILD_OPTIONS=nocheck"
+   dh_auto_build -O--buildsystem=makefile
+	make -j4 INSTALL="install --strip-program=true"
+make[1]: Entering directory '/debcraft/source'
+cat /dev/null missing/kqueue_inotify.c missing/strlcpy.c > compat.c
+cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c status.c
+cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c entr.c
+cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c compat.c
+status.c: In function 'start_log_filter':
+status.c:48:17: warning: ignoring return value of 'asprintf' declared with attribute 'warn_unused_result' [-Wunused-result]
+   48 |                 asprintf(&awk_script, "%s/.entr/status.awk", pw->pw_dir);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -o entr compat.o status.o entr.o -Wl,-z,relro -Wl,-z,now
+make[1]: Leaving directory '/debcraft/source'
+   dh_auto_test -O--buildsystem=makefile
+	make -j4 test
+make[1]: Entering directory '/debcraft/source'
+ls entr.1 | EV_TRACE=1 ./entr -zn wc -l entr.1
+open_max: 65536
+209 entr.1
+make[1]: Leaving directory '/debcraft/source'
    create-stamp debian/debhelper-build-stamp
    dh_testroot -O--buildsystem=makefile
    dh_prep -O--buildsystem=makefile
    debian/rules override_dh_auto_install
 make[1]: Entering directory '/debcraft/source'
 dh_auto_install -- PREFIX=/usr
-	make -j4 install DESTDIR=/debcraft/source/debian/entr AM_UPDATE_INFO_DIR=no "INSTALL=install --strip-program=true" PREFIX=/usr
+	make -j4 install DESTDIR=/debcraft/source/debian/entr AM_UPDATE_INFO_DIR=no INSTALL="install --strip-program=true" PREFIX=/usr
 make[2]: Entering directory '/debcraft/source'
 install entr /debcraft/source/debian/entr/usr/bin
 install -m 644 entr.1 /debcraft/source/debian/entr/usr/share/man/man1
@@ -219,59 +317,132 @@ make[1]: Leaving directory '/debcraft/source'
    dh_gencontrol -O--buildsystem=makefile
    dh_md5sums -O--buildsystem=makefile
    dh_builddeb -O--buildsystem=makefile
-dpkg-deb: building package 'entr' in '../entr_5.5-1_amd64.deb'.
- dpkg-genbuildinfo --build=binary -O../entr_5.5-1_amd64.buildinfo
- dpkg-genchanges --build=binary -O../entr_5.5-1_amd64.changes
-dpkg-genchanges: info: binary-only upload (no source code included)
+dpkg-deb: building package 'entr' in '../entr_5.8-1_amd64.deb'.
+ dpkg-genbuildinfo -O../entr_5.8-1_amd64.buildinfo
+ dpkg-genchanges -O../entr_5.8-1_amd64.changes
+dpkg-genchanges: info: including full source code in upload
+ debian/rules clean
+dh clean --buildsystem=makefile
+   dh_auto_clean -O--buildsystem=makefile
+	make -j4 distclean
+make[1]: Entering directory '/debcraft/source'
+rm -f *.o compat.c entr
+rm -f Makefile
+make[1]: Leaving directory '/debcraft/source'
+   dh_autoreconf_clean -O--buildsystem=makefile
+   dh_clean -O--buildsystem=makefile
  dpkg-source --after-build .
-dpkg-source: info: unapplying fix-spelling.patch
-dpkg-source: info: unapplying system-test-fixes.patch
-dpkg-source: info: unapplying debug-system-test.patch
-dpkg-source: info: unapplying kfreebsd-support.patch
-dpkg-source: info: unapplying libbsd-overlay.patch
-dpkg-buildpackage: info: binary-only upload (no source included)
-Cache directory:    /debcraft/cache/ccache
-Config file:        /debcraft/cache/ccache/ccache.conf
-System config file: /etc/ccache.conf
-Stats updated:      Fri Jan 12 08:01:04 2024
+dpkg-source: info: unapplying Include-local-strlcpy.patch
+dpkg-source: info: unapplying system-test-with-system-binary.patch
+dpkg-buildpackage: info: full upload (original source is included)
+Cache stats: ccache
+Cache directory:       /debcraft/cache/ccache
+Config file:           /debcraft/cache/ccache/ccache.conf
+Directory config file:
+System config file:    /etc/ccache.conf
+Stats updated:         Thu Oct  1 14:41:42 2026
+Cacheable calls:         3 /   5 (60.00%)
+  Hits:                  0 /   3 ( 0.00%)
+    Direct:              0
+    Preprocessed:        0
+  Misses:                3 /   3 (100.0%)
+Uncacheable calls:       2 /   5 (40.00%)
+  Called for linking:    1 /   2 (50.00%)
+  No input file:         1 /   2 (50.00%)
+Successful lookups:
+  Direct:                0 /   3 ( 0.00%)
+  Preprocessed:          0 /   3 ( 0.00%)
 Local storage:
-  Cache size (GiB): 0.0 / 5.0 ( 0.00%)
-  Files:              0
-  Hits:               0
-  Misses:             0
-  Reads:              0
-  Writes:             0
+  Cache size (GB):     0.0 / 3.0 ( 0.04%)
+  Files:                90
+  Hits:                  0 /   3 ( 0.00%)
+  Misses:                3 /   3 (100.0%)
+  Reads:                 6
+  Writes:                6
 
 Create lintian.log
+N:
+P: entr source: package-uses-old-debhelper-compat-version 13
+N:
+N:   This package uses a debhelper compatibility level that is no longer
+N:   recommended. Please consider using the recommended level.
+N:
+N:   For most packages, the best way to set the compatibility level is to
+N:   specify debhelper-compat (= X) as a Build-Depends in debian/control. You
+N:   can also use the debian/compat file or export DH_COMPAT in debian/rules.
+N:
+N:   If no level is selected debhelper defaults to level 1, which is
+N:   deprecated.
+N:
+N:   Please refer to the debhelper(7) manual page for details.
+N:
+N:   Visibility: pedantic
+N:   Show-Always: no
+N:   Check: debhelper
+N:
+
+Create blhc.log
+CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c compat.c
+CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c entr.c
+CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c status.c
+LDFLAGS missing (-fPIE -pie): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -o entr compat.o status.o entr.o -Wl,-z,relro -Wl,-z,now
 
 Create filelist.log
 
-Create maintainer-scripts.log
+Create control.log and maintainer-scripts.log
 
 Create diffoscope report comparing to previous build
 
-Build completed in 10 seconds and created:
-total 72K
- 32K diffoscope.html
-4.0K entr_5.5-1_amd64.build
-8.0K entr_5.5-1_amd64.buildinfo
-4.0K entr_5.5-1_amd64.changes
- 20K entr_5.5-1_amd64.deb
-4.0K filelist.log
-   0 lintian.log
+Create diffoscope report comparing to last tagged build
 
-Artifacts at ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest
+Build completed in 10 seconds and created:
+total 356K
+4.0K blhc.log
+4.0K build.err.log
+4.0K build.err.log.diff
+4.0K build.err.log.last-tagged.diff
+8.0K build.log
+4.0K build.log.diff
+4.0K build.log.last-tagged.diff
+8.0K buildinfo.log
+8.0K buildinfo.log.diff
+8.0K buildinfo.log.last-tagged.diff
+4.0K changes.log
+4.0K changes.log.diff
+4.0K changes.log.last-tagged.diff
+4.0K control.log
+ 88K diffoscope.last-tagged.html
+ 88K diffoscope.previous.html
+ 20K entr_5.8-1.debian.tar.xz
+4.0K entr_5.8-1.dsc
+8.0K entr_5.8-1_amd64.buildinfo
+4.0K entr_5.8-1_amd64.changes
+ 24K entr_5.8-1_amd64.deb
+ 28K entr_5.8.orig.tar.gz
+4.0K entr_5.8.orig.tar.gz.asc
+4.0K filelist.log
+4.0K lintian.log
+4.0K lintian.log.diff
+4.0K lintian.log.last-tagged.diff
+
+Artifacts at /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest
+
 To compare build artifacts with those of previous similar build you can use for example:
-  meld ~/entr/debcraft-build-entr-1705046398.1964390+debian.latest ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest &
-  browse ~/entr/debcraft-build-entr-1705046461.1964390+debian.latest/diffoscope.html
+  meld /home/otto/.cache/debcraft/debcraft-build-entr-1789446347.548d1d5+debian.latest /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest &
+  browse /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest/diffoscope.previous.html
+
+To compare build artifacts with the previous tagged release run:
+  meld /home/otto/.cache/debcraft/debcraft-build-entr-1789446347.548d1d5+debian.latest /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest &
+  browse /home/otto/.cache/debcraft/debcraft-build-entr-1790865664.548d1d5+debian.latest/diffoscope.last-tagged.html
 ```
 
 ## Installation
 
 ### Debian package
 
-Debcraft is in Debian unstable ("sid") and Ubuntu 24.10 "Oracular" since July 2024.
-If running such a new version one can simply install with:
+[Debcraft](https://tracker.debian.org/pkg/debcraft) ships in Debian 13 "Trixie"
+and in the `universe` component of Ubuntu 25.04 "Plucky" and newer. In those
+distributions one can simply install with:
 
 ```
 apt install debcraft
@@ -282,8 +453,10 @@ default.
 
 ### Development version
 
-To use the latest development version, simply clone the git repository and link the
-script from any directory you have in your `$PATH`, such as `$HOME/bin`
+To use the latest development version, simply clone the git repository and run
+`make install-local`, which links the script into `~/.local/bin`, a directory
+that is part of `$PATH` on most distributions. Alternatively link the script
+manually from any other directory you have in your `$PATH`.
 
 ```
 git clone https://salsa.debian.org/debian/debcraft.git
@@ -347,9 +520,8 @@ The core design principles are:
    to make too many decisions, and when full automation is not possible, steer
    users to follow the best practices in software development.
 2. Use [git](https://tracker.debian.org/pkg/git),
-   [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) and
-   [quilt](https://tracker.debian.org/pkg/quilt) as Debian is on a path to
-   standardize on them as shown by the [Debian Trends
+   [git-buildpackage](https://tracker.debian.org/pkg/git-buildpackage) as Debian
+   is on a path to standardize on them as shown by the [Debian Trends
    website](https://trends.debian.net/).
 3. **Use Linux containers** (not chroot like traditional Debian tools do) for
    improved isolation, security and reproducibility.
@@ -369,49 +541,22 @@ The core design principles are:
 9. **Teach users about the Debian policy** gradually and in context, so that
    over time users grow towards Debian maintainership.
 
-Note! Debcraft builds never runs as root, and thus packages with
-`DEB_RULES_REQUIRES_ROOT` are not supported, and won't be supported as also
-[dpkg](https://manpages.debian.org/unstable/dpkg/) itself is heading in the
-direction of never using root in package builds.
+Note! Debcraft builds never run as root, and thus packages that declare
+`Rules-Requires-Root: yes` in `debian/control` are not supported, and won't be
+supported as also [dpkg](https://manpages.debian.org/unstable/dpkg/) itself is
+heading in the direction of never using root in package builds.
 
 ### Development as an open source project
 
 **This project is open source and contributions are welcome!** The project
 maintains a promise that the initial review will happen in 48h for all Merge
-Requests received. The [code review will be conducted professionally]() and the
+Requests received. The [code review will be conducted
+professionally](https://optimizedbyotto.com/post/how-to-code-review/) and the
 code base aims to maintain a very high quality bar, so please reserve time to
 polish your code submission in a couple of review rounds.
 
 The project is hosted at https://salsa.debian.org/debian/debcraft with mirrors at
 https://gitlab.com/ottok/debcraft and https://github.com/ottok/debcraft.
-
-### Roadmap
-
-Debcraft does not intend to replace well-working existing tools like
-[git-buildpackage](https://honk.sigxcpu.org/piki/projects/git-buildpackage/),
-but rather build upon them, making the overall process as easy as possible.
-**Current development focus is to make the `debcraft build` as easy and
-efficient as possible** and it is already quite capable. The `release` is also
-already fully usable.
-
-The `validate` command only does static testing for the source directory without
-modifying anything. Something like `polish` to run
-[lintian-brush](https://manpages.debian.org/unstable/lintian-brush/lintian-brush.1.en.html)
-and other tools to automatically improve the package source code might be added
-later, or a command to run dynamic tests on the built binaries (create local
-repo, run piuparts, autopkgtests, some of the Salsa-CI tests locally etc).
-
-The `prune` command is not tied to any source package, but to the build
-directories of all of them, and it can be run from anywhere. It is not
-complete yet: the container images and volumes it builds are not touched, older
-artifacts have no longer expiration than the general prune age, and the logs of
-past builds are never compressed or removed.
-
-To help Debian Developers with recurring work, a command such as `update` to
-automatically import a new upstream version might also be implemented later.
-
-Search for `@TODO` comments in the sources to see which parts are incomplete and
-pending to be written out.
 
 ### Programming language: Bash
 
@@ -425,7 +570,7 @@ ANSI codes, overly simplistic error handling etc) start to feel limiting, parts
 of this tool might be rewritten in a fast to develop language like Python, Mojo,
 Nim, Zig or Rust.
 
-Note that Bash is used to its fullest. There is no need to restrict
+Note that Bash is used to the fullest. There is no need to restrict
 functionality to POSIX compatibility as Debcraft will always run on Linux using
 Linux containers anyway.
 
@@ -433,7 +578,7 @@ Linux containers anyway.
 
 Despite being written with Bash, Debcraft still aims for the highest possible code
 quality by enforcing that the code base is Shellcheck-clean along with other
-applicable static testing, such as spellchecking. While running `set -e` is in
+applicable static testing, such as spellchecking. Also, running `set -e` is in
 effect to stop execution on any error unless explicitly handled.
 
 The Bash code should avoid spawning subshells if it can be avoided. For example
@@ -451,7 +596,7 @@ enough to stand the test of time and serve for decades to come.
 It is more important for code to be easy to read and reason about than quick to
 write. Therefore, always spend a bit of extra effort to make things clear and
 easy to read. For example, write `--parameter` instead of just `-p` when
-possible. Most commands are also run with `--verbose` intentionally to expose to
+possible. Most commands are also run with `--debug` intentionally to expose to
 users what is happening.
 
 Automation in a developer tool does not mean that things should be hidden - in
@@ -511,6 +656,7 @@ specific container images.
 3. A custom file provided via `--config <path>`
 
 Example configuration file:
+
 ```bash
 # /etc/debcraft
 # The pattern should be as follow :
@@ -528,4 +674,5 @@ parsed from the changelog.
 
 Copyright 2023-2026 Otto Kekäläinen & collaborators
 
-Debcraft is free and open source software as published under GPL version 3.
+Debcraft is free and open source software as published under GNU General Public
+License version 3 or later (`GPL-3.0-or-later`).
