@@ -100,12 +100,21 @@ RUN apt-get update -q && \
       diffoscope-minimal \
       zstd || true
 
-# The lintianb-rush package is (consistently) available only since Debian 12
-# "Bookworm" and thus building containers of older Debian or Ubuntu releases
-# will fail, but that can be ignored
+# The lintian-brush package is packaged in Debian testing, unstable and
+# oldstable, but neither in Debian stable nor in any Ubuntu release yet, and thus
+# building containers for those releases will fail, but that can be ignored
 RUN apt-get update -q && \
     apt-get install -q --yes --no-install-recommends \
       lintian-brush || true
+
+# The debian-codemods package provides the companion tools of lintian-brush, such
+# as 'deb-scrub-obsolete', and is packaged separately from 'lintian-brush' even
+# though they share a source package. Install it in a step of its own so that it
+# being unavailable does not take 'lintian-brush' down with it, as 'apt-get
+# install' installs nothing at all if any of the named packages is missing.
+RUN apt-get update -q && \
+    apt-get install -q --yes --no-install-recommends \
+      debian-codemods || true
 
 # The licenserecon package is available only since Debian 13 "Trixie",
 # and thus building containers of older Debian or Ubuntu releases will fail
