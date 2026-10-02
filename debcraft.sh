@@ -138,7 +138,7 @@ TITLE_UPDATE_PID=""
 
 if [ -z "$1" ]
 then
-  log_error "Missing argument <build|improve|test|release|shell|logs|prune>"
+  log_error "Missing argument <build|improve|test|release|update|shell|logs|prune>"
   echo
   display_help
   exit 1
