@@ -138,11 +138,11 @@ then
   PREVIOUS_CHANGES_FILE="$(find previous/ -maxdepth 1 -name "*.changes" -print -quit)"
   if [ -n "$PREVIOUS_CHANGES_FILE" ]
   then
-    # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
+    # Force diffoscope to terminate after 2 minutes. If diffoscope takes longer
     # than that, the output is probably massive and unreadable. Diffoscope is more
     # useful for hunting small changes which might be hard to find with other
     # tools.
-    diffoscope --html=diffoscope.previous.html --timeout=$((60*5)) \
+    diffoscope --html=diffoscope.previous.html --timeout=$((60*2)) \
       "$PREVIOUS_CHANGES_FILE" ./*.changes || true
     # Exit status is zero only if inputs are identical, so ignore exit code
   else
@@ -171,11 +171,11 @@ then
   LAST_TAGGED_CHANGES_FILE="$(find last-tagged/ -maxdepth 1 -name "*.changes" -print -quit)"
   if [ -n "$LAST_TAGGED_CHANGES_FILE" ]
   then
-    # Force diffoscope to terminate after 5 minutes. If diffoscope takes longer
+    # Force diffoscope to terminate after 2 minutes. If diffoscope takes longer
     # than that, the output is probably massive and unreadable. Diffoscope is more
     # useful for hunting small changes which might be hard to find with other
     # tools.
-    diffoscope --html=diffoscope.last-tagged.html --timeout=$((60*5)) \
+    diffoscope --html=diffoscope.last-tagged.html --timeout=$((60*2)) \
       "$LAST_TAGGED_CHANGES_FILE" ./*.changes || true
     # Exit status is zero only if inputs are identical, so ignore exit code
   else
