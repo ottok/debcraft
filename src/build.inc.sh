@@ -4,21 +4,34 @@
 # would create it anyway
 mkdir --parents "$BUILD_DIR/source"
 
-# Copy sources if requested
+# Build on a copy if requested, so that the original source directory is not
+# polluted with build artifacts. Prefer a Podman overlay mount, which does not
+# copy anything at all, and fall back to a shared git clone created inside the
+# container for engines without overlay support (e.g. Docker).
+COPY_MODE=""
 if [ -n "$COPY" ]
 then
-  if ! command -v rsync >/dev/null 2>&1
+  if [ "$CONTAINER_SUPPORTS_OVERLAYS" = "true" ]
   then
-    log_error "rsync is required for --copy but is not installed"
-    exit 1
+    # The original sources become the read-only lower layer and all build
+    # writes go to an overlay upper layer that Podman keeps in its own storage
+    # and destroys when the container exits. Since neither .git nor the working
+    # tree are copied this is the fastest option, and the original directory is
+    # guaranteed to stay untouched. Letting Podman manage the upper layer also
+    # avoids the root-owned work directory that custom upperdir/workdir leaves
+    # behind, which a regular user cannot remove afterwards.
+    COPY_MODE="overlay"
+    log_info "Building on a copy of the sources using an overlay filesystem to not pollute the current directory"
+  else
+    # The container creates a cheap shared git clone that reuses the object
+    # database of the original repository, so the potentially very large .git
+    # directory is never duplicated while git, gbp and pristine-tar keep
+    # working inside the copy.
+    COPY_MODE="clone"
+    CONTAINER_RUN_ARGS+=("--env=COPY")
+    log_info "Building on a copy of the sources to not pollute the current directory with build artifacts"
   fi
-  log_info "Copying sources to build directory to not pollute current directory with build artifacts"
-  rsync --archive --exclude="**/.git/" "$PWD/" "$BUILD_DIR/source"
-  SOURCE_DIR="$BUILD_DIR/source"
 fi
-# @TODO: If we want to avoid sources being polluted but not duplicate files too
-# much or spend time on copying, try using overlays (but requires Podman 4.x series):
-# '--volume=/...:/debcraft/source:O,upperdir=/debcraft/upper,workdir=/debcraft/workdir'
 
 if [ -n "${PREVIOUS_SUCCESSFUL_BUILD_DIRS[0]}" ]
 then
@@ -110,8 +123,21 @@ then
     bash -lc 'mkdir -p /debcraft/source && tar -C /debcraft/source -xf - && /debcraft-builder.sh' \
     || FAILURE=true
 else
-  # Local/sibling: bind-mount sources and run the builder
-  CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source")
+  # Local/sibling: bind-mount sources and run the builder.
+  if [ "$COPY_MODE" = "overlay" ]
+  then
+    # Mount the original sources as the read-only lower layer of a temporary
+    # Podman-managed overlay so that all modifications are discarded when the
+    # container exits
+    CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source:O")
+  elif [ -n "$COPY" ]
+  then
+    # The clone is created inside the container, so the original sources are
+    # only ever read and can be mounted read-only.
+    CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source:ro")
+  else
+    CONTAINER_RUN_ARGS+=("--volume=${SOURCE_PATH}:/debcraft/source")
+  fi
   "$CONTAINER_CMD" run \
     --tty \
     "${CONTAINER_RUN_ARGS[@]}" \
@@ -150,14 +176,16 @@ then
   rmdir "$BUILD_DIR/last-tagged"
 fi
 
-if [ -n "$COPY" ] && [ -d "$BUILD_DIR/source" ]
+if [ -n "$COPY" ] && [ -d "$BUILD_DIR/copy" ]
 then
-  # Clean up copied source files to save space after build completes
-  rm -rf "$BUILD_DIR/source"
-elif [ -d "$BUILD_DIR/source" ]
+  # Clean up the copy of the sources to save space after build completes
+  rm -rf "$BUILD_DIR/copy"
+fi
+
+if [ -d "$BUILD_DIR/source" ]
 then
   # Clean up temporary mount directory from polluting build artifacts
-  # if a "source" directory was mounted (i.e. COPY was *not* used)
+  # if a "source" directory was mounted
   rmdir "$BUILD_DIR/source" || true
 fi
 
