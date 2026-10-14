@@ -67,6 +67,17 @@ function debcraft_test() {
   fi
 }
 
+# Verify that a build did not leave anything behind in the current directory.
+# Used to assert that --copy really keeps the original source directory clean.
+function assert_source_dir_clean() {
+  if [ -n "$(git status --porcelain --ignored --untracked-files=all)" ]
+  then
+    echo "ERROR: Build with --copy left files in the source directory:"
+    git status --porcelain --ignored --untracked-files=all | head
+    exit 1
+  fi
+}
+
 TEST_CMD_PATH="$(readlink --canonicalize-existing --verbose "$0")"
 DEBCRAFT_TEST_SRC_DIR="$(dirname "$TEST_CMD_PATH")"
 DEBCRAFT_SRC_DIR="$(dirname "$DEBCRAFT_TEST_SRC_DIR")"
@@ -109,6 +120,32 @@ gbp clone --pristine-tar --debian-branch=debian/latest https://salsa.debian.org/
 debcraft_test "build entr" "Artifacts at /"
 
 cd entr
+
+# Test building on a copy of the sources. When Podman with overlay support is
+# available this exercises the overlay code path, otherwise the shared-clone
+# fallback. Either way the current directory must stay free of build artifacts.
+git clean -fdx
+debcraft_test "build --copy" "$EXPECTED"
+assert_source_dir_clean
+if grep --quiet "using an overlay filesystem" "$TEMPDIR/test-$TEST_NUMBER.log"
+then
+  echo "Note: --copy used the Podman overlay code path"
+else
+  echo "Note: --copy used the shared-clone fallback (Podman overlays unavailable)"
+fi
+
+# Explicitly disable overlay support to make sure the shared-clone fallback
+# code path is exercised as well, even when the overlay path above was used
+git clean -fdx
+export DEBCRAFT_DISABLE_OVERLAY=true
+debcraft_test "build --copy" "$EXPECTED"
+unset DEBCRAFT_DISABLE_OVERLAY
+assert_source_dir_clean
+if ! grep --quiet "Copying sources to /debcraft/copy" "$TEMPDIR/test-$TEST_NUMBER.log"
+then
+  echo "ERROR: --copy did not use the shared-clone fallback when overlays were disabled"
+  exit 1
+fi
 
 # Build FIRST to create artifacts needed for release
 git clean -fdx
