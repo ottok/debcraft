@@ -26,6 +26,44 @@ source "/cache.inc.sh"
 # plain 'build.log' for consistency across builds and directory diffs
 BUILD_LOG="build.log"
 
+# When --copy is used, build in a copy of the source directory so that the
+# original directory is not polluted with build artifacts. If the sources are
+# a git repository, create a cheap shared clone that references the original
+# object database instead of duplicating the potentially very large .git
+# directory. Uncommitted changes and untracked files are then copied over the
+# checkout so the copy matches the original working tree exactly.
+if [ "$COPY" = "true" ]
+then
+  ORIGINAL_DIR="$PWD"
+  COPY_DIR="/debcraft/copy"
+  log_info "Copying sources to $COPY_DIR"
+  rm --recursive --force "$COPY_DIR"
+  if [ -e "$ORIGINAL_DIR/.git" ]
+  then
+    ORIGINAL_BRANCH="$(git -C "$ORIGINAL_DIR" symbolic-ref --quiet --short HEAD || true)"
+    ORIGINAL_HEAD="$(git -C "$ORIGINAL_DIR" rev-parse HEAD)"
+    git clone --quiet --shared --no-checkout "$ORIGINAL_DIR" "$COPY_DIR"
+    if [ -n "$ORIGINAL_BRANCH" ]
+    then
+      git -C "$COPY_DIR" checkout --quiet --force "$ORIGINAL_BRANCH"
+    else
+      git -C "$COPY_DIR" checkout --quiet --force --detach "$ORIGINAL_HEAD"
+    fi
+    # The checkout populates the working tree with HEAD, but the original
+    # working tree may have deleted files. Clear the working tree (keeping the
+    # git metadata, and thus the index) so that the tar overlay below produces
+    # an exact copy of the original working tree, deletions included.
+    find "$COPY_DIR" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+  else
+    mkdir --parents "$COPY_DIR"
+  fi
+  # Overlay the original working tree, excluding the git metadata, so any
+  # uncommitted changes are included in the copy as well
+  tar --directory="$ORIGINAL_DIR" --exclude='.git' --create --file=- . \
+    | tar --directory="$COPY_DIR" --extract --file=-
+  cd "$COPY_DIR"
+fi
+
 # Normal builds in Debian are full binary releases with sources
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
