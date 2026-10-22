@@ -39,7 +39,11 @@ source "/pristine-tar.inc.sh"
 # completely new package or old package with new binary package name.
 if [ -n "$DEBCRAFT_FULL_BUILD" ]
 then
-  DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
+  # Include orig tarball in .changes file (-sa) as dpkg-buildpackage omits it by
+  # default for Debian revisions other than -0/-1. Full builds are typically
+  # uploads that need to pass the NEW queue and should always carry a complete
+  # source package, even if the archive does not have the orig tarball yet.
+  DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore -sa"
   # Check if orig tarball already exists (from pristine-tar or copied by release.inc.sh)
   # If it exists, prevent gbp from creating a duplicate. If not, let gbp create it.
   PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
