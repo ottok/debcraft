@@ -225,7 +225,7 @@ then
     )
   else
     log_warn "Unable to find any git tags, which are needed to identify" \
-             "previous release and compare build artifacts with it. " \
+             "previous release and compare build artifacts with it." \
              "Run 'git fetch --tags' to ensure any remote tag is available locally."
     LAST_TAGGED_SUCCESSFUL_BUILDINFO_FILES=()
   fi

@@ -45,6 +45,10 @@ fi
 log_debug_var DEBIAN_VERSION
 log_debug_var PACKAGE_VERSION
 
+# Before starting the container, check that the orig tarball can be taken
+# from an existing file or pristine-tar branch, or download it if needed.
+conditional_download_orig_tarball "$PACKAGE" "$PACKAGE_VERSION"
+
 # Opportunistically copy the upstream tarball if it exists. Command dpkg-source
 # expects it in the parent directory of the source tree for '3.0 (quilt)'
 # format. This needs to happen before the container is run.
