@@ -32,31 +32,13 @@ then
   # Parse upstream version to extract pristine-tar only when doing full builds
   # that need the upstream source tarball. Skip this for binary-only builds
   # (--skip-sources) to save time.
+  PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
   # shellcheck source=src/container/pristine-tar.inc.sh
   source "/pristine-tar.inc.sh"
 
   # Empty means full build, both source and binaries
   DPKG_BUILDPACKAGE_ARGS=""
-  # Check if orig tarball already exists (from pristine-tar or copied by build.inc.sh)
-  # If it exists, prevent gbp from creating a duplicate. If not, let gbp create it.
-  PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
-  ORIG_TARBALL_EXISTS=false
-  for ext in gz xz bz2 lzma zst
-  do
-    if [ -f "../${PACKAGE_NAME}_${UPSTREAM_VERSION}.orig.tar.${ext}" ]
-    then
-      ORIG_TARBALL_EXISTS=true
-      break
-    fi
-  done
-  if [ "$ORIG_TARBALL_EXISTS" = true ]
-  then
-    log_info "Using existing orig tarball, preventing gbp from creating a new one"
-    GBP_ARGS="--git-no-create-orig"
-  else
-    log_info "No orig tarball found, allowing gbp to create one from upstream tag"
-    GBP_ARGS=""
-  fi
+  set_gbp_args_for_orig_tarball
 else
   # Skip generating source package to make (binary) build faster by default
   DPKG_BUILDPACKAGE_ARGS="--build=any,all"

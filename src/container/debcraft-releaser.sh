@@ -28,8 +28,10 @@ then
   source "/cache.inc.sh"
 fi
 
+PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
+
 # Mimic debuild log filename '<package>_<version>_source.build'
-BUILD_LOG="$(dpkg-parsechangelog --show-field=source)_$(dpkg-parsechangelog --show-field=version)_source.build"
+BUILD_LOG="${PACKAGE_NAME}_$(dpkg-parsechangelog --show-field=version)_source.build"
 
 # shellcheck source=src/container/pristine-tar.inc.sh
 source "/pristine-tar.inc.sh"
@@ -44,26 +46,7 @@ then
   # uploads that need to pass the NEW queue and should always carry a complete
   # source package, even if the archive does not have the orig tarball yet.
   DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore -sa"
-  # Check if orig tarball already exists (from pristine-tar or copied by release.inc.sh)
-  # If it exists, prevent gbp from creating a duplicate. If not, let gbp create it.
-  PACKAGE_NAME="$(dpkg-parsechangelog --show-field=source)"
-  ORIG_TARBALL_EXISTS=false
-  for ext in gz xz bz2 lzma zst
-  do
-    if [ -f "../${PACKAGE_NAME}_${UPSTREAM_VERSION}.orig.tar.${ext}" ]
-    then
-      ORIG_TARBALL_EXISTS=true
-      break
-    fi
-  done
-  if [ "$ORIG_TARBALL_EXISTS" = true ]
-  then
-    log_info "Using existing orig tarball, preventing gbp from creating a new one"
-    GBP_ARGS="--git-no-create-orig"
-  else
-    log_info "No orig tarball found, allowing gbp to create one from upstream tag"
-    GBP_ARGS=""
-  fi
+  set_gbp_args_for_orig_tarball
 else
   DPKG_BUILDPACKAGE_ARGS="--diff-ignore --tar-ignore"
   # Use -S so all tools (dpkg-build, dpkg-source) see it as using --build=source
