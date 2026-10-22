@@ -198,6 +198,44 @@ mkdir --parents "$EXTRA"
 debcraft_test "build --extra-repository $EXTRA" "$EXPECTED"
 
 echo "$SEPARATOR" # Extra separator for test bed modifications
+echo "Testing orig tarball download when no local tarball or pristine-tar branch exists"
+
+# Force the download path: remove the pristine-tar branch, remote and gbp.conf
+# setting, and make sure there is no reusable orig tarball in the parent directory
+git branch --delete --force pristine-tar
+git remote remove origin
+sed --in-place '/pristine-tar/d' debian/gbp.conf
+git add debian/gbp.conf
+git -c user.name="Debcraft Test" \
+    -c user.email=debcraft@example.com \
+    -c commit.gpgsign=false \
+    commit --message "Remove pristine-tar for download test"
+rm --force ../entr_*.orig.tar.*
+
+debcraft_test "build" "$EXPECTED"
+if ! grep --quiet --fixed-strings "Attempt to download it from" "$TEMPDIR/test-$TEST_NUMBER.log"
+then
+  echo "ERROR: Expected the orig tarball to be downloaded"
+  echo "  Full log:  $TEMPDIR/test-$TEST_NUMBER.log"
+  exit 1
+fi
+if ! ls ../entr_*.orig.tar.* &> /dev/null
+then
+  echo "ERROR: Downloaded orig tarball not found in the parent directory"
+  ls -lha ..
+  exit 1
+fi
+
+# A second build must reuse the tarball already downloaded into the parent directory
+debcraft_test "build" "$EXPECTED"
+if grep --quiet --fixed-strings "Attempt to download it from" "$TEMPDIR/test-$TEST_NUMBER.log"
+then
+  echo "ERROR: Orig tarball was downloaded again despite existing in the parent directory"
+  echo "  Full log:  $TEMPDIR/test-$TEST_NUMBER.log"
+  exit 1
+fi
+
+echo "$SEPARATOR" # Extra separator for test bed modifications
 echo "Deleting /.git so next build will build without access to git repository branches or tags"
 rm --recursive --force --verbose .git
 
