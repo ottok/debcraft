@@ -34,14 +34,14 @@ log_debug_var CURRENT_BRANCH
 
 if [ "$CURRENT_BRANCH" = "$DEBIAN_BRANCH" ]
 then
-  log_error "Running 'debcraft improve' directly on the Debian branch" \
-            "'$DEBIAN_BRANCH' is not supported as Debcraft can't guarantee" \
-            "that all automatic improvements are fully correct. Run the" \
-            "command on a development branch, review the commits generated," \
-            "and run 'git rebase -i $DEBIAN_BRANCH' while reworking the" \
-            " commits until the final version is ready to be merged on the" \
-            "main packaging branch."
-  exit 1
+  log_warn "Running 'debcraft improve' directly on the Debian branch" \
+           "'$DEBIAN_BRANCH' is not recommended as Debcraft can't guarantee" \
+           "that all automatic improvements are fully correct. It is better" \
+           "to run the command on a development branch, review the commits" \
+           "generated, and run 'git rebase -i $DEBIAN_BRANCH' to rework them" \
+           "before merging them into the Debian branch."
+
+  read -r -p "Press Ctrl+C to abort, or press enter to proceed with semi-automatic improvements directly on $DEBIAN_BRANCH"
 fi
 
 ensure_git_identity
