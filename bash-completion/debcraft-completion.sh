@@ -56,21 +56,21 @@ _debcraft_complete() {
        options="$generic_options $targets --release-to --skip-sources https://"
       ;;
     release*)
-      options="$generic_options --with-binaries --release-to"
+      options="$generic_options --with-binaries --release-to --yes"
       ;;
     update*)
       targets="$(find_targets "$cur")"
-      options="--build-dirs-path --container-command --host-architecture --pull --copy --clean $targets https://"
+      options="--build-dirs-path --container-command --host-architecture --pull --copy --clean --config --debug $targets https://"
       ;;
     test*|shell*)
       options="$generic_options"
       ;;
     logs*)
       targets="$(find_targets "$cur")"
-      options="--build-dirs-path --copy --clean $targets"
+      options="--build-dirs-path --copy --clean --config --debug $targets"
       ;;
     prune*)
-      options="--build-dirs-path --older-than --yes"
+      options="--build-dirs-path --older-than --yes --config --debug"
       ;;
     --container-command*)
       # Complete file paths for options requiring paths
