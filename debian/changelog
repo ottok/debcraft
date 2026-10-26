@@ -1,3 +1,29 @@
+debcraft (1.0.0) unstable; urgency=medium
+
+  * Release version 1.0.0 as Debcraft is now considered ready for wider adoption
+  * Add 'tenacious' as the new default Ubuntu development release
+  * Include orig tarball in release uploads with --with-binaries
+  * If needed, download orig tarball on the host before container starts
+  * Add a new autopkgtest that runs `debcraft build entr`
+  * Build --copy using Podman overlays, with a shared git clone fallback
+  * Additionally do a lot of small bugfixes and polish:
+    - Refactor the branch check in `debcraft improve` to run earlier
+    - Make Debhelper version check compatible with both '(=13)' or '(= 13)'
+    - Be explicit about this being a native package in gbp.conf
+    - Update README.md to match current state of project
+    - List 'update' in the error message for a missing argument
+    - Clean away unnecessary / commented out sections
+    - Drop diffoscope timeout to 2 minutes
+    - Allow running `debcraft improve` on the Debian branch but with warning
+    - Refactor how existing orig tarball is reused inside the container
+    - Extend tests to include testing orig tarball download and reuse
+    - Test both --copy code paths in the test suite
+    - Ensure Bash completion matches current commands and arguments
+    - Ensure --help descriptions match current commands and arguments
+    - Update README to match current behavior and features
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 26 Oct 2026 11:26:11 +0000
+
 debcraft (0.9.5) unstable; urgency=medium
 
   * Implement partial `debcraft prune`
