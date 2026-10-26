@@ -10,7 +10,7 @@ Build-Depends:
  shellcheck <!nocheck>,
 Standards-Version: 4.7.4
 Homepage: https://salsa.debian.org/debian/debcraft
-Vcs-Git: https://salsa.debian.org/debian/debcraft.git
+Vcs-Git: https://salsa.debian.org/debian/debcraft.git -b debian/13-trixie-backports
 Vcs-Browser: https://salsa.debian.org/debian/debcraft
 
 Package: debcraft

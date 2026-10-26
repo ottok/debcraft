@@ -1,3 +1,11 @@
+debcraft (1.0.0~bpo13+1) trixie-backports; urgency=medium
+
+  * Backport to Debian 13 "Trixie"
+  * Revert "Bump Debhelper version from 13 to 14" so that package can build on
+    older Debian releases
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 26 Oct 2026 15:26:26 +0000
+
 debcraft (1.0.0) unstable; urgency=medium
 
   * Release version 1.0.0 as Debcraft is now considered ready for wider adoption
