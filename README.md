@@ -2,12 +2,15 @@
 
 * **Easy**: Build any Debian/Ubuntu package in one single command. If you don't
   have the package or source already downloaded, it will be done automatically.
-  Also, a build container (both Podman and Docker supported) is automatically
-  built using the target Debian or Ubuntu suite in `debian/changelog` and with
-  exact build dependencies from `debian/control`. Users are spared from having
-  to manually prepare ahead or maintain [sbuild](https://wiki.debian.org/sbuild)
-  root file systems or similar. The command output is (relatively) easy to read,
-  and it also teaches users about Debian packaging in context.
+  When the orig tarball is neither already present nor available on a
+  pristine-tar branch, the exact upstream tarball is downloaded from the archive
+  instead of being regenerated from the upstream git tag. Also, a build
+  container (both Podman and Docker supported) is automatically built using the
+  target Debian or Ubuntu suite in `debian/changelog` and with exact build
+  dependencies from `debian/control`. Users are spared from having to manually
+  prepare ahead or maintain [sbuild](https://wiki.debian.org/sbuild) root file
+  systems or similar. The command output is (relatively) easy to read, and it
+  also teaches users about Debian packaging in context.
 
 * **Fast**: Container layer caching is utilized to make builds and re-builds
   blazingly fast. Debian packages that support [ccache](https://ccache.dev/),
@@ -24,9 +27,10 @@
   artifacts.
 
   Commands that need to reach the network in order to do their job are the
-  exceptions: the `build` and `release` commands run hermetically, but
-  `improve`, `test` and `shell` deliberately do not, and `update` never runs a
-  container at all.
+  exceptions: the `build` container and the `release` build container run
+  hermetically, but `improve`, `test` and `shell` deliberately do not, and
+  `update`, `logs` and `prune` never run a container at all. PPA uploads are
+  performed on the host and thus do use the network.
 
 ## Usage
 
@@ -56,9 +60,9 @@ debcraft build
 debcraft shell
 ```
 
-Note that the shell is the one command that intentionally runs as `root` inside
+Note that the `shell` and `test` commands intentionally run as `root` inside
 the container, so that packages can be installed and upgraded while debugging,
-whereas builds always run as an unprivileged user.
+whereas builds run as an unprivileged user.
 
 #### Automatically apply packaging improvements on a branch
 
@@ -115,6 +119,15 @@ debcraft logs
 DEBCRAFT_PPA=ppa:otto/ppa debcraft release
 ```
 
+#### Release a full source and binary upload
+
+```shell
+debcraft release --with-binaries
+```
+
+This always includes the orig tarball, which is required when uploading a
+package to the archive for the first time (e.g. to the NEW queue).
+
 #### Copy build artifacts to another directory
 
 ```shell
@@ -157,44 +170,43 @@ will run the Debian-specific regression test suite if the package has
 autopkgtest support, and drops to a shell for investigation if tests fail to
 pass. The command 'release' uploads a package that is ready to be released and
 the command 'update' tries to update the package to the latest upstream version
-if the package git repository layout is compatible.
+if the package git repository layout is compatible. The command 'shell' can be
+used to explore the container and run various tests and build commands
+one-by-one, typically for debugging purposes.
 
-The command 'shell' can be used to explore the container and 'prune' will
-clean up temporary files created by Debcraft. Unlike the other commands,
-'prune' is not tied to any source package and can be run from anywhere: it
-cleans up the build directories of all packages, and reports how much disk
-space Debcraft occupies before it deletes anything.
+The command 'logs' lists previous builds and their logs and 'prune' cleans up
+the build directories of all packages, and reports how much disk space Debcraft
+occupies before it deletes anything. These two commands are not tied to any
+source package and can be invoked from anywhere.
 
 In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS=''). Successful builds
+be honored (currently DEB_BUILD_OPTIONS='parallel=4 noautodbgsym'). Successful builds
 include running './debian/rules clean' to clean up artifacts, while failed
 builds will leave them around for inspection.
 
 optional arguments:
   --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)
-  --distribution          Linux distribution to build in (default: debian:sid)
-  --container-command     Container command to use (default: podman)
+  --distribution          Linux distribution to build in (default: from debian/changelog)
+  --container-command     Container command to use (default: autodetect Podman or Docker)
   --host-architecture     Host architecture to use when performing a cross build
-  --skip-sources          Build only binaries and skip creating a source
-                          tarball to make the build slightly faster
-                          ('debcraft build' only)
+  --skip-sources          Build only binaries and skip creating a source tarball
+                          to make the build slightly faster ('debcraft build' only)
   --with-binaries         Create a release with both source and binaries,
                           for example with the intent to upload to NEW
                           ('debcraft release' only)
-  --pull                  Ensure container base is updated
   --copy                  Perform the build on a copy of the package directory
   --clean                 Ensure sources are clean before and after build
                           (only needed for packages with incomplete 'debian/clean'
                           or 'debian/.gitignore' definitions)
+  --pull                  Ensure latest container base image version is pulled
   --extra-repository      Use directory as local package repository for builds
   --config                Path to debcraft configuration file
   --release-to            After build or release, copy artefacts to specified dir
   --older-than            Only prune files and directories that are older than
                           the given number of days (default: 365)
                           ('debcraft prune' only)
-  --yes                   Don't ask for confirmation, delete everything that
-                          the action matches
-                          ('debcraft prune' and PPA release uploads)
+  --yes                   Don't ask for confirmation
+                          ('debcraft prune' and PPA uploads)
   --debug                 Emit debug information
   -h, --help              Display this help and exit
   --version               Display version and exit
