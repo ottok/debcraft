@@ -1,4 +1,4 @@
-# Debcraft: Easy, fast and secure way to build Debian packages
+# <img src="debcraft-transparent.png" alt="" width="48" height="48"> Debcraft: Easy, fast and secure way to build Debian packages
 
 * **Easy**: Build any Debian/Ubuntu package in one single command. If you don't
   have the package or source already downloaded, it will be done automatically.
