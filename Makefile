@@ -28,11 +28,13 @@ build: manpage build-depends
 # debcraft'). See
 # https://manpages.ubuntu.com/manpages/noble/en/man7/ronn-format.7.html and
 # https://eddieantonio.ca/blog/2015/12/18/authoring-manpages-in-markdown-with-pandoc/
+
 manpage:
-	@echo "Generate man page for Debcraft"
+	@echo "Generate man page"
 	mkdir --verbose --parents $(DESTDIR)/usr/share/man/man1
 	help2man \
 		--name "Easy, fast and secure way to build Debian packages" \
+		--version-string "$$(grep --only-matching --max-count=1 --perl-regexp '\(\K[^)]+' debian/changelog)" \
 		--section 1 \
 		--manual "Debcraft usage" \
 		--output $(DESTDIR)/usr/share/man/man1/debcraft.1 \
