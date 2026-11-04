@@ -394,10 +394,6 @@ N:   Check: debhelper
 N:
 
 Create blhc.log
-CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c compat.c
-CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c entr.c
-CFLAGS missing (-fPIE): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -DRELEASE=\"5.7\" -c status.c
-LDFLAGS missing (-fPIE -pie): cc -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/debcraft/source=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wdate-time -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_LINUX_PORT -Imissing -o entr compat.o status.o entr.o -Wl,-z,relro -Wl,-z,now
 
 Create filelist.log
 

@@ -30,13 +30,17 @@ lintian --verbose --info --color=always --display-level=">=pedantic" --display-e
 # filelist log can be created in parallel? Will it make overall progress faster?
 
 # Run blhc, ignore errors caused by findings.
+#
+# Use --debian since both Debian and Ubuntu have PIE enabled in GCC by default,
+# so blhc should not warn about missing PIE flags.
+#
 # Strip all ANSI terminal escape sequences, since otherwise blhc will not
 # recognize the format. Sort file so comparing changes with diff is consistent
 # and not polluted by parallel builds outputting build commands at random.
 echo
 log_info "Create blhc.log"
 sed -E -e 's/\x1b\[[0-9;]+[mK]//g' "$BUILD_LOG" > /tmp/build_nocolor.log
-blhc --all --color /tmp/build_nocolor.log | sort | tee -a "blhc.log" || true
+blhc --debian --all --color /tmp/build_nocolor.log | sort | tee -a "blhc.log" || true
 
 # Symlink *.changes and *.buildinfo to an unversioned filename so that the diff
 # steps that run later can compare them, and also meld can compare them
