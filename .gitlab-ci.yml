@@ -21,6 +21,7 @@ test-static:
         shellcheck
   script:
     - make test-static
+    - make test-pristine-tar
   # Don't run this job if only a git tag was pushed
   except:
     variables:

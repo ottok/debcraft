@@ -307,6 +307,13 @@ function copy_upstream_component_tarballs() {
 
   for tarball_path in "../${package}_${version}.orig-"*.tar.*
   do
+    # The glob also matches signatures and pristine-tar metadata, so only copy
+    # actual tarballs.
+    case "$tarball_path" in
+      *.asc|*.delta|*.id)
+        continue
+        ;;
+    esac
     if [ -f "$tarball_path" ]
     then
       cp_update_none "$tarball_path" "$dest/"

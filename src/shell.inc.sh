@@ -30,6 +30,9 @@ log_debug_var PACKAGE_VERSION
 # Attempt to copy the tarball with any compression supported by dpkg-source
 copy_upstream_tarball "$PACKAGE" "$PACKAGE_VERSION" "$SHELL_DIR" || true
 
+# Also copy any component tarballs for multipart source packages
+copy_upstream_component_tarballs "$PACKAGE" "$PACKAGE_VERSION" "$SHELL_DIR" || true
+
 if [ -n "$DEBUG" ]
 then
   set -x

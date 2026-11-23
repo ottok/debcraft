@@ -58,7 +58,7 @@ install-local:
 	ln --force --symbolic --verbose ${PWD}/debcraft.sh ~/.local/bin/debcraft
 	ln --force --symbolic --verbose ${PWD}/bash-completion/debcraft-completion.sh ~/.local/share/bash-completion/completions/debcraft
 
-test: test-static test-debcraft
+test: test-static test-pristine-tar test-debcraft
 
 # All generic static tests that don't need Debcraft to actually run
 # @TODO: Evaluate using '-o all' to run extra validation (https://github.com/koalaman/shellcheck/wiki/Optional)
@@ -69,6 +69,11 @@ test-static: test-depends
 	codespell --interactive=0 --check-filenames --check-hidden --skip=.git \
 	  --ignore-words-list soler
 	shellcheck -x --shell=bash $(shell grep -Irnw -e '^#!.*/bash' | sort -u |cut -d ':' -f 1 | xargs)
+
+# Run pristine-tar handling tests without requiring a container
+test-pristine-tar:
+	@echo "Running pristine-tar tests"
+	tests/pristine-tar-tests.sh
 
 # Run Debcraft and ensure it behaves as expected
 test-debcraft:
