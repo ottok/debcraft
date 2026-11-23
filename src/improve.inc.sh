@@ -52,6 +52,7 @@ then
 fi
 
 # See build.inc.sh for explanation of container run parameters
+add_container_env_args
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
@@ -61,7 +62,7 @@ $CONTAINER_CMD run \
     --shm-size=1G \
     --volume="${SOURCE_DIR:=$PWD}":/debcraft/source \
     --workdir=/debcraft/source \
-    --env="DEB*" \
+    "${CONTAINER_ENV_ARGS[@]}" \
     ${GIT_AUTHOR_NAME:+--env="GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME"} \
     ${GIT_AUTHOR_EMAIL:+--env="GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL"} \
     ${GIT_COMMITTER_NAME:+--env="GIT_COMMITTER_NAME=$GIT_COMMITTER_NAME"} \

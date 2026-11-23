@@ -66,10 +66,36 @@ then
   CONTAINER_CAN_HAVE_TTY=true
 fi
 
+# Environment variables to pass into the containers. List them explicitly as
+# Docker does not expand wildcards in '--env', while Podman does.
+CONTAINER_ENV_VARS=(
+  DEB_BUILD_OPTIONS
+  DEB_BUILD_PROFILES
+  DEBEMAIL
+  DEBNAME
+  DEBFULLNAME
+  DEBCRAFT_FULL_BUILD
+)
+
+# Build the corresponding --env arguments for variables that are set. This is
+# called before each container run so that variables exported later, such as
+# DEBCRAFT_FULL_BUILD, are included as well.
+function add_container_env_args() {
+  local env_var
+  CONTAINER_ENV_ARGS=()
+  for env_var in "${CONTAINER_ENV_VARS[@]}"
+  do
+    if [ -n "${!env_var+set}" ]
+    then
+      CONTAINER_ENV_ARGS+=("--env=$env_var")
+    fi
+  done
+}
 
 # Explicit exports
 export CONTAINER_CMD
 export CONTAINER_TYPE
 export CONTAINER_RUN_ARGS
+export CONTAINER_ENV_ARGS
 export CONTAINER_CAN_HAVE_TTY
 export CONTAINER_SUPPORTS_OVERLAYS

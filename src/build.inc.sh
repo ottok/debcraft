@@ -92,10 +92,12 @@ fi
 #   just exit tty), and also for CI to be able to pipe tar contents
 # --network=none to ensure build is hermetic and does not download anything
 #
-# Export all DEB* variables, such as DEB_BUILD_OPTIONS, DEBEMAIL, DEBNAME etc
+# Export Debian build and developer environment variables listed in
+# CONTAINER_ENV_VARS
 #
 # Export HOST_ARCH for cross build
 #
+add_container_env_args
 # shellcheck disable=SC2191
 CONTAINER_RUN_ARGS+=(
   --name="$CONTAINER"
@@ -106,7 +108,7 @@ CONTAINER_RUN_ARGS+=(
   --volume="$CACHE_DIR":/debcraft/cache
   --volume="$BUILD_DIR":/debcraft
   --workdir=/debcraft/source
-  --env="DEB*"
+  "${CONTAINER_ENV_ARGS[@]}"
   --env="HOST_ARCH"
 )
 

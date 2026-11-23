@@ -39,6 +39,7 @@ fi
 # Note! The exit code is captured explicitly because 'set -e' is in effect and
 # would otherwise abort the script before the temporary directory gets cleaned
 # up, leaving it behind whenever the container exits non-zero.
+add_container_env_args
 EXIT_CODE=0
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
@@ -53,7 +54,7 @@ $CONTAINER_CMD run \
     $EXTRA_CONTAINER_MOUNTS \
     --volume="${SOURCE_DIR:=$PWD}":/debcraft/source \
     --workdir=/debcraft/source \
-    --env="DEB*" \
+    "${CONTAINER_ENV_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-shell.sh \
     || EXIT_CODE=$?

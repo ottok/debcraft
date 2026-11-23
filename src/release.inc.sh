@@ -71,6 +71,7 @@ then
 fi
 
 # See build.inc.sh for explanation of container run parameters
+add_container_env_args
 # shellcheck disable=SC2086
 $CONTAINER_CMD run \
     --name="$CONTAINER" \
@@ -83,7 +84,7 @@ $CONTAINER_CMD run \
     --volume="$RELEASE_DIR":/debcraft \
     --volume="${SOURCE_DIR:=$PWD}":/debcraft/source \
     --workdir=/debcraft/source \
-    --env="DEB*" \
+    "${CONTAINER_ENV_ARGS[@]}" \
     "${CONTAINER_RUN_ARGS[@]}" \
     "$CONTAINER" \
     /debcraft-releaser.sh \
