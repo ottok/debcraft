@@ -140,11 +140,17 @@ debcraft build --release-to ~/deb-builds
 debcraft prune --older-than 180
 ```
 
-#### Pass build options
+#### Pass build options and profiles
 
 ```shell
 DEB_BUILD_OPTIONS="parallel=4 nocheck noautodbgsym" debcraft build
+DEB_BUILD_PROFILES="nocheck" DEB_BUILD_OPTIONS="nocheck" debcraft build
 ```
+
+`DEB_BUILD_PROFILES` is a space-separated list of build profiles. Debcraft
+passes it both when installing build dependencies into the container and when
+running `dpkg-buildpackage`, so profile-gated dependencies are installed
+consistently.
 
 ### Command reference
 
@@ -179,10 +185,11 @@ the build directories of all packages, and reports how much disk space Debcraft
 occupies before it deletes anything. These two commands are not tied to any
 source package and can be invoked from anywhere.
 
-In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='parallel=4 noautodbgsym'). Successful builds
-include running './debian/rules clean' to clean up artifacts, while failed
-builds will leave them around for inspection.
+In addition to parameters below, anything passed in DEB_BUILD_OPTIONS or
+DEB_BUILD_PROFILES will also be honored (currently
+DEB_BUILD_OPTIONS='parallel=4 noautodbgsym'). Successful builds include running
+'./debian/rules clean' to clean up artifacts, while failed builds will leave
+them around for inspection.
 
 optional arguments:
   --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)

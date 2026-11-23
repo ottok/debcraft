@@ -272,6 +272,23 @@ then
   exit 1
 fi
 
+# Verify that build profiles are passed both to the container image build and
+# to dpkg-buildpackage. The deliberately non-installable build dependency is
+# gated behind <!nocheck>, so it must be ignored when the 'nocheck' profile is
+# active. If either step drops the profile, dependency installation or
+# dpkg-checkbuilddeps will fail.
+ORIGINAL_HEAD="$(git rev-parse HEAD)"
+sed --in-place '/^Build-Depends:/a\ debcraft-profile-regression-nonexistent <!nocheck>,' debian/control
+git add debian/control
+git -c user.name="Debcraft Test" \
+    -c user.email=debcraft@example.com \
+    -c commit.gpgsign=false \
+    commit --message "Add profile-gated build dependency for regression test"
+DEB_BUILD_PROFILES="nocheck" DEB_BUILD_OPTIONS="nocheck" \
+    debcraft_test "build" "$EXPECTED"
+git reset --hard "$ORIGINAL_HEAD"
+git clean -fdx
+
 echo "$SEPARATOR" # Extra separator for test bed modifications
 echo "Deleting /.git so next build will build without access to git repository branches or tags"
 rm --recursive --force --verbose .git

@@ -41,7 +41,9 @@ manpage:
 		--no-info \
 		./debcraft.sh
 	# Filter out inclusion of DEB_BUILD_OPTIONS in static Makefile.
-	sed -i -e 's@ (currently DEB_BUILD_OPTIONS=.*)\.@.@g' \
+	# Use -z so the pattern also matches if help output wraps the parenthetical
+	# across lines based on the value of DEB_BUILD_OPTIONS at build time.
+	sed -z -i -e 's@ (currently[[:space:]]*DEB_BUILD_OPTIONS=[^)]*)\.@.@g' \
 		$(DESTDIR)/usr/share/man/man1/debcraft.1
 
 install: build

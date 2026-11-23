@@ -43,10 +43,11 @@ the build directories of all packages, and reports how much disk space Debcraft
 occupies before it deletes anything. These two commands are not tied to any
 source package and can be invoked from anywhere.
 
-In addition to parameters below, anything passed in DEB_BUILD_OPTIONS will also
-be honored (currently DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds
-include running './debian/rules clean' to clean up artifacts, while failed
-builds will leave them around for inspection.
+In addition to parameters below, anything passed in DEB_BUILD_OPTIONS or
+DEB_BUILD_PROFILES will also be honored (currently
+DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS'). Successful builds include running
+'./debian/rules clean' to clean up artifacts, while failed builds will leave
+them around for inspection.
 
 optional arguments:
   --build-dirs-path       Path for writing build files and artifacts (default: ~/.cache/debcraft)

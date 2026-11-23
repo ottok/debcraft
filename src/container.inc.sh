@@ -69,6 +69,7 @@ $CONTAINER_CMD build  \
   --build-arg SOURCE_DATE_EPOCH=0 \
   --iidfile="$CONTAINER_DIR/container-$BUILD_ID-iid" \
   --build-arg HOST_ARCH=$HOST_ARCH \
+  --build-arg "DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-}" \
   $CONTAINER_BUILD_ARGS \
   --file="$CONTAINER_DIR/Containerfile" \
   "$CONTAINER_DIR" \

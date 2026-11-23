@@ -2,6 +2,7 @@
 FROM debian:sid
 
 ARG HOST_ARCH
+ARG DEB_BUILD_PROFILES
 ARG SOURCE_DATE_EPOCH
 ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 
@@ -159,11 +160,29 @@ COPY control /debcraft-control/debian/control
 # downloader container as it strips the line above from this file. Without this
 # guard apt aborts with "Unsupported file /debcraft-control given on commandline",
 # as apt only accepts a directory that really contains a debian/control file.
+#
+# DEB_BUILD_PROFILES is space-separated, while apt expects a comma-separated
+# list, so normalize it before passing it on. Use the APT::Build-Profiles
+# configuration item instead of --build-profiles, as older apt versions in
+# supported distributions do not have the command-line option. The cross-build
+# defaults match those used by debcraft-builder.sh so that the dependencies
+# installed here and the actual build agree.
 RUN [ -z "$HOST_ARCH" ] || dpkg --add-architecture "$HOST_ARCH"; \
     apt-get update -q && \
     if [ -f /debcraft-control/debian/control ]; then \
-        apt-get build-dep --dry-run ${HOST_ARCH:+--host-architecture $HOST_ARCH} -y --no-install-recommends /debcraft-control 2>&1 | grep -v -E '^(Starting|Investigating|Re-Instated|Considering|Done|[[:space:]]+Removing[[:space:]]|Broken.*9999)' && \
-        apt-get build-dep ${HOST_ARCH:+--host-architecture $HOST_ARCH} -y --no-install-recommends /debcraft-control; \
+        profiles="$(printf '%s' "${DEB_BUILD_PROFILES:-}" | tr -s '[:space:]' ',')"; \
+        profiles="${profiles#,}"; \
+        profiles="${profiles%,}"; \
+        if [ -n "$HOST_ARCH" ] && \
+           [ "$HOST_ARCH" != "$(dpkg --print-architecture)" ] && \
+           [ -z "$profiles" ]; then \
+            profiles="cross,nocheck"; \
+        fi; \
+        set -- -y --no-install-recommends; \
+        [ -z "$HOST_ARCH" ] || set -- "$@" --host-architecture "$HOST_ARCH"; \
+        [ -z "$profiles" ] || set -- "$@" -o "APT::Build-Profiles=$profiles"; \
+        apt-get build-dep --dry-run "$@" /debcraft-control 2>&1 | grep -v -E '^(Starting|Investigating|Re-Instated|Considering|Done|[[:space:]]+Removing[[:space:]]|Broken.*9999)' && \
+        apt-get build-dep "$@" /debcraft-control; \
     fi
 
 # Should be automatic and not needed at all, but run one more time just to be sure
